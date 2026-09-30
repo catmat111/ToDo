@@ -1,0 +1,233 @@
+<% content_for :title, @job_application.title %>
+<% events = @job_application.job_application_events.newest_first.to_a %>
+<% tasks = @job_application.tasks.ordered.to_a %>
+<% listing = @job_application.job_listing %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Navegação estrutural">
+      <%= link_to "Candidaturas", job_applications_path %> / <span aria-current="page"><%= @job_application.title.truncate(60) %></span>
+    </nav>
+    <h1 class="page-header__title"><%= @job_application.title %></h1>
+    <div class="page-header__subtitle cluster">
+      <%= status_badge(@job_application.status) %>
+      <% if @job_application.company_name.present? %>
+        <span class="cluster ja-inline"><%= icon :briefcase, size: 16 %> <%= @job_application.company_name %></span>
+      <% end %>
+      <span class="cluster ja-inline"><%= icon :clock, size: 16 %> <%= job_application_activity(@job_application) %></span>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to edit_job_application_path(@job_application), class: "btn btn--outline" do %><%= icon :edit %> Editar<% end %>
+    <%= button_to job_application_path(@job_application), method: :delete, class: "btn btn--danger",
+          form: { data: { turbo_confirm: "Apagar esta candidatura e todo o seu histórico? As tarefas associadas são mantidas." } } do %>
+      <%= icon :trash %> Apagar
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <section class="card card--accent" aria-labelledby="ja-next-step">
+      <div class="card__header">
+        <h2 class="card__title" id="ja-next-step">Próximo passo</h2>
+        <span class="muted small">Estado atual: <%= @job_application.status_label %></span>
+      </div>
+
+      <% if @job_application.closed? %>
+        <p class="ja-closed">
+          <%= icon :archive %>
+          <span>Esta candidatura está encerrada (<strong><%= @job_application.status_label %></strong>).
+          O histórico continua disponível abaixo.</span>
+        </p>
+      <% else %>
+        <div class="ja-transitions">
+          <% @job_application.allowed_transitions.each do |to| %>
+            <%= form_with url: transition_job_application_path(@job_application), method: :patch, scope: :transition,
+                  class: "form ja-transition ja-transition--#{to.dasherize}",
+                  data: { turbo_confirm: job_application_transition_confirm(to) } do |f| %>
+              <%= f.hidden_field :to, value: to, id: nil %>
+              <div class="ja-transition__head">
+                <%= status_badge(to, job_application_transition_label(@job_application, to)) %>
+                <p class="ja-transition__hint"><%= job_application_transition_hint(@job_application, to) %></p>
+              </div>
+
+              <% if to == "applied" %>
+                <div class="field">
+                  <label class="field__label" for="transition_applied_occurred_at">Data de envio</label>
+                  <%= f.datetime_field :occurred_at, value: Time.current.change(sec: 0), id: "transition_applied_occurred_at" %>
+                </div>
+                <label class="check" for="transition_applied_create_follow_up">
+                  <%= f.check_box :create_follow_up, { checked: true, id: "transition_applied_create_follow_up" }, "1", "0" %>
+                  Criar tarefa de follow-up
+                </label>
+                <p class="field__hint">Uma tarefa para voltares a contactar a empresa daqui a 7 dias.</p>
+              <% elsif to == "interview" %>
+                <div class="field">
+                  <label class="field__label" for="transition_interview_at">Data da entrevista <span class="muted">(opcional)</span></label>
+                  <%= f.datetime_field :interview_at, id: "transition_interview_at", "aria-describedby": "transition_interview_at_hint" %>
+                  <p class="field__hint" id="transition_interview_at_hint">Cria a tarefa «Entrevista» com um lembrete na véspera.</p>
+                </div>
+              <% end %>
+
+              <div class="field">
+                <label class="field__label" for="transition_<%= to %>_notes">Nota <span class="muted">(opcional)</span></label>
+                <%= f.text_field :notes, id: "transition_#{to}_notes", maxlength: 1000,
+                      placeholder: (to == "rejected" ? "Motivo, feedback recebido…" : "Detalhes a guardar no histórico") %>
+              </div>
+
+              <div class="form__actions">
+                <%= f.button type: "submit", class: job_application_transition_button_class(to) do %>
+                  <%= icon(to == "rejected" || to == "withdrawn" ? :archive : :check) %>
+                  <%= job_application_transition_label(@job_application, to) %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="card" id="historico" aria-labelledby="ja-history">
+      <div class="card__header">
+        <h2 class="card__title" id="ja-history">Histórico</h2>
+        <span class="muted small"><%= events.size == 1 ? "1 evento" : "#{events.size} eventos" %></span>
+      </div>
+
+      <% if events.any? %>
+        <ol class="timeline ja-timeline">
+          <% events.each do |event| %>
+            <li class="timeline__item ja-event ja-event--<%= event.event_type.dasherize %>" id="<%= dom_id(event) %>">
+              <div class="spread ja-event__head">
+                <div>
+                  <strong class="ja-event__label"><%= event.label %></strong>
+                  <div class="timeline__date">
+                    <time datetime="<%= event.occurred_at.iso8601 %>"><%= format_datetime(event.occurred_at, format: :long) %></time>
+                  </div>
+                </div>
+                <%= button_to job_application_job_application_event_path(@job_application, event), method: :delete,
+                      class: "btn btn--ghost btn--icon btn--sm", title: "Apagar evento",
+                      "aria-label": "Apagar evento «#{event.label}» de #{format_datetime(event.occurred_at)}",
+                      form: { data: { turbo_confirm: "Apagar este evento do histórico?" } } do %>
+                  <%= icon :trash, size: 16 %>
+                <% end %>
+              </div>
+              <% if event.notes.present? %>
+                <div class="ja-event__notes"><%= simple_format(event.notes) %></div>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <p class="muted">Ainda não há eventos no histórico.</p>
+      <% end %>
+
+      <div class="card__footer">
+        <h3 class="ja-subtitle">Adicionar evento</h3>
+        <%= form_with model: [ @job_application, @event ], class: "form" do |f| %>
+          <%= render "shared/form_errors", record: @event %>
+          <div class="form__row">
+            <div class="field">
+              <%= f.label :event_type, "Tipo", class: "field__label" %>
+              <%= f.select :event_type, job_application_event_type_options(@event.event_type) %>
+            </div>
+            <div class="field">
+              <%= f.label :occurred_at, "Data", class: "field__label" %>
+              <%= f.datetime_field :occurred_at, required: true %>
+            </div>
+          </div>
+          <div class="field">
+            <%= f.label :notes, "Notas", class: "field__label" %>
+            <%= f.text_area :notes, rows: 3, maxlength: 5000, placeholder: "Ex.: enviei email ao recrutador, feedback da entrevista…" %>
+          </div>
+          <p class="field__hint">Adicionar um evento não muda o estado da candidatura — usa «Próximo passo» para isso.</p>
+          <div class="form__actions">
+            <%= f.button type: "submit", class: "btn btn--secondary" do %><%= icon :plus %> Adicionar ao histórico<% end %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+  <aside class="stack" aria-label="Detalhes da candidatura">
+    <section class="card card--olive" aria-labelledby="ja-listing">
+      <h2 class="card__title ja-card-heading" id="ja-listing">Vaga</h2>
+      <% if listing %>
+        <p class="ja-listing__title"><%= link_to listing.title, job_listing_path(listing) %></p>
+        <dl class="dl">
+          <dt>Empresa</dt>
+          <dd><%= listing.company_name.presence || "—" %></dd>
+          <dt>Local</dt>
+          <dd><%= listing.location.presence || "—" %></dd>
+          <dt>Fonte</dt>
+          <dd><%= job_listing_source_label(listing.source) %></dd>
+          <% if listing.published_at %>
+            <dt>Publicada</dt>
+            <dd><%= format_date(listing.published_at) %></dd>
+          <% end %>
+        </dl>
+        <div class="card__footer cluster">
+          <%= link_to listing.url, target: "_blank", rel: "noopener noreferrer", class: "btn btn--secondary btn--sm" do %>
+            <%= icon :external %> Abrir vaga<span class="sr-only"> (abre numa nova janela)</span>
+          <% end %>
+          <%= link_to "Ver detalhes", job_listing_path(listing), class: "btn btn--ghost btn--sm" %>
+        </div>
+      <% else %>
+        <p class="muted ja-listing__missing">
+          Sem vaga associada. Se esta candidatura veio de uma vaga entretanto removida, o título e a empresa
+          foram mantidos aqui.
+        </p>
+      <% end %>
+    </section>
+
+    <section class="card" aria-labelledby="ja-details">
+      <h2 class="card__title ja-card-heading" id="ja-details">Detalhes</h2>
+      <dl class="dl">
+        <dt>Estado</dt>
+        <dd><%= status_badge(@job_application.status) %></dd>
+        <dt>Empresa</dt>
+        <dd><%= @job_application.company_name.presence || "—" %></dd>
+        <dt>Enviada em</dt>
+        <dd><%= format_datetime(@job_application.applied_at) %></dd>
+        <dt>Criada em</dt>
+        <dd><%= format_datetime(@job_application.created_at) %></dd>
+      </dl>
+      <% if @job_application.notes.present? %>
+        <div class="card__footer">
+          <h3 class="ja-subtitle">Notas</h3>
+          <div class="ja-notes"><%= simple_format(@job_application.notes) %></div>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="card" aria-labelledby="ja-tasks">
+      <div class="card__header">
+        <h2 class="card__title" id="ja-tasks">Tarefas associadas</h2>
+        <%= button_to create_task_job_application_path(@job_application), class: "btn btn--primary btn--sm",
+              title: "Criar «#{@job_application.suggested_task_title}»" do %>
+          <%= icon :plus %> Criar tarefa
+        <% end %>
+      </div>
+      <% if tasks.any? %>
+        <ul class="list ja-card-list">
+          <% tasks.each do |task| %>
+            <li class="list__item">
+              <div class="list__main">
+                <%= link_to task.title, task_path(task), class: "list__title" %>
+                <div class="list__meta">
+                  <%= status_badge(task.status) %>
+                  <% if task.overdue? %><span class="badge badge--overdue">Atrasada</span><% end %>
+                  <span><%= icon :clock, size: 14 %> <%= relative_due(task.due_at) %></span>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted small">Sem tarefas. Cria uma para preparar o próximo passo: «<%= @job_application.suggested_task_title %>».</p>
+      <% end %>
+    </section>
+
+    <%= render "links/section", linkable: @job_application if lookup_context.exists?("section", [ "links" ], true) %>
+  </aside>
+</div>

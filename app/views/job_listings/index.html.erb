@@ -1,0 +1,104 @@
+<% content_for :title, "Vagas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Vagas</h1>
+    <p class="page-header__subtitle">
+      <% if job_listing_filters_applied? %>
+        <%= pluralize(@total_count, "vaga encontrada", plural: "vagas encontradas") %> com estes filtros
+      <% else %>
+        <%= pluralize(@total_count, "vaga guardada", plural: "vagas guardadas") %> a partir das tuas pesquisas
+      <% end %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to job_searches_path, class: "btn btn--outline" do %><%= icon :search %> Pesquisas<% end %>
+    <%= link_to new_job_listing_path, class: "btn btn--primary" do %><%= icon :plus %> Adicionar vaga<% end %>
+  </div>
+</div>
+
+<%= form_with url: job_listings_path, method: :get, class: "filters form job-listing-filters", role: "search",
+      "aria-label": "Filtrar vagas" do |f| %>
+  <div class="field job-listing-filters__search">
+    <%= f.label :q, "Pesquisar", class: "field__label" %>
+    <%= f.search_field :q, value: params[:q], placeholder: "Título ou empresa" %>
+  </div>
+  <div class="field">
+    <%= f.label :source, "Fonte", class: "field__label" %>
+    <%= f.select :source, options_for_select([ [ "Todas", "" ] ] + job_source_options, params[:source]) %>
+  </div>
+  <div class="field">
+    <%= f.label :job_search_id, "Pesquisa", class: "field__label" %>
+    <%= f.select :job_search_id,
+          options_for_select([ [ "Todas", "" ] ] + @job_searches.map { |search| [ search.name, search.id ] }, params[:job_search_id]) %>
+  </div>
+  <div class="field">
+    <%= f.label :state, "Estado", class: "field__label" %>
+    <%= f.select :state, options_for_select(job_listing_state_options, params[:state]) %>
+  </div>
+  <div class="cluster">
+    <%= f.submit "Filtrar", class: "btn btn--secondary", name: nil %>
+    <% if job_listing_filters_applied? %>
+      <%= link_to "Limpar", job_listings_path, class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @job_listings.any? %>
+  <div class="card card--flush">
+    <ul class="list job-listing-list">
+      <% @job_listings.each do |listing| %>
+        <% application = @applications_by_listing[listing.id] %>
+        <li class="list__item job-listing-item">
+          <span class="job-listing-item__mark job-source-mark--<%= listing.source %>" aria-hidden="true">
+            <%= (listing.company_name.presence || listing.title).first.upcase %>
+          </span>
+          <div class="list__main">
+            <%= link_to listing.title, listing, class: "list__title" %>
+            <div class="list__meta">
+              <% if listing.company_name.present? %><span class="job-listing-item__company"><%= listing.company_name %></span><% end %>
+              <% if listing.location.present? %><span><%= listing.location %></span><% end %>
+              <%= job_source_badge(listing.source) %>
+              <% if listing.job_search %>
+                <%= link_to listing.job_search.name, listing.job_search, class: "job-listing-item__search" %>
+              <% end %>
+              <span><%= job_listing_discovered(listing) %></span>
+              <% if application %>
+                <%= link_to job_application_path(application), class: "job-listing-item__application", title: "Ver candidatura" do %>
+                  <%= status_badge(application.status, application.status_label) %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+          <div class="list__actions">
+            <%= link_to listing.url, class: "btn btn--ghost btn--icon", target: "_blank", rel: "noopener noreferrer", title: "Abrir vaga" do %>
+              <%= icon :external, title: "Abrir #{listing.title} (novo separador)" %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <% if @page > 1 || @next_page %>
+    <nav class="pagination" aria-label="Paginação">
+      <% if @page > 1 %>
+        <%= link_to "← Mais recentes", job_listings_path(request.query_parameters.merge(page: @page - 1)), class: "btn btn--outline btn--sm" %>
+      <% end %>
+      <span class="muted small job-listing-page">Página <%= @page %></span>
+      <% if @next_page %>
+        <%= link_to "Mais antigas →", job_listings_path(request.query_parameters.merge(page: @next_page)), class: "btn btn--outline btn--sm" %>
+      <% end %>
+    </nav>
+  <% end %>
+<% elsif job_listing_filters_applied? %>
+  <%= render "shared/empty_state",
+        title: "Nenhuma vaga corresponde aos filtros",
+        body: "Experimenta outros termos ou limpa os filtros para veres todas as vagas guardadas.",
+        action: link_to("Limpar filtros", job_listings_path, class: "btn btn--outline") %>
+<% else %>
+  <%= render "shared/empty_state",
+        title: "Ainda não guardaste vagas",
+        body: "Abre uma das tuas pesquisas, encontra uma vaga interessante e guarda aqui o link — assim não a perdes e podes transformá-la numa candidatura.",
+        action: link_to("Adicionar vaga", new_job_listing_path, class: "btn btn--primary") %>
+<% end %>

@@ -1,0 +1,15 @@
+<p>Olá, <%= @user.first_name %>!</p>
+
+<p>
+  Recebemos um pedido para redefinir a password da tua conta no ToDo.
+  Para escolheres uma nova password, abre
+  <%= link_to "esta página de redefinição de password", edit_password_url(@user.password_reset_token) %>.
+</p>
+
+<p>
+  O link expira dentro de <%= distance_of_time_in_words(0, @user.password_reset_token_expires_in) %>.
+</p>
+
+<p>Se não foste tu que pediste esta alteração, podes ignorar este email: a tua password continua igual.</p>
+
+<p>— A equipa ToDo</p>

@@ -1,0 +1,8 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Legacy model from the first sketch; the app uses Task (tasks table) instead.
+
+one:
+  nome: Tarefa antiga
+
+two:
+  nome: Outra tarefa antiga

@@ -1,0 +1,87 @@
+<% content_for :title, "Notificações" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Notificações</h1>
+    <p class="page-header__subtitle">
+      <% if @unread_count.zero? %>
+        Estás a par de tudo.
+      <% else %>
+        <%= @unread_count %> <%= @unread_count == 1 ? "notificação por ler" : "notificações por ler" %>
+      <% end %>
+    </p>
+  </div>
+  <% if @unread_count.positive? %>
+    <div class="page-header__actions">
+      <%= button_to read_all_notifications_path, method: :patch, class: "btn btn--outline" do %>
+        <%= icon :check %> Marcar todas como lidas
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<nav class="tabs" aria-label="Filtrar notificações">
+  <%= link_to "Todas", notifications_path, class: [ "tabs__link", ("is-active" if @filter == "all") ],
+        "aria-current": (@filter == "all" ? "page" : nil) %>
+  <%= link_to notifications_path(filter: "unread"), class: [ "tabs__link", ("is-active" if @filter == "unread") ],
+        "aria-current": (@filter == "unread" ? "page" : nil) do %>
+    Por ler <% if @unread_count.positive? %><span class="badge badge--in-progress"><%= @unread_count %></span><% end %>
+  <% end %>
+</nav>
+
+<% if @notifications.any? %>
+  <div class="card card--flush">
+    <ul class="list" id="notifications">
+      <% @notifications.each do |notification| %>
+        <% target = notifiable_path(notification) %>
+        <li class="list__item notification<%= " notification--unread" unless notification.read? %>" id="<%= dom_id(notification) %>">
+          <%= notification_icon(notification) %>
+          <div class="list__main">
+            <div class="notification__heading">
+              <% if target %>
+                <%= link_to notification.title, target, class: "list__title" %>
+              <% else %>
+                <span class="list__title"><%= notification.title %></span>
+              <% end %>
+              <% unless notification.read? %><span class="notification__dot" title="Por ler"><span class="sr-only">Por ler</span></span><% end %>
+            </div>
+            <% if notification.body.present? %>
+              <p class="notification__body"><%= notification.body %></p>
+            <% end %>
+            <div class="list__meta">
+              <span class="badge badge--type"><%= notification.type_label %></span>
+              <%= notification_time(notification) %>
+            </div>
+          </div>
+          <div class="list__actions notification__actions">
+            <% if target %>
+              <%= link_to target, class: "btn btn--ghost btn--sm" do %><%= icon :external, size: 14 %> <%= notifiable_label(notification) %><% end %>
+            <% end %>
+            <% unless notification.read? %>
+              <%= button_to read_notification_path(notification), method: :patch, params: { stay: 1 },
+                    class: "btn btn--outline btn--sm", "aria-label": "Marcar “#{notification.title}” como lida" do %>
+                <%= icon :check, size: 14 %> Marcar como lida
+              <% end %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <% if @page > 1 || @next_page %>
+    <nav class="pagination" aria-label="Paginação">
+      <% if @page > 1 %>
+        <%= link_to "← Anteriores", notifications_path(filter: (@filter if @filter != "all"), page: @page - 1), class: "btn btn--outline btn--sm" %>
+      <% end %>
+      <% if @next_page %>
+        <%= link_to "Mais antigas →", notifications_path(filter: (@filter if @filter != "all"), page: @page + 1), class: "btn btn--outline btn--sm" %>
+      <% end %>
+    </nav>
+  <% end %>
+<% else %>
+  <%= render "shared/empty_state",
+        title: @filter == "unread" ? "Nada por ler" : "Ainda sem notificações",
+        body: @filter == "unread" ? "Leste todas as tuas notificações." : "Os lembretes e avisos de prazos das tuas tarefas vão aparecer aqui.",
+        action: (@filter == "unread" ? link_to("Ver todas", notifications_path, class: "btn btn--outline") : link_to("Ir para as tarefas", tasks_path, class: "btn btn--primary")) %>
+<% end %>

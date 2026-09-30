@@ -1,0 +1,48 @@
+<%# locals: (job_application:) %>
+<%= form_with model: job_application, class: "form" do |f| %>
+  <%= render "shared/form_errors", record: job_application %>
+
+  <% if job_application.new_record? && job_application.job_listing %>
+    <% listing = job_application.job_listing %>
+    <%= f.hidden_field :job_listing_id %>
+    <div class="ja-from-listing">
+      <%= icon :link %>
+      <div>
+        <p class="ja-from-listing__title">A partir da vaga «<%= listing.title %>»</p>
+        <p class="muted small">
+          <%= [ listing.company_name, listing.location ].compact_blank.join(" · ").presence || "Vaga guardada" %>
+          — o título e a empresa ficam guardados mesmo que a vaga seja removida.
+        </p>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :title, "Título da vaga" %>
+    <%= f.text_field :title, required: true, maxlength: 200, autofocus: job_application.new_record?,
+          placeholder: "Ex.: Programador(a) Ruby on Rails" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :company_name, "Empresa" %>
+    <%= f.text_field :company_name, maxlength: 200, placeholder: "Ex.: ACME, Lda." %>
+  </div>
+
+  <div class="field">
+    <%= f.label :notes, "Notas" %>
+    <%= f.text_area :notes, rows: 5, "aria-describedby": "job_application_notes_hint",
+          placeholder: "Contactos, requisitos, salário, impressões…" %>
+    <p class="field__hint" id="job_application_notes_hint">Só tu vês estas notas.</p>
+  </div>
+
+  <% if job_application.new_record? %>
+    <p class="field__hint">A candidatura começa no estado «<%= JobApplication.status_label("saved") %>». Depois podes avançá-la na página da candidatura.</p>
+  <% end %>
+
+  <div class="form__actions">
+    <%= f.button type: "submit", class: "btn btn--primary" do %>
+      <%= icon :check %> <%= job_application.new_record? ? "Criar candidatura" : "Guardar alterações" %>
+    <% end %>
+    <%= link_to "Cancelar", (job_application.persisted? ? job_application_path(job_application) : job_applications_path), class: "btn btn--ghost" %>
+  </div>
+<% end %>

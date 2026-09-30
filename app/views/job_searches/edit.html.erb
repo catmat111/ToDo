@@ -1,0 +1,18 @@
+<% content_for :title, "Editar pesquisa" %>
+
+<nav class="breadcrumb" aria-label="Navegação estrutural">
+  <%= link_to "Pesquisas", job_searches_path %> /
+  <%= link_to @job_search.name_was.presence || @job_search.name, job_search_path(@job_search) %> /
+  <span aria-current="page">Editar</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Editar pesquisa</h1>
+    <p class="page-header__subtitle"><%= @job_search.name_was.presence || @job_search.name %></p>
+  </div>
+</div>
+
+<div class="card job-search-form-card">
+  <%= render "form", job_search: @job_search %>
+</div>

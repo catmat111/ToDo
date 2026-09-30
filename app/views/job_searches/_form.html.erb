@@ -1,0 +1,50 @@
+<%# locals: (job_search:) %>
+<%= form_with model: job_search, class: "form" do |f| %>
+  <%= render "shared/form_errors", record: job_search %>
+
+  <div class="field">
+    <%= f.label :name, "Nome", class: "field__label" %>
+    <%= f.text_field :name, required: true, maxlength: 100, autofocus: job_search.new_record?,
+          placeholder: "Ex.: Frontend júnior em Lisboa", "aria-describedby": "job_search_name_hint" %>
+    <p class="field__hint" id="job_search_name_hint">Um nome curto para reconheceres a pesquisa.</p>
+  </div>
+
+  <fieldset class="form__section">
+    <legend>Fonte</legend>
+    <div class="job-source-options">
+      <% JobSearch::SOURCES.each do |source| %>
+        <label class="job-source-option">
+          <%= f.radio_button :source, source, class: "job-source-option__input" %>
+          <span class="job-source-option__body">
+            <span class="job-source-option__title"><%= JobSearch.source_label(source) %></span>
+            <span class="job-source-option__text">
+              <%= { "linkedin" => "Abre linkedin.com/jobs com os teus filtros.",
+                    "indeed" => "Abre pt.indeed.com com os teus filtros.",
+                    "other" => "Pesquisa geral de emprego no Google." }[source] %>
+            </span>
+          </span>
+        </label>
+      <% end %>
+    </div>
+    <p class="field__hint">Se mudares a fonte, os filtros que ela não suporta ficam guardados mas são ignorados.</p>
+  </fieldset>
+
+  <div class="field">
+    <%= f.label :query, "Termos de pesquisa", class: "field__label" %>
+    <%= f.text_field :query, maxlength: 200, placeholder: "Ex.: desenvolvedor ruby on rails",
+          "aria-describedby": "job_search_query_hint" %>
+    <p class="field__hint" id="job_search_query_hint">
+      Cargo, tecnologia ou área. Localização, recência e tipo de contrato adicionam-se depois como filtros.
+    </p>
+  </div>
+
+  <label class="check">
+    <%= f.check_box :active %>
+    Pesquisa ativa
+  </label>
+
+  <div class="form__actions">
+    <%= f.submit job_search.new_record? ? "Criar pesquisa" : "Guardar alterações", class: "btn btn--primary" %>
+    <%= link_to "Cancelar", job_search.new_record? ? job_searches_path : job_search_path(job_search), class: "btn btn--ghost" %>
+  </div>
+<% end %>

@@ -1,0 +1,39 @@
+<%# locals: (connection:, configured:) %>
+<section class="card card--olive calendar-sync-card" aria-labelledby="calendar-sync-title">
+  <div class="card__header">
+    <h2 class="card__title" id="calendar-sync-title">Google Calendar</h2>
+    <%= calendar_connection_badge(connection) %>
+  </div>
+
+  <% if connection %>
+    <dl class="dl small">
+      <dt>Última sincronização</dt>
+      <dd><%= calendar_last_synced(connection) %></dd>
+      <dt>Calendário</dt>
+      <dd><%= connection.calendar_id == "primary" ? "Principal" : connection.calendar_id %></dd>
+    </dl>
+    <% if connection.last_error.present? %>
+      <p class="calendar-sync-card__error" role="status"><%= connection.last_error %></p>
+    <% end %>
+    <div class="card__footer cluster">
+      <% if connection.active? %>
+        <%= button_to sync_calendar_connection_path, class: "btn btn--secondary btn--sm" do %>
+          <%= icon :refresh, size: 15 %> Sincronizar agora
+        <% end %>
+      <% elsif configured %>
+        <%= button_to calendar_connection_path, class: "btn btn--primary btn--sm", form: { data: { turbo: false } } do %>
+          <%= icon :link, size: 15 %> Voltar a ligar
+        <% end %>
+      <% end %>
+      <%= link_to "Gerir ligação", calendar_connection_path, class: "btn btn--ghost btn--sm" %>
+    </div>
+  <% elsif configured %>
+    <p class="muted small">Liga a tua conta Google para que as tarefas com data apareçam no teu calendário, sempre atualizadas.</p>
+    <%= button_to calendar_connection_path, class: "btn btn--primary btn--block", form: { data: { turbo: false } } do %>
+      <%= icon :link, size: 16 %> Ligar Google Calendar
+    <% end %>
+  <% else %>
+    <p class="muted small">A sincronização com o Google Calendar ainda não está configurada neste servidor.</p>
+    <%= link_to "Ver como configurar", calendar_connection_path, class: "btn btn--outline btn--sm" %>
+  <% end %>
+</section>

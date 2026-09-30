@@ -1,0 +1,48 @@
+<%# locals: (job_applications:, next_tasks:) %>
+<% if job_applications.empty? %>
+  <%= render "shared/empty_state",
+        title: "Nenhuma candidatura encontrada",
+        body: "Experimenta outro estado ou outra pesquisa.",
+        action: link_to("Ver todas", job_applications_path(view: "list"), class: "btn btn--outline") %>
+<% else %>
+  <div class="card card--flush">
+    <div class="table-wrap">
+      <table class="table ja-table">
+        <caption class="sr-only">Lista de candidaturas</caption>
+        <thead>
+          <tr>
+            <th scope="col">Candidatura</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Enviada em</th>
+            <th scope="col">Próxima tarefa</th>
+            <th scope="col">Atualizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% job_applications.each do |job_application| %>
+            <% next_task = next_tasks[job_application.id] %>
+            <tr id="<%= dom_id(job_application, :row) %>">
+              <td>
+                <%= link_to job_application.title, job_application, class: "list__title" %>
+                <% if job_application.company_name.present? %>
+                  <div class="muted small"><%= job_application.company_name %></div>
+                <% end %>
+              </td>
+              <td><%= status_badge(job_application.status) %></td>
+              <td class="nowrap"><%= format_date(job_application.applied_at) %></td>
+              <td>
+                <% if next_task %>
+                  <span class="<%= 'ja-text-danger' if next_task.overdue? %>"><%= relative_due(next_task.due_at) %></span>
+                  <div class="muted small"><%= next_task.title.truncate(40) %></div>
+                <% else %>
+                  <span class="muted">—</span>
+                <% end %>
+              </td>
+              <td class="nowrap muted small">há <%= time_ago_in_words(job_application.updated_at) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>

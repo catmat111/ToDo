@@ -1,0 +1,27 @@
+<% parent = task_visible_parent(@task) %>
+<% heading = parent ? "Nova subtarefa" : "Nova tarefa" %>
+<% content_for :title, heading %>
+
+<nav class="breadcrumb" aria-label="Caminho">
+  <%= link_to "Tarefas", tasks_path %>
+  <% if parent %>
+    <span aria-hidden="true">›</span> <%= link_to parent.title, parent %>
+  <% end %>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title"><%= heading %></h1>
+    <p class="page-header__subtitle">
+      <% if parent %>
+        Um passo de «<%= parent.title %>».
+      <% else %>
+        Um projeto, uma entrega, um exame ou uma rotina — tudo começa aqui.
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<div class="card task-form-card">
+  <%= render "tasks/form", task: @task %>
+</div>

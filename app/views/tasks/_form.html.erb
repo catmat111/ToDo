@@ -1,0 +1,121 @@
+<%# locals: (task:) %>
+<%= form_with model: task, class: "form task-form" do |f| %>
+  <%= render "shared/form_errors", record: task %>
+
+  <fieldset class="form__section">
+    <legend>O essencial</legend>
+    <div class="stack">
+      <div class="field">
+        <%= f.label :title, "Título" %>
+        <%= f.text_field :title, required: true, maxlength: 200, autofocus: task.new_record?,
+                         placeholder: "Ex.: Preparar a apresentação final", "aria-describedby": ("task_title_error" if task.errors[:title].any?) %>
+        <%= task_field_error(task, :title, id: "task_title_error") %>
+      </div>
+
+      <div class="field">
+        <%= f.label :description, "Descrição" %>
+        <%= f.text_area :description, rows: 5, placeholder: "Notas, contexto, o que significa estar concluída…" %>
+      </div>
+
+      <div class="form__row">
+        <div class="field">
+          <%= f.label :task_type, "Tipo" %>
+          <%= f.select :task_type, task_type_options %>
+        </div>
+        <% if task.persisted? %>
+          <div class="field">
+            <%= f.label :status, "Estado" %>
+            <%= f.select :status, task_status_options(task), {}, "aria-describedby": "task_status_hint" %>
+            <p class="field__hint" id="task_status_hint">Só aparecem os estados possíveis a partir do atual.</p>
+            <%= task_field_error(task, :status) %>
+          </div>
+        <% end %>
+        <div class="field">
+          <%= f.label :priority, "Prioridade" %>
+          <%= f.select :priority, task_priority_options %>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="form__section">
+    <legend>Datas</legend>
+    <div class="form__row">
+      <div class="field">
+        <%= f.label :starts_at, "Início" %>
+        <%= f.datetime_field :starts_at, include_seconds: false %>
+      </div>
+      <div class="field">
+        <%= f.label :due_at, "Prazo" %>
+        <%= f.datetime_field :due_at, include_seconds: false, "aria-describedby": ("task_due_at_error" if task.errors[:due_at].any?) %>
+        <%= task_field_error(task, :due_at, id: "task_due_at_error") %>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="form__section">
+    <legend>Organização</legend>
+    <div class="stack">
+      <div class="form__row">
+        <div class="field">
+          <%= f.label :parent_task_id, "Tarefa-mãe" %>
+          <%= f.select :parent_task_id, @parent_options, { include_blank: "Nenhuma — tarefa principal" }, "aria-describedby": "task_parent_hint" %>
+          <p class="field__hint" id="task_parent_hint">Escolhe uma tarefa para tornar esta numa subtarefa.</p>
+          <%= task_field_error(task, :parent_task) %>
+        </div>
+        <div class="field">
+          <%= f.label :job_application_id, "Candidatura" %>
+          <% if @job_applications.any? %>
+            <%= f.select :job_application_id, task_job_application_options(@job_applications), { include_blank: "Nenhuma" } %>
+          <% else %>
+            <p class="field__hint">Ainda não tens candidaturas. <%= link_to "Criar candidatura", new_job_application_path %></p>
+          <% end %>
+          <%= task_field_error(task, :job_application) %>
+        </div>
+      </div>
+
+      <fieldset class="field task-form__tags">
+        <legend class="field__label">Etiquetas</legend>
+        <% if @tags.any? %>
+          <div class="check-group">
+            <%= f.collection_check_boxes :tag_ids, @tags, :id, :name do |b| %>
+              <%= b.label(class: "check task-tag-option") { b.check_box + tag_chip(b.object) } %>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="field__hint">Ainda não tens etiquetas. <%= link_to "Criar etiqueta", new_tag_path %></p>
+        <% end %>
+      </fieldset>
+    </div>
+  </fieldset>
+
+  <fieldset class="form__section">
+    <legend>Calendário e lembretes</legend>
+    <div class="stack">
+      <div class="field">
+        <label class="check">
+          <%= f.check_box :sync_to_calendar, "aria-describedby": "task_sync_hint" %> Sincronizar com o Google Calendar
+        </label>
+        <p class="field__hint" id="task_sync_hint">
+          Cria e mantém um evento no teu calendário quando a tarefa tem datas. Precisas de ligar a tua conta Google nas definições.
+        </p>
+      </div>
+
+      <% if task.new_record? %>
+        <div class="field task-form__reminder">
+          <%= f.label :reminder_at, "Lembrete (opcional)" %>
+          <%= f.datetime_field :reminder_at, include_seconds: false, "aria-describedby": "task_reminder_hint" %>
+          <p class="field__hint" id="task_reminder_hint">Recebes uma notificação nesse momento. Podes adicionar mais lembretes depois.</p>
+          <%= task_field_error(task, :reminder_at) %>
+        </div>
+      <% end %>
+    </div>
+  </fieldset>
+
+  <div class="form__actions">
+    <%= f.button type: "submit", class: "btn btn--primary" do %>
+      <%= icon :check %> <%= task.persisted? ? "Guardar alterações" : "Criar tarefa" %>
+    <% end %>
+    <%= link_to "Cancelar", (task.persisted? ? task_path(task) : (task_visible_parent(task) ? task_path(task_visible_parent(task)) : tasks_path)), class: "btn btn--ghost" %>
+  </div>
+<% end %>

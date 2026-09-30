@@ -1,0 +1,163 @@
+<% content_for :title, "Google Calendar" %>
+
+<div class="page-header">
+  <div>
+    <p class="breadcrumb"><%= link_to "Calendário", calendar_path %> / Google Calendar</p>
+    <h1 class="page-header__title">Google Calendar</h1>
+    <p class="page-header__subtitle">Sincroniza as tarefas com data com o teu calendário Google.</p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to calendar_path, class: "btn btn--outline" do %><%= icon :calendar %> Ver calendário<% end %>
+  </div>
+</div>
+
+<% unless @configured %>
+  <section class="card card--mustard calendar-setup" aria-labelledby="calendar-setup-title">
+    <h2 class="card__title" id="calendar-setup-title">Integração por configurar</h2>
+    <p>
+      Este servidor ainda não tem credenciais OAuth da Google. Para ativar a sincronização, cria um cliente OAuth
+      (tipo «Aplicação Web») na Google Cloud Console com a API Google Calendar ativa, e define as variáveis de ambiente:
+    </p>
+    <ul class="calendar-setup__vars">
+      <li><code>GOOGLE_CLIENT_ID</code> — o ID de cliente OAuth</li>
+      <li><code>GOOGLE_CLIENT_SECRET</code> — o segredo do cliente</li>
+    </ul>
+    <p class="small muted">
+      URI de redirecionamento autorizado: <code><%= callback_calendar_connection_url %></code>.
+      Depois reinicia a aplicação. Enquanto isso, o calendário e as tarefas funcionam normalmente.
+    </p>
+  </section>
+<% end %>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <% if @connection %>
+      <section class="card card--olive" aria-labelledby="connection-status-title">
+        <div class="card__header">
+          <h2 class="card__title" id="connection-status-title">Estado da ligação</h2>
+          <%= calendar_connection_badge(@connection) %>
+        </div>
+
+        <% if @connection.last_error.present? %>
+          <div class="calendar-alert" role="status">
+            <strong>Último erro:</strong> <%= @connection.last_error %>
+          </div>
+        <% end %>
+
+        <dl class="dl">
+          <dt>Conta</dt>
+          <dd><%= @connection.external_account_id.presence || "Conta Google ligada" %></dd>
+          <dt>Calendário</dt>
+          <dd><%= @connection.calendar_id == "primary" ? "Principal (primary)" : @connection.calendar_id %></dd>
+          <dt>Última sincronização</dt>
+          <dd>
+            <% if @connection.last_synced_at %>
+              <%= format_datetime(@connection.last_synced_at) %> <span class="muted small">(<%= calendar_last_synced(@connection).downcase %>)</span>
+            <% else %>
+              <span class="muted">Ainda não sincronizou</span>
+            <% end %>
+          </dd>
+          <dt>Ligada desde</dt>
+          <dd><%= format_date(@connection.created_at) %></dd>
+        </dl>
+
+        <div class="grid grid--3 calendar-stats">
+          <div class="stat stat--olive">
+            <div class="stat__value"><%= @event_counts["synced"] %></div>
+            <div class="stat__label">sincronizadas</div>
+          </div>
+          <div class="stat stat--mustard">
+            <div class="stat__value"><%= @event_counts["pending"] %></div>
+            <div class="stat__label">pendentes</div>
+          </div>
+          <div class="stat <%= @event_counts["error"].positive? ? "stat--terracotta" : "" %>">
+            <div class="stat__value"><%= @event_counts["error"] %></div>
+            <div class="stat__label">com erro</div>
+          </div>
+        </div>
+
+        <div class="card__footer spread">
+          <div class="cluster">
+            <% if @connection.active? %>
+              <%= button_to sync_calendar_connection_path, class: "btn btn--secondary" do %>
+                <%= icon :refresh %> Sincronizar agora
+              <% end %>
+            <% elsif @configured %>
+              <%= button_to calendar_connection_path, class: "btn btn--primary", form: { data: { turbo: false } } do %>
+                <%= icon :link %> Voltar a ligar a conta Google
+              <% end %>
+            <% end %>
+          </div>
+          <%= button_to calendar_connection_path, method: :delete, class: "btn btn--danger",
+                        form: { data: { turbo_confirm: "Desligar o Google Calendar? Os eventos já criados ficam no teu calendário Google." } } do %>
+            <%= icon :trash %> Desligar
+          <% end %>
+        </div>
+      </section>
+
+      <section class="card card--flush" aria-labelledby="calendar-problems-title">
+        <div class="card__header calendar-problems__header">
+          <h2 class="card__title" id="calendar-problems-title">Tarefas com problemas</h2>
+          <% if @problem_events.any?(&:conflict?) && @connection.active? %>
+            <%= button_to sync_calendar_connection_path(resolve: "todo"), class: "btn btn--warning btn--sm",
+                          form: { data: { turbo_confirm: "Substituir os eventos em conflito pela versão do ToDo?" } } do %>
+              Resolver conflitos com a versão do ToDo
+            <% end %>
+          <% end %>
+        </div>
+        <% if @problem_events.any? %>
+          <ul class="list">
+            <% @problem_events.each do |calendar_event| %>
+              <li class="list__item">
+                <div class="list__main">
+                  <% if calendar_event.task %>
+                    <%= link_to calendar_event.task.title, task_path(calendar_event.task), class: "list__title" %>
+                  <% else %>
+                    <span class="list__title">Tarefa removida</span>
+                  <% end %>
+                  <div class="list__meta">
+                    <%= status_badge("error", calendar_event.conflict? ? "Conflito" : "Erro") %>
+                    <span><%= calendar_event.last_error %></span>
+                  </div>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="calendar-problems__empty muted">Tudo em ordem — nenhuma tarefa com erros de sincronização.</p>
+        <% end %>
+      </section>
+    <% else %>
+      <section class="card card--accent calendar-connect" aria-labelledby="calendar-connect-title">
+        <div class="calendar-connect__icon" aria-hidden="true"><%= icon :calendar, size: 32 %></div>
+        <h2 class="card__title" id="calendar-connect-title">Ligar a conta Google</h2>
+        <p class="muted">
+          Autoriza o ToDo a criar e atualizar eventos no teu calendário. Só pedimos acesso aos eventos
+          (<code>calendar.events</code>) — nunca aos teus contactos, email ou ficheiros.
+        </p>
+        <% if @configured %>
+          <%= button_to calendar_connection_path, class: "btn btn--primary", form: { data: { turbo: false } } do %>
+            <%= icon :link %> Ligar Google Calendar
+          <% end %>
+        <% else %>
+          <button type="button" class="btn btn--primary" disabled aria-describedby="calendar-setup-title">
+            <%= icon :link %> Ligar Google Calendar
+          </button>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
+
+  <aside class="card" aria-labelledby="calendar-how-title">
+    <h2 class="card__title" id="calendar-how-title">Como funciona</h2>
+    <ul class="calendar-how">
+      <li><%= icon :check, size: 16 %> Só sincronizam as tarefas com <strong>«Sincronizar com o Google Calendar»</strong> ativo e com prazo ou data de início.</li>
+      <li><%= icon :clock, size: 16 %> Sem data de início, o evento ocupa os 30 minutos antes do prazo.</li>
+      <li><%= icon :check, size: 16 %> Tarefas concluídas aparecem com «✓» no título.</li>
+      <li><%= icon :refresh, size: 16 %> Se mudares a hora do evento no Google e a tarefa não tiver mudado, a nova hora é importada.</li>
+      <li><%= icon :history, size: 16 %> Se ambos mudarem, nada é substituído: a tarefa fica marcada com conflito e recebes uma notificação.</li>
+      <li><%= icon :trash, size: 16 %> Apagar, arquivar ou deixar de sincronizar uma tarefa remove o evento do Google.</li>
+      <li><%= icon :settings, size: 16 %> Os tokens de acesso são guardados cifrados e nunca saem do servidor.</li>
+    </ul>
+  </aside>
+</div>

@@ -1,0 +1,162 @@
+<% content_for :title, @task.title %>
+<% recurrence_form = @recurrence || @task.recurrence || TaskRecurrence.new(frequency: "weekly", interval: 1) %>
+<% can_nest = @task.ancestors.size + 1 < Task::MAX_DEPTH %>
+
+<nav class="breadcrumb" aria-label="Caminho">
+  <%= link_to "Tarefas", tasks_path %>
+  <% @task.ancestors.reverse_each do |ancestor| %>
+    <span aria-hidden="true">›</span> <%= link_to ancestor.title, ancestor %>
+  <% end %>
+</nav>
+
+<div class="page-header">
+  <div class="task-header">
+    <h1 class="page-header__title<%= " task-header__title--closed" if @task.closed? %>"><%= @task.title %></h1>
+    <div class="cluster task-header__meta">
+      <%= status_badge(@task.status, @task.status_label) %>
+      <%= priority_badge(@task) %>
+      <%= task_type_badge(@task) %>
+      <% if @task.archived? %><span class="badge badge--archived"><%= icon :archive, size: 12 %> Arquivada</span><% end %>
+      <%= task_due(@task) %>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <%= task_status_buttons(@task) %>
+    <%= link_to edit_task_path(@task), class: "btn btn--outline btn--sm" do %><%= icon :edit, size: 15 %> Editar<% end %>
+  </div>
+</div>
+
+<% if @task.suggest_completion? %>
+  <div class="card card--mustard task-suggestion" role="status">
+    <p class="task-suggestion__text"><%= icon :check %> Todas as subtarefas estão concluídas — concluir esta tarefa?</p>
+    <%= button_to complete_task_path(@task), method: :patch, class: "btn btn--secondary btn--sm" do %>
+      Concluir tarefa
+    <% end %>
+  </div>
+<% end %>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <section class="card" aria-labelledby="task-description-heading">
+      <h2 class="card__title task-card-title" id="task-description-heading">Descrição</h2>
+      <% if @task.description.present? %>
+        <div class="task-description"><%= simple_format(@task.description) %></div>
+      <% else %>
+        <p class="muted">Sem descrição. <%= link_to "Adicionar", edit_task_path(@task) %></p>
+      <% end %>
+    </section>
+
+    <section class="card" aria-labelledby="task-subtasks-heading">
+      <div class="card__header">
+        <h2 class="card__title" id="task-subtasks-heading">Subtarefas</h2>
+        <% if @subtasks.any? %>
+          <% done, total = @task.progress %>
+          <span class="muted small"><%= done %> de <%= total %> concluídas</span>
+        <% end %>
+      </div>
+
+      <% if @subtasks.any? %>
+        <%= progress_bar(@task.progress_percent, label: "Subtarefas concluídas") %>
+        <ul class="list task-subtasks" aria-label="Subtarefas">
+          <%= render partial: "tasks/task", collection: @subtasks, as: :task %>
+        </ul>
+      <% else %>
+        <p class="muted small">Divide esta tarefa em passos mais pequenos.</p>
+      <% end %>
+
+      <% if can_nest %>
+        <%= form_with scope: :task, url: tasks_path, class: "task-quick-add" do |f| %>
+          <%= f.hidden_field :parent_task_id, value: @task.id, id: nil %>
+          <%= f.label :title, "Nova subtarefa", for: "subtask_title", class: "sr-only" %>
+          <%= f.text_field :title, id: "subtask_title", class: "input", placeholder: "Adicionar subtarefa…", required: true, maxlength: 200 %>
+          <%= f.button type: "submit", class: "btn btn--secondary btn--sm" do %><%= icon :plus, size: 15 %> Adicionar<% end %>
+        <% end %>
+        <p class="small task-quick-add__more">
+          <%= link_to "Criar subtarefa com datas e detalhes", new_task_path(parent_task_id: @task.id) %>
+        </p>
+      <% else %>
+        <p class="field__hint">Atingiste a profundidade máxima de <%= Task::MAX_DEPTH %> níveis.</p>
+      <% end %>
+    </section>
+
+    <%= render "reminders/section", task: @task if lookup_context.exists?("section", [ "reminders" ], true) %>
+    <%= render "links/section", linkable: @task if lookup_context.exists?("section", [ "links" ], true) %>
+  </div>
+
+  <aside class="stack" aria-label="Detalhes da tarefa">
+    <section class="card" aria-labelledby="task-details-heading">
+      <h2 class="card__title task-card-title" id="task-details-heading">Detalhes</h2>
+      <dl class="dl">
+        <dt>Tipo</dt>
+        <dd><%= @task.type_label %></dd>
+        <dt>Estado</dt>
+        <dd><%= @task.status_label %></dd>
+        <dt>Prioridade</dt>
+        <dd><%= Task.priority_label(@task.priority) %></dd>
+        <dt>Início</dt>
+        <dd><%= format_datetime(@task.starts_at) %></dd>
+        <dt>Prazo</dt>
+        <dd><%= format_datetime(@task.due_at) %></dd>
+        <% if @task.completed_at %>
+          <dt>Concluída em</dt>
+          <dd><%= format_datetime(@task.completed_at) %></dd>
+        <% end %>
+        <% if @task.parent_task %>
+          <dt>Tarefa-mãe</dt>
+          <dd><%= link_to @task.parent_task.title, @task.parent_task %></dd>
+        <% end %>
+        <% if @task.job_application %>
+          <dt>Candidatura</dt>
+          <dd>
+            <%= link_to job_application_path(@task.job_application) do %>
+              <%= icon :briefcase, size: 14 %> <%= [ @task.job_application.title, @task.job_application.company_name ].compact_blank.join(" — ") %>
+            <% end %>
+          </dd>
+        <% end %>
+        <dt>Calendário</dt>
+        <dd><%= @task.sync_to_calendar? ? "Sincroniza com o Google Calendar" : "Não sincroniza" %></dd>
+        <dt>Criada em</dt>
+        <dd><%= format_datetime(@task.created_at) %></dd>
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="task-tags-heading">
+      <h2 class="card__title task-card-title" id="task-tags-heading">Etiquetas</h2>
+      <% if @task.tags.any? %>
+        <div class="cluster">
+          <% @task.tags.sort_by(&:name).each do |tag_record| %>
+            <%= link_to tasks_path(tag_id: tag_record.id), class: "task-tag-link", title: "Ver tarefas com «#{tag_record.name}»" do %>
+              <%= tag_chip(tag_record) %>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="muted small">Sem etiquetas. <%= link_to "Adicionar", edit_task_path(@task) %></p>
+      <% end %>
+    </section>
+
+    <%= render "task_recurrences/card", task: @task, recurrence: recurrence_form %>
+
+    <%= render "calendar_events/task_status", task: @task if lookup_context.exists?("task_status", [ "calendar_events" ], true) %>
+
+    <section class="card" aria-labelledby="task-manage-heading">
+      <h2 class="card__title task-card-title" id="task-manage-heading">Gerir</h2>
+      <div class="stack stack--sm task-manage">
+        <% if @task.archived? %>
+          <%= button_to unarchive_task_path(@task), method: :patch, class: "btn btn--outline btn--sm btn--block" do %>
+            <%= icon :archive, size: 15 %> Restaurar do arquivo
+          <% end %>
+        <% else %>
+          <%= button_to archive_task_path(@task), method: :patch, class: "btn btn--outline btn--sm btn--block" do %>
+            <%= icon :archive, size: 15 %> Arquivar
+          <% end %>
+        <% end %>
+        <%= button_to task_path(@task), method: :delete, class: "btn btn--danger btn--sm btn--block",
+                      form: { data: { turbo_confirm: task_delete_confirmation(@task) } } do %>
+          <%= icon :trash, size: 15 %> Eliminar
+        <% end %>
+      </div>
+      <p class="field__hint task-manage__hint">Arquivar esconde a tarefa sem perder o histórico.</p>
+    </section>
+  </aside>
+</div>

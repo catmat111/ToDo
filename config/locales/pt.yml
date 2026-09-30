@@ -1,0 +1,326 @@
+# Português de Portugal (pt-PT).
+# A gem rails-i18n fornece a base (meses, números, mensagens genéricas);
+# aqui ficam os nomes dos modelos/atributos da app e os ajustes de estilo.
+pt:
+  activerecord:
+    models:
+      user:
+        one: Utilizador
+        other: Utilizadores
+      session:
+        one: Sessão
+        other: Sessões
+      task:
+        one: Tarefa
+        other: Tarefas
+      task_recurrence:
+        one: Recorrência
+        other: Recorrências
+      tag:
+        one: Etiqueta
+        other: Etiquetas
+      task_tag:
+        one: Etiqueta da tarefa
+        other: Etiquetas das tarefas
+      reminder:
+        one: Lembrete
+        other: Lembretes
+      link:
+        one: Link
+        other: Links
+      job_search:
+        one: Pesquisa de emprego
+        other: Pesquisas de emprego
+      job_filter:
+        one: Filtro
+        other: Filtros
+      job_listing:
+        one: Vaga
+        other: Vagas
+      job_application:
+        one: Candidatura
+        other: Candidaturas
+      job_application_event:
+        one: Evento da candidatura
+        other: Eventos da candidatura
+      calendar_connection:
+        one: Ligação ao calendário
+        other: Ligações ao calendário
+      calendar_event:
+        one: Evento do calendário
+        other: Eventos do calendário
+      notification:
+        one: Notificação
+        other: Notificações
+      audit_log:
+        one: Registo de atividade
+        other: Registos de atividade
+
+    attributes:
+      user:
+        email_address: Email
+        password: Palavra-passe
+        password_confirmation: Confirmação da palavra-passe
+        password_digest: Palavra-passe
+        password_challenge: Palavra-passe atual
+        name: Nome
+        avatar_url: URL do avatar
+        objective: Objetivo
+        theme: Tema
+        timezone: Fuso horário
+        sessions: Sessões
+        tasks: Tarefas
+        tags: Etiquetas
+        created_at: Criado em
+        updated_at: Atualizado em
+      session:
+        user: Utilizador
+        ip_address: Endereço IP
+        user_agent: Navegador
+        created_at: Início da sessão
+        updated_at: Última atividade
+      task:
+        user: Utilizador
+        parent_task: Tarefa principal
+        parent_task_id: Tarefa principal
+        job_application: Candidatura
+        job_application_id: Candidatura
+        title: Título
+        description: Descrição
+        task_type: Tipo
+        status: Estado
+        priority: Prioridade
+        starts_at: Início
+        due_at: Prazo
+        completed_at: Concluída em
+        archived_at: Arquivada em
+        position: Posição
+        sync_to_calendar: Sincronizar com o Google Calendar
+        subtasks: Subtarefas
+        tags: Etiquetas
+        tag_ids: Etiquetas
+        reminders: Lembretes
+        reminder_at: Lembrete
+        recurrence: Recorrência
+        links: Links
+        created_at: Criada em
+        updated_at: Atualizada em
+      task_recurrence:
+        task: Tarefa
+        frequency: Frequência
+        interval: Intervalo
+        ends_at: Termina em
+      tag:
+        user: Utilizador
+        name: Nome
+        color: Cor
+        tasks: Tarefas
+        task_tags: Tarefas
+      task_tag:
+        task: Tarefa
+        tag: Etiqueta
+      reminder:
+        task: Tarefa
+        remind_at: Data do lembrete
+        channel: Canal
+        sent_at: Enviado em
+        attempts: Tentativas
+        last_error: Último erro
+      link:
+        user: Utilizador
+        linkable: Recurso associado
+        linkable_type: Tipo de recurso
+        linkable_id: Recurso associado
+        url: URL
+        label: Nome
+      job_search:
+        user: Utilizador
+        name: Nome
+        source: Fonte
+        query: Termo de pesquisa
+        active: Ativa
+        last_run_at: Última execução
+        job_filters: Filtros
+        job_listings: Vagas
+      job_filter:
+        job_search: Pesquisa
+        key: Filtro
+        value: Valor
+        operator: Operador
+      job_listing:
+        user: Utilizador
+        job_search: Pesquisa
+        external_id: ID externo
+        source: Fonte
+        title: Cargo
+        company_name: Empresa
+        location: Localização
+        url: Link da vaga
+        normalized_url: Link da vaga
+        description: Descrição
+        published_at: Publicada em
+        discovered_at: Encontrada em
+      job_application:
+        user: Utilizador
+        job_listing: Vaga
+        job_listing_id: Vaga
+        title: Cargo
+        company_name: Empresa
+        status: Estado
+        applied_at: Data da candidatura
+        notes: Notas
+        job_application_events: Histórico
+        created_at: Criada em
+        updated_at: Atualizada em
+      job_application_event:
+        job_application: Candidatura
+        event_type: Tipo de evento
+        occurred_at: Data
+        notes: Notas
+      calendar_connection:
+        user: Utilizador
+        provider: Fornecedor
+        external_account_id: Conta externa
+        calendar_id: Calendário
+        access_token: Token de acesso
+        refresh_token: Token de renovação
+        expires_at: Expira em
+        scope: Permissões
+        status: Estado
+        last_error: Último erro
+        last_synced_at: Última sincronização
+      calendar_event:
+        calendar_connection: Ligação ao calendário
+        task: Tarefa
+        external_event_id: ID do evento externo
+        etag: Versão externa
+        last_synced_at: Última sincronização
+        sync_status: Estado da sincronização
+        last_error: Último erro
+      notification:
+        user: Utilizador
+        notifiable: Origem
+        notification_type: Tipo
+        title: Título
+        body: Mensagem
+        read_at: Lida em
+        created_at: Recebida em
+      audit_log:
+        user: Utilizador
+        action: Ação
+        resource_type: Tipo de recurso
+        resource_id: ID do recurso
+        metadata: Detalhes
+        created_at: Data
+
+    errors:
+      messages:
+        record_invalid: "A validação falhou: %{errors}"
+      models:
+        tag:
+          attributes:
+            name:
+              taken: já existe numa das tuas etiquetas
+        link:
+          attributes:
+            linkable_type:
+              inclusion: não permite links
+        user:
+          attributes:
+            email_address:
+              taken: já está registado
+
+  # Fallback partilhado por todos os modelos (human_attribute_name procura aqui em último lugar).
+  attributes:
+    created_at: Criado em
+    updated_at: Atualizado em
+    user: Utilizador
+    user_id: Utilizador
+    task: Tarefa
+    task_id: Tarefa
+    tag_id: Etiqueta
+    job_search_id: Pesquisa
+    job_application_id: Candidatura
+    calendar_connection_id: Ligação ao calendário
+    notifiable_type: Tipo de origem
+    notifiable_id: Origem
+
+  # Mensagens neutras quanto ao género ("Título/Descrição não pode ficar em branco").
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: não pode ficar em branco
+      present: tem de ficar em branco
+      empty: não pode ficar vazio
+      required: tem de existir
+      taken: já está em uso
+      invalid: não é válido
+      inclusion: não é uma opção válida
+      exclusion: não está disponível
+      confirmation: não coincide com %{attribute}
+      too_long: tem demasiados caracteres (máximo %{count})
+      too_short: tem poucos caracteres (mínimo %{count})
+      wrong_length: tem de ter exatamente %{count} caracteres
+      password_too_long: é demasiado longa
+      not_a_number: tem de ser um número
+      not_an_integer: tem de ser um número inteiro
+
+  helpers:
+    select:
+      prompt: Selecione uma opção
+    submit:
+      create: Criar %{model}
+      update: Guardar %{model}
+      submit: Guardar %{model}
+      task:
+        create: Criar tarefa
+        update: Guardar alterações
+      tag:
+        create: Criar etiqueta
+        update: Guardar alterações
+      reminder:
+        create: Adicionar lembrete
+        update: Guardar lembrete
+      link:
+        create: Adicionar link
+        update: Guardar link
+      job_search:
+        create: Criar pesquisa
+        update: Guardar alterações
+      job_filter:
+        create: Adicionar filtro
+        update: Guardar filtro
+      job_listing:
+        create: Guardar vaga
+        update: Guardar alterações
+      job_application:
+        create: Criar candidatura
+        update: Guardar alterações
+      job_application_event:
+        create: Registar evento
+        update: Guardar evento
+      task_recurrence:
+        create: Ativar recorrência
+        update: Guardar recorrência
+      user:
+        create: Criar conta
+        update: Guardar alterações
+
+  date:
+    formats:
+      default: "%d/%m/%Y"
+      short: "%-d %b %Y"
+      long: "%-d de %B de %Y"
+      day: "%-d %b"
+      month: "%B de %Y"
+      weekday: "%A, %-d de %B"
+
+  time:
+    formats:
+      default: "%-d %b %Y, %H:%M"
+      short: "%-d %b %Y, %H:%M"
+      long: "%-d de %B de %Y às %H:%M"
+      day: "%-d %b"
+      day_time: "%-d %b, %H:%M"
+      time: "%H:%M"
+      weekday: "%A, %-d de %B"

@@ -1,0 +1,37 @@
+<%# locals: (period:, agenda:) %>
+<div class="calendar-week">
+  <% period.days.each do |date| %>
+    <% day_tasks = agenda.tasks_on(date) %>
+    <section class="calendar-week__day<%= " calendar-week__day--today" if period.today?(date) %><%= " calendar-week__day--weekend" if date.saturday? || date.sunday? %>"
+             aria-labelledby="calendar-day-<%= date.iso8601 %>"
+             <%= tag.attributes("aria-current": (period.today?(date) ? "date" : nil)) %>>
+      <header class="calendar-week__header">
+        <h3 class="calendar-week__title" id="calendar-day-<%= date.iso8601 %>">
+          <span class="calendar-week__weekday"><%= calendar_weekday_names[date.cwday - 1] %></span>
+          <span class="calendar-week__date"><%= date.day %></span>
+          <span class="sr-only"><%= calendar_full_date(date) %><%= ", hoje" if period.today?(date) %></span>
+        </h3>
+        <% if period.today?(date) %><span class="badge badge--in-progress">Hoje</span><% end %>
+      </header>
+
+      <% if day_tasks.any? %>
+        <ul class="calendar-week__items">
+          <% day_tasks.each do |task| %>
+            <li class="calendar-week__item calendar-week__item--<%= task.status.dasherize %><%= " calendar-week__item--overdue" if task.overdue? %>">
+              <span class="calendar-week__time"><%= calendar_task_time(task) %></span>
+              <%= link_to task.title, task_path(task), class: "calendar-week__link" %>
+              <span class="calendar-week__meta">
+                <%= status_badge(task.status) %>
+                <%= priority_badge(task) %>
+                <% if task.overdue? %><span class="badge badge--overdue">Em atraso</span><% end %>
+                <%= calendar_task_sync_badge(task) %>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="calendar-week__empty">Sem tarefas</p>
+      <% end %>
+    </section>
+  <% end %>
+</div>

@@ -1,0 +1,55 @@
+<%# locals: (period:, agenda:) %>
+<% max_items = 3 %>
+<div class="card card--flush calendar-month-wrap">
+  <table class="calendar-month">
+    <caption class="sr-only">Tarefas de <%= period.title %>, por dia</caption>
+    <thead>
+      <tr>
+        <% calendar_weekday_names.each_with_index do |name, index| %>
+          <th scope="col" abbr="<%= Calendar::Period::WEEKDAY_FULL_NAMES[index] %>"><%= name %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% period.weeks.each do |week| %>
+        <tr>
+          <% week.each do |date| %>
+            <% day_tasks = agenda.tasks_on(date) %>
+            <td class="<%= calendar_day_classes(period, date) %><%= " calendar-day--empty" if day_tasks.empty? %>"
+                <%= tag.attributes("aria-current": (period.today?(date) ? "date" : nil)) %>>
+              <div class="calendar-day__header">
+                <%= link_to calendar_path(view: "week", date: date.iso8601), class: "calendar-day__number",
+                            "aria-label": "#{calendar_full_date(date)}#{", hoje" if period.today?(date)} — ver semana" do %>
+                  <span class="calendar-day__weekday" aria-hidden="true"><%= calendar_weekday_names[date.cwday - 1] %></span>
+                  <span><%= date.day %></span>
+                <% end %>
+                <% if day_tasks.any? %>
+                  <span class="calendar-day__count"><%= day_tasks.size %><span class="sr-only"> <%= day_tasks.size == 1 ? "tarefa" : "tarefas" %></span></span>
+                <% end %>
+              </div>
+              <% if day_tasks.any? %>
+                <ul class="calendar-day__items">
+                  <% day_tasks.first(max_items).each do |task| %>
+                    <li><%= render "calendar/task_item", task: task %></li>
+                  <% end %>
+                </ul>
+                <% if day_tasks.size > max_items %>
+                  <%= link_to "+#{day_tasks.size - max_items} mais", calendar_path(view: "week", date: date.iso8601),
+                              class: "calendar-day__more", "aria-label": "Ver mais #{day_tasks.size - max_items} tarefas de #{calendar_full_date(date)}" %>
+                <% end %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<% if agenda.tasks_in_focus.empty? %>
+  <div class="calendar-empty">
+    <%= render "shared/empty_state", title: "Nada marcado para este mês",
+                                     body: "As tarefas com prazo ou data de início aparecem aqui automaticamente.",
+                                     action: link_to("Criar tarefa", new_task_path, class: "btn btn--primary") %>
+  </div>
+<% end %>

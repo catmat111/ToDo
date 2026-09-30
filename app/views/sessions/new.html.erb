@@ -1,0 +1,30 @@
+<% content_for :title, "Entrar" %>
+<div data-controller="theme" data-theme-name-value="<%= theme_attribute %>" hidden></div>
+
+<div class="auth-intro">
+  <h2 class="auth-intro__title">Entrar</h2>
+  <p class="auth-intro__text">Bom ver-te de novo. Entra para continuar onde ficaste.</p>
+</div>
+
+<%# Full page load so the layout picks up the user's theme on <html>. %>
+<%= form_with url: session_path, class: "form", data: { turbo: false } do |form| %>
+  <div class="field">
+    <%= form.label :email_address, "Email", class: "field__label" %>
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username",
+                         placeholder: "nome@exemplo.pt", value: params[:email_address] %>
+  </div>
+
+  <div class="field">
+    <div class="auth-field-head">
+      <%= form.label :password, "Password", class: "field__label" %>
+      <%= link_to "Esqueceste-te da password?", new_password_path, class: "small" %>
+    </div>
+    <%= form.password_field :password, required: true, autocomplete: "current-password", maxlength: 72 %>
+  </div>
+
+  <%= form.submit "Entrar", class: "btn btn--primary btn--block" %>
+<% end %>
+
+<p class="auth__footer">
+  Ainda não tens conta? <%= link_to "Criar conta", new_registration_path %>
+</p>

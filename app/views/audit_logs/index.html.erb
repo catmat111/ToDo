@@ -1,0 +1,55 @@
+<% content_for :title, "Histórico" %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Caminho"><%= link_to "Perfil", profile_path %> / Histórico</nav>
+    <h1 class="page-header__title">Histórico</h1>
+    <p class="page-header__subtitle">As ações importantes feitas na tua conta, das mais recentes para as mais antigas.</p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Filtrar histórico">
+  <% AuditLogsHelper::AUDIT_SCOPE_TABS.each do |scope, label| %>
+    <% active = @scope == scope %>
+    <%= link_to label, audit_logs_path(scope: scope), class: [ "tabs__link", ("is-active" if active) ],
+                "aria-current": (active ? "page" : nil) %>
+  <% end %>
+</nav>
+
+<% if @audit_logs.empty? %>
+  <%= render "shared/empty_state",
+             title: "Ainda não há nada no histórico",
+             body: (@scope ? "Não há registos nesta categoria. Experimenta ver tudo." : "Quando criares tarefas, candidaturas ou alterares a tua conta, as ações aparecem aqui."),
+             action: (link_to("Ver tudo", audit_logs_path, class: "btn btn--outline") if @scope) %>
+<% else %>
+  <div class="card history">
+    <% @audit_logs.group_by { |log| log.created_at.in_time_zone.to_date }.each do |day, logs| %>
+      <section class="history__day" aria-labelledby="history-day-<%= day.iso8601 %>">
+        <h2 class="history__day-title" id="history-day-<%= day.iso8601 %>"><%= audit_day_label(day) %></h2>
+        <ol class="timeline">
+          <% logs.each do |log| %>
+            <li class="timeline__item history-entry history-entry--<%= audit_domain(log.action) %>">
+              <div class="history-entry__head">
+                <span class="history-entry__icon"><%= icon audit_icon(log.action), size: 16 %></span>
+                <span class="history-entry__label"><%= audit_action_label(log.action) %></span>
+                <time class="timeline__date" datetime="<%= log.created_at.iso8601 %>"><%= l(log.created_at.in_time_zone, format: "%H:%M") %></time>
+              </div>
+              <% resource = audit_resource_link(log, @resources) %>
+              <% details = audit_details(log) %>
+              <% if resource || details %>
+                <div class="history-entry__meta">
+                  <%= resource %>
+                  <% if details %><span class="history-entry__details"><%= details %></span><% end %>
+                </div>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      </section>
+    <% end %>
+  </div>
+
+  <% if @audit_logs.size >= AuditLogsController::LIMIT %>
+    <p class="small muted history__limit">A mostrar os <%= AuditLogsController::LIMIT %> registos mais recentes.</p>
+  <% end %>
+<% end %>

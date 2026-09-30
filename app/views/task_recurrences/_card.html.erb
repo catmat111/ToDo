@@ -1,0 +1,51 @@
+<%# locals: (task:, recurrence:) %>
+<% saved = task.recurrence %>
+<section class="card<%= " card--olive" if saved %>" id="task-recurrence" aria-labelledby="task-recurrence-heading">
+  <div class="card__header">
+    <h2 class="card__title" id="task-recurrence-heading">Recorrência</h2>
+    <% if saved %><%= icon :refresh, title: "Tarefa recorrente" %><% end %>
+  </div>
+
+  <% if saved %>
+    <p class="task-recurrence__summary"><strong><%= task_recurrence_summary(saved) %></strong></p>
+    <p class="field__hint">Ao concluíres esta tarefa, é criada a próxima ocorrência com as datas avançadas.</p>
+  <% else %>
+    <p class="muted small">Repete esta tarefa: quando a concluíres, é criada automaticamente a próxima ocorrência.</p>
+  <% end %>
+
+  <details class="task-recurrence__edit"<%= " open" if recurrence.errors.any? || saved.nil? %>>
+    <summary class="task-recurrence__toggle"><%= saved ? "Alterar regra" : "Definir repetição" %></summary>
+
+    <%= form_with model: recurrence, url: task_recurrence_path(task), method: (saved ? :patch : :post), class: "form task-recurrence__form" do |f| %>
+      <%= render "shared/form_errors", record: recurrence %>
+      <div class="form__row">
+        <div class="field">
+          <%= f.label :frequency, "Frequência" %>
+          <%= f.select :frequency, task_frequency_options, {}, required: true %>
+        </div>
+        <div class="field">
+          <%= f.label :interval, "Intervalo" %>
+          <%= f.number_field :interval, min: 1, max: 365, step: 1, required: true, "aria-describedby": "task_recurrence_interval_hint" %>
+        </div>
+      </div>
+      <p class="field__hint" id="task_recurrence_interval_hint">Ex.: Semanal com intervalo 2 repete a cada duas semanas.</p>
+      <div class="field">
+        <%= f.label :ends_at, "Termina em (opcional)" %>
+        <%= f.datetime_field :ends_at, include_seconds: false, "aria-describedby": "task_recurrence_ends_at_hint" %>
+        <p class="field__hint" id="task_recurrence_ends_at_hint">Depois desta data não são criadas mais ocorrências.</p>
+      </div>
+      <div class="form__actions">
+        <%= f.submit (saved ? "Guardar regra" : "Repetir tarefa"), class: "btn btn--secondary btn--sm" %>
+      </div>
+    <% end %>
+  </details>
+
+  <% if saved %>
+    <div class="card__footer">
+      <%= button_to task_recurrence_path(task), method: :delete, class: "btn btn--ghost btn--sm",
+                    form: { data: { turbo_confirm: "Deixar de repetir esta tarefa?" } } do %>
+        Deixar de repetir
+      <% end %>
+    </div>
+  <% end %>
+</section>

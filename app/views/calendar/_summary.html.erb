@@ -1,0 +1,33 @@
+<%# locals: (tasks:, period:) %>
+<% open_count = tasks.count(&:open?) %>
+<% done_count = tasks.count(&:completed?) %>
+<% overdue_count = tasks.count(&:overdue?) %>
+<section class="card" aria-labelledby="calendar-summary-title">
+  <div class="card__header">
+    <h2 class="card__title" id="calendar-summary-title"><%= period.month? ? "Este mês" : "Esta semana" %></h2>
+  </div>
+  <div class="calendar-summary">
+    <div class="stat stat--terracotta">
+      <div class="stat__value"><%= open_count %></div>
+      <div class="stat__label">por fazer</div>
+    </div>
+    <div class="stat stat--olive">
+      <div class="stat__value"><%= done_count %></div>
+      <div class="stat__label"><%= done_count == 1 ? "concluída" : "concluídas" %></div>
+    </div>
+  </div>
+  <% if overdue_count.positive? %>
+    <p class="calendar-summary__overdue small">
+      <span class="badge badge--overdue"><%= overdue_count %> em atraso</span>
+    </p>
+  <% end %>
+
+  <h3 class="calendar-legend__title">Legenda</h3>
+  <ul class="calendar-legend">
+    <% Task::STATUSES.each do |status| %>
+      <li><span class="calendar-legend__swatch calendar-item--<%= status.dasherize %>" aria-hidden="true"></span><%= ApplicationHelper::STATUS_LABELS[status] %></li>
+    <% end %>
+    <li><span class="calendar-legend__swatch calendar-item--overdue" aria-hidden="true"></span>Em atraso</li>
+    <li><%= icon :calendar, size: 13, class: "calendar-legend__icon" %>Sincroniza com o Google</li>
+  </ul>
+</section>

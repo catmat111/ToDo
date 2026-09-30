@@ -1,0 +1,27 @@
+<%# locals: (columns:, next_tasks:) %>
+<p class="muted small ja-kanban__hint" id="ja-kanban-hint">
+  Arrasta um cartão para outra coluna para mudar o estado, ou abre a candidatura para ver todas as opções.
+</p>
+<div class="kanban ja-kanban" data-controller="application-kanban" aria-describedby="ja-kanban-hint">
+  <% JobApplication::STATUSES.each do |status| %>
+    <% applications = columns.fetch(status, []) %>
+    <section class="kanban__column ja-column ja-column--<%= status.dasherize %>"
+             aria-labelledby="ja-column-<%= status %>"
+             data-application-kanban-target="column" data-status="<%= status %>"
+             data-label="<%= JobApplication.status_label(status) %>">
+      <header class="kanban__header">
+        <h2 class="ja-column__title" id="ja-column-<%= status %>"><%= JobApplication.status_label(status) %></h2>
+        <span class="badge ja-column__count" aria-label="<%= applications.size == 1 ? "1 candidatura" : "#{applications.size} candidaturas" %>"><%= applications.size %></span>
+      </header>
+      <div class="kanban__cards">
+        <% if applications.any? %>
+          <% applications.each do |job_application| %>
+            <%= render "kanban_card", job_application: job_application, next_task: next_tasks[job_application.id] %>
+          <% end %>
+        <% else %>
+          <p class="ja-column__empty">Sem candidaturas</p>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

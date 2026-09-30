@@ -1,0 +1,54 @@
+<% content_for :title, "Etiquetas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Etiquetas</h1>
+    <p class="page-header__subtitle"><%= tags_summary(@tags) %></p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to new_tag_path, class: "btn btn--primary" do %><%= icon :plus %> Nova etiqueta<% end %>
+  </div>
+</div>
+
+<% if @tags.empty? %>
+  <%= render "shared/empty_state",
+        title: "Ainda não tens etiquetas",
+        body: "As etiquetas agrupam tarefas por contexto — universidade, trabalho, casa… Cria a primeira e associa-a às tuas tarefas para as encontrares num instante.",
+        action: link_to("Criar a primeira etiqueta", new_tag_path, class: "btn btn--primary") %>
+<% else %>
+  <ul class="grid grid--3 tag-grid" aria-label="Lista de etiquetas">
+    <% @tags.each do |tag_record| %>
+      <li class="card tag-card" id="<%= dom_id(tag_record) %>" style="<%= tag_color_style(tag_record.color) %>">
+        <div class="tag-card__top">
+          <span class="chip tag-card__chip" style="<%= tag_color_style(tag_record.color) %>"><%= tag_record.name %></span>
+          <div class="tag-card__actions">
+            <%= link_to edit_tag_path(tag_record), class: "btn btn--ghost btn--icon btn--sm",
+                  title: "Editar etiqueta", "aria-label": "Editar etiqueta #{tag_record.name}" do %>
+              <%= icon :edit %>
+            <% end %>
+            <%= button_to tag_path(tag_record), method: :delete, class: "btn btn--ghost btn--icon btn--sm tag-card__delete",
+                  title: "Eliminar etiqueta", "aria-label": "Eliminar etiqueta #{tag_record.name}",
+                  form: { data: { turbo_confirm: "Eliminar a etiqueta “#{tag_record.name}”? As tarefas não são apagadas, apenas deixam de ter esta etiqueta." } } do %>
+              <%= icon :trash %>
+            <% end %>
+          </div>
+        </div>
+
+        <p class="tag-card__count">
+          <span class="tag-card__number"><%= tag_record.tasks_count %></span>
+          <span class="muted"><%= tag_record.tasks_count == 1 ? "tarefa ativa" : "tarefas ativas" %></span>
+        </p>
+
+        <div class="tag-card__footer">
+          <span class="small muted tag-card__color">
+            <span class="tag-card__dot" aria-hidden="true"></span><%= tag_color_name(tag_record.color) %>
+          </span>
+          <%= link_to tasks_path(tag_id: tag_record.id), class: "tag-card__link",
+                "aria-label": "Ver tarefas com a etiqueta #{tag_record.name}" do %>
+            Ver tarefas <%= icon :tasks, size: 16 %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

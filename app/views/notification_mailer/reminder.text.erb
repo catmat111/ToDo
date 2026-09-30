@@ -1,0 +1,17 @@
+Olá <%= @user.first_name %>,
+
+<%= @notification.title %>
+<% if @notification.body.present? %>
+<%= @notification.body %>
+<% end %>
+<% if @task %>
+Prazo: <%= @task.due_at ? l(@task.due_at.in_time_zone, format: "%d/%m/%Y às %H:%M") : "sem prazo" %>
+Prioridade: <%= @task.priority_label.capitalize %>
+
+Abrir tarefa: <%= task_url(@task) %>
+<% else %>
+Ver notificações: <%= notifications_url %>
+<% end %>
+
+--
+ToDo · Recebeste este email porque criaste um lembrete por email.

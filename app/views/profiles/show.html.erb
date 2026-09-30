@@ -1,0 +1,141 @@
+<% content_for :title, "Perfil" %>
+<div data-controller="theme" data-theme-name-value="<%= @user.theme %>" hidden></div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Perfil</h1>
+    <p class="page-header__subtitle">A tua conta, preferências e integrações.</p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to audit_logs_path, class: "btn btn--outline" do %><%= icon :history %> Histórico<% end %>
+    <%= link_to edit_profile_path, class: "btn btn--primary" do %><%= icon :edit %> Editar perfil<% end %>
+  </div>
+</div>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <section class="card card--accent profile-hero" aria-labelledby="profile-name">
+      <%= user_avatar(@user, size: :lg) %>
+      <div class="profile-hero__body">
+        <h2 class="profile-hero__name" id="profile-name"><%= @user.name %></h2>
+        <p class="profile-hero__email"><%= @user.email_address %></p>
+        <p class="small muted">Membro desde <%= format_date(@user.created_at, format: :long) %></p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="objective-title">
+      <div class="card__header">
+        <h2 class="card__title" id="objective-title">O teu objetivo</h2>
+        <%= link_to edit_profile_path(anchor: "user_objective"), class: "btn btn--ghost btn--sm" do %><%= icon :edit %> Editar<% end %>
+      </div>
+      <% if @user.objective.present? %>
+        <blockquote class="profile-objective"><%= simple_format(@user.objective) %></blockquote>
+      <% else %>
+        <p class="muted">
+          Ainda não definiste um objetivo. Escrever o que queres alcançar ajuda a manter o foco.
+          <%= link_to "Definir objetivo", edit_profile_path(anchor: "user_objective") %>
+        </p>
+      <% end %>
+    </section>
+
+    <section class="card" aria-labelledby="preferences-title">
+      <div class="card__header">
+        <h2 class="card__title" id="preferences-title">Preferências</h2>
+      </div>
+      <dl class="dl">
+        <dt>Tema</dt>
+        <dd><span class="theme-swatch theme-swatch--<%= @user.theme %>" aria-hidden="true"></span><%= theme_label(@user.theme) %></dd>
+        <dt>Fuso horário</dt>
+        <dd><%= timezone_label(@user.timezone) %></dd>
+        <dt>Hora local</dt>
+        <dd><%= l(Time.current, format: "%H:%M") %></dd>
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="security-title">
+      <div class="card__header">
+        <h2 class="card__title" id="security-title">Segurança</h2>
+      </div>
+      <ul class="list profile-list">
+        <li class="list__item">
+          <div class="list__main">
+            <span class="list__title">Password</span>
+            <div class="list__meta">Ao alterares a password, as sessões noutros dispositivos são terminadas.</div>
+          </div>
+          <div class="list__actions">
+            <%= link_to "Alterar password", password_profile_path, class: "btn btn--outline btn--sm" %>
+          </div>
+        </li>
+        <li class="list__item">
+          <div class="list__main">
+            <span class="list__title">Sessões ativas</span>
+            <div class="list__meta">
+              Esta sessão<% if @other_sessions_count.positive? %> e mais <%= pluralize(@other_sessions_count, "sessão noutro dispositivo", plural: "sessões noutros dispositivos") %><% else %>, sem outras sessões abertas<% end %>.
+            </div>
+          </div>
+        </li>
+        <li class="list__item">
+          <div class="list__main">
+            <span class="list__title">Histórico da conta</span>
+            <div class="list__meta">Consulta as ações importantes feitas na tua conta.</div>
+          </div>
+          <div class="list__actions">
+            <%= link_to "Ver histórico", audit_logs_path, class: "btn btn--ghost btn--sm" %>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <aside class="stack">
+    <section class="card card--olive" aria-labelledby="integrations-title">
+      <div class="card__header">
+        <h2 class="card__title" id="integrations-title">Integrações</h2>
+      </div>
+      <div class="integration">
+        <span class="integration__icon"><%= icon :calendar, size: 20 %></span>
+        <div class="integration__body">
+          <div class="spread">
+            <strong>Google Calendar</strong>
+            <%= profile_calendar_badge(@calendar_connection) %>
+          </div>
+          <p class="small muted integration__status">
+            <% if @calendar_connection.nil? %>
+              Liga a tua conta Google para enviares tarefas com prazo para o calendário.
+            <% elsif @calendar_connection.error? %>
+              A última sincronização falhou. Revê a ligação para voltar a sincronizar.
+            <% elsif @calendar_connection.revoked? %>
+              O acesso foi revogado. Volta a ligar a conta para retomar a sincronização.
+            <% elsif @calendar_connection.last_synced_at %>
+              Última sincronização há <%= time_ago_in_words(@calendar_connection.last_synced_at) %>.
+            <% else %>
+              Ligado. Ainda não houve nenhuma sincronização.
+            <% end %>
+          </p>
+          <%= link_to calendar_connection_path, class: "btn btn--outline btn--sm" do %>
+            <%= icon :link %> <%= @calendar_connection ? "Gerir ligação" : "Ligar Google Calendar" %>
+          <% end %>
+        </div>
+      </div>
+    </section>
+
+    <section class="card danger-zone" id="zona-de-perigo" aria-labelledby="danger-title">
+      <div class="card__header">
+        <h2 class="card__title danger-zone__title" id="danger-title">Zona de perigo</h2>
+      </div>
+      <p class="small">
+        Eliminar a conta apaga definitivamente as tuas tarefas, etiquetas, candidaturas, pesquisas e ligações.
+        Esta ação não pode ser desfeita.
+      </p>
+      <%= form_with url: profile_path, method: :delete, class: "form",
+                    data: { turbo_confirm: "Eliminar definitivamente a tua conta e todos os teus dados?" } do |form| %>
+        <div class="field">
+          <%= form.label :password, "Confirma com a tua password", class: "field__label", for: "delete_account_password" %>
+          <%= form.password_field :password, id: "delete_account_password", required: true,
+                                  autocomplete: "current-password", maxlength: 72 %>
+        </div>
+        <%= form.button type: "submit", class: "btn btn--danger btn--block" do %><%= icon :trash %> Eliminar conta<% end %>
+      <% end %>
+    </section>
+  </aside>
+</div>

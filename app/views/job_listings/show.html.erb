@@ -1,0 +1,85 @@
+<% content_for :title, @job_listing.title %>
+
+<nav class="breadcrumb" aria-label="Navegação estrutural">
+  <%= link_to "Vagas", job_listings_path %> / <span aria-current="page"><%= truncate(@job_listing.title, length: 60) %></span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title"><%= @job_listing.title %></h1>
+    <p class="page-header__subtitle cluster">
+      <% if (subtitle = job_listing_subtitle(@job_listing)).present? %><span><%= subtitle %></span><% end %>
+      <%= job_source_badge(@job_listing.source) %>
+      <% if @job_application %><%= status_badge(@job_application.status, @job_application.status_label) %><% end %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= job_listing_external_link(@job_listing, css: "btn btn--outline") %>
+    <% if @job_application %>
+      <%= link_to job_application_path(@job_application), class: "btn btn--secondary" do %><%= icon :briefcase %> Ver candidatura<% end %>
+    <% else %>
+      <%= button_to job_applications_path, params: { job_application: { job_listing_id: @job_listing.id } }, class: "btn btn--primary" do %>
+        <%= icon :briefcase %> Guardar como candidatura
+      <% end %>
+    <% end %>
+    <%= button_to job_listing_path(@job_listing), method: :delete, class: "btn btn--danger",
+          form: { data: { turbo_confirm: @job_application ? "Eliminar esta vaga? A candidatura associada é mantida." : "Eliminar esta vaga?" } } do %>
+      <%= icon :trash %> Eliminar
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid--sidebar">
+  <section class="card" aria-labelledby="description-title">
+    <h2 class="card__title job-listing-section-title" id="description-title">Descrição</h2>
+    <% if @job_listing.description.present? %>
+      <div class="job-listing-description"><%= simple_format(@job_listing.description) %></div>
+    <% else %>
+      <p class="muted">Sem descrição guardada. Abre a vaga para leres o anúncio completo.</p>
+      <%= job_listing_external_link(@job_listing, label: "Ler o anúncio", css: "btn btn--ghost btn--sm") %>
+    <% end %>
+  </section>
+
+  <aside class="stack">
+    <section class="card card--olive" aria-labelledby="details-title">
+      <h2 class="card__title job-listing-section-title" id="details-title">Detalhes</h2>
+      <dl class="dl">
+        <dt>Empresa</dt>
+        <dd><%= @job_listing.company_name.presence || "—" %></dd>
+        <dt>Local</dt>
+        <dd><%= @job_listing.location.presence || "—" %></dd>
+        <dt>Fonte</dt>
+        <dd><%= @job_listing.source_label %></dd>
+        <dt>Pesquisa</dt>
+        <dd><%= @job_listing.job_search ? link_to(@job_listing.job_search.name, @job_listing.job_search) : "—" %></dd>
+        <dt>Publicada</dt>
+        <dd><%= format_datetime(@job_listing.published_at) %></dd>
+        <dt>Descoberta</dt>
+        <dd><%= format_datetime(@job_listing.discovered_at) %></dd>
+        <% if @job_listing.external_id.present? %>
+          <dt>ID externo</dt>
+          <dd><code><%= @job_listing.external_id %></code></dd>
+        <% end %>
+        <dt>Link</dt>
+        <dd class="job-listing-link">
+          <%= link_to truncate(@job_listing.url, length: 60), @job_listing.url, target: "_blank", rel: "noopener noreferrer",
+                title: @job_listing.url %>
+        </dd>
+      </dl>
+    </section>
+
+    <% if @job_application %>
+      <section class="card card--accent" aria-labelledby="application-title">
+        <h2 class="card__title job-listing-section-title" id="application-title">Candidatura</h2>
+        <p><%= status_badge(@job_application.status, @job_application.status_label) %></p>
+        <p class="small muted">Atualizada há <%= time_ago_in_words(@job_application.updated_at) %>.</p>
+        <%= link_to "Abrir candidatura", job_application_path(@job_application), class: "btn btn--outline btn--sm" %>
+      </section>
+    <% else %>
+      <section class="card card--mustard" aria-labelledby="next-title">
+        <h2 class="card__title job-listing-section-title" id="next-title">Próximo passo</h2>
+        <p class="small">Vais candidatar-te? Guarda a vaga como candidatura para acompanhares o estado, as entrevistas e as tarefas associadas.</p>
+      </section>
+    <% end %>
+  </aside>
+</div>

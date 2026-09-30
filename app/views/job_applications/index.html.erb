@@ -1,0 +1,79 @@
+<% content_for :title, "Candidaturas" %>
+<% total = @status_counts.values.sum %>
+<% in_progress = @status_counts.slice("saved", "applied", "interview", "offer").values.sum %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Candidaturas</h1>
+    <p class="page-header__subtitle">
+      <% if total.zero? %>
+        Acompanha cada candidatura desde que guardas a vaga até à resposta final.
+      <% else %>
+        <%= total == 1 ? "1 candidatura" : "#{total} candidaturas" %> · <%= in_progress %> em curso
+      <% end %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to job_listings_path, class: "btn btn--outline" do %><%= icon :list %> Ver vagas<% end %>
+    <%= link_to new_job_application_path, class: "btn btn--primary" do %><%= icon :plus %> Nova candidatura<% end %>
+  </div>
+</div>
+
+<% if total.zero? %>
+  <%= render "shared/empty_state",
+        title: "Ainda não tens candidaturas",
+        body: "Guarda uma vaga que te interesse ou regista uma candidatura manualmente. Depois é só acompanhar cada etapa.",
+        action: link_to("Criar a primeira candidatura", new_job_application_path, class: "btn btn--primary") %>
+<% else %>
+  <section class="ja-stats" aria-label="Resumo das candidaturas">
+    <div class="stat stat--terracotta">
+      <div class="stat__value"><%= in_progress %></div>
+      <div class="stat__label">Em curso</div>
+    </div>
+    <div class="stat stat--charcoal">
+      <div class="stat__value"><%= @applied_count %></div>
+      <div class="stat__label">Candidaturas enviadas</div>
+    </div>
+    <div class="stat stat--olive">
+      <div class="stat__value"><%= @status_counts.fetch("interview", 0) %></div>
+      <div class="stat__label">Em entrevista</div>
+    </div>
+    <div class="stat stat--mustard">
+      <div class="stat__value"><%= @status_counts.fetch("offer", 0) %></div>
+      <div class="stat__label"><%= @status_counts.fetch("offer", 0) == 1 ? "Oferta" : "Ofertas" %></div>
+    </div>
+  </section>
+
+  <nav class="tabs" aria-label="Modo de visualização">
+    <%= link_to job_application_view_path("kanban"), class: [ "tabs__link", ("is-active" if @view == "kanban") ],
+          "aria-current": (@view == "kanban" ? "page" : nil) do %>Quadro<% end %>
+    <%= link_to job_application_view_path("list"), class: [ "tabs__link", ("is-active" if @view == "list") ],
+          "aria-current": (@view == "list" ? "page" : nil) do %>Lista<% end %>
+  </nav>
+
+  <%= form_with url: job_applications_path, method: :get, class: "filters", role: "search" do |f| %>
+    <%= hidden_field_tag :view, @view, id: nil %>
+    <div class="field">
+      <%= f.label :q, "Pesquisar", class: "field__label" %>
+      <%= f.search_field :q, value: @query, placeholder: "Título ou empresa…", class: "input" %>
+    </div>
+    <% if @view == "list" %>
+      <div class="field">
+        <%= f.label :status, "Estado", class: "field__label" %>
+        <%= f.select :status, job_application_status_options(@status), {}, class: "input" %>
+      </div>
+    <% end %>
+    <div class="cluster">
+      <%= f.button class: "btn btn--secondary" do %><%= icon :search %> Filtrar<% end %>
+      <% if @query.present? || @status.present? %>
+        <%= link_to "Limpar", job_applications_path(view: @view), class: "btn btn--ghost" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @view == "list" %>
+    <%= render "list", job_applications: @job_applications, next_tasks: @next_tasks %>
+  <% else %>
+    <%= render "kanban", columns: @columns, next_tasks: @next_tasks %>
+  <% end %>
+<% end %>

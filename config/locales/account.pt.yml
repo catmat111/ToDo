@@ -1,0 +1,6 @@
+pt:
+  activerecord:
+    attributes:
+      user:
+        # Virtual attribute used by ProfilesController#update_password (not in pt.yml).
+        current_password: Password atual

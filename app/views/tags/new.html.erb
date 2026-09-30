@@ -1,0 +1,26 @@
+<% content_for :title, "Nova etiqueta" %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Navegação estrutural">
+      <%= link_to "Etiquetas", tags_path %> / Nova
+    </nav>
+    <h1 class="page-header__title">Nova etiqueta</h1>
+    <p class="page-header__subtitle">Dá-lhe um nome curto e uma cor fácil de reconhecer.</p>
+  </div>
+</div>
+
+<div class="grid grid--sidebar">
+  <div class="card">
+    <%= render "form", tag_record: @tag %>
+  </div>
+
+  <aside class="card card--olive tag-tips" aria-labelledby="tag-tips-title">
+    <h2 class="card__title" id="tag-tips-title">Como usar etiquetas</h2>
+    <ul class="tag-tips__list">
+      <li>Agrupa tarefas por contexto: <em>Universidade</em>, <em>Casa</em>, <em>Emprego</em>.</li>
+      <li>Uma tarefa pode ter várias etiquetas.</li>
+      <li>Na lista de tarefas podes filtrar por etiqueta.</li>
+    </ul>
+  </aside>
+</div>

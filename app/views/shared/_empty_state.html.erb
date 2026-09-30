@@ -1,0 +1,6 @@
+<%# locals: (title:, body: nil, action: nil) %>
+<div class="empty-state">
+  <p class="empty-state__title"><%= title %></p>
+  <% if body %><p class="empty-state__body"><%= body %></p><% end %>
+  <% if action %><div class="empty-state__action"><%= action %></div><% end %>
+</div>

@@ -1,0 +1,55 @@
+<%# locals: (linkable:) %>
+<% links = linkable.links.chronological.to_a %>
+<% section_id = "links_#{dom_id(linkable)}" %>
+<section class="card links-section" id="<%= section_id %>" aria-labelledby="<%= section_id %>_title">
+  <div class="card__header">
+    <h2 class="card__title links-section__title" id="<%= section_id %>_title"><%= icon :link %> Links</h2>
+    <% if links.any? %><span class="badge" aria-label="<%= links.size %> links"><%= links.size %></span><% end %>
+  </div>
+
+  <% if links.any? %>
+    <ul class="list links-section__list">
+      <% links.each do |link| %>
+        <li class="list__item links-section__item" id="<%= dom_id(link) %>">
+          <span class="links-section__favicon" aria-hidden="true"><%= icon :external, size: 16 %></span>
+          <div class="list__main">
+            <%= link_to link.display_label, link.url, class: "list__title links-section__label",
+                  target: "_blank", rel: "noopener noreferrer", title: link.url %>
+            <div class="list__meta">
+              <span><%= link.host || link.url %></span>
+              <span class="sr-only">(abre numa nova janela)</span>
+            </div>
+          </div>
+          <div class="list__actions">
+            <%= button_to link_path(link), method: :delete, class: "btn btn--ghost btn--icon btn--sm",
+                  title: "Remover link", "aria-label": "Remover link #{link.display_label}",
+                  form: { data: { turbo_confirm: "Remover o link “#{link.display_label}”?" } } do %>
+              <%= icon :trash %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="muted small links-section__empty">Ainda não há links. Guarda aqui o enunciado, a página da vaga, um documento partilhado…</p>
+  <% end %>
+
+  <%= form_with model: Link.new, url: links_path, class: "form links-section__form", id: "#{section_id}_form" do |f| %>
+    <%= f.hidden_field :linkable_type, value: linkable.class.name, id: "#{section_id}_linkable_type" %>
+    <%= f.hidden_field :linkable_id, value: linkable.id, id: "#{section_id}_linkable_id" %>
+    <div class="links-section__fields">
+      <div class="field links-section__url">
+        <%= f.label :url, "Endereço (URL)", for: "#{section_id}_url", class: "field__label" %>
+        <%= f.url_field :url, id: "#{section_id}_url", required: true, maxlength: 2000,
+              placeholder: "https://…", autocomplete: "url" %>
+      </div>
+      <div class="field">
+        <%= f.label :label, "Nome (opcional)", for: "#{section_id}_label", class: "field__label" %>
+        <%= f.text_field :label, id: "#{section_id}_label", maxlength: 100, placeholder: "ex.: Enunciado" %>
+      </div>
+      <div class="links-section__submit">
+        <%= f.button type: "submit", class: "btn btn--secondary" do %><%= icon :plus %> Adicionar<% end %>
+      </div>
+    </div>
+  <% end %>
+</section>

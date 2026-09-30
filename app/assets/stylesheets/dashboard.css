@@ -1,0 +1,157 @@
+/*
+ * Dashboard ("Hoje"), notificações e lembretes.
+ * Uses only the design-system tokens from application.css.
+ */
+
+/* ---------- Hero ---------- */
+.dashboard-hero {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-5);
+  flex-wrap: wrap; margin-bottom: var(--space-5);
+}
+.dashboard-hero__text { min-width: 0; max-width: 680px; }
+.dashboard-hero__date {
+  margin: 0 0 var(--space-1); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--color-warning);
+}
+.dashboard-hero__greeting { margin: 0; font-size: clamp(2.1rem, 4vw, 2.9rem); }
+.dashboard-hero__objective {
+  margin: var(--space-3) 0 0; padding: var(--space-1) 0 var(--space-1) var(--space-4);
+  border-left: 3px solid var(--color-primary);
+}
+.dashboard-hero__objective blockquote { margin: 0; }
+.dashboard-hero__objective p {
+  margin: 0; font-family: var(--font-display); font-style: italic; font-size: 1.25rem;
+  line-height: 1.4; color: var(--color-text-muted);
+}
+.dashboard-hero__objective p::before { content: "\201C"; }
+.dashboard-hero__objective p::after { content: "\201D"; }
+.dashboard-hero__objective figcaption {
+  font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* ---------- Stats ---------- */
+.dashboard-stats {
+  display: grid; gap: var(--space-4); margin-bottom: var(--space-6);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.dashboard-stat {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3);
+  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+}
+.dashboard-stat::after {
+  content: ""; position: absolute; right: -28px; bottom: -28px; width: 96px; height: 96px;
+  border-radius: 50%; background: currentColor; opacity: 0.08; pointer-events: none;
+}
+.dashboard-stat__icon { opacity: 0.75; }
+
+/* ---------- Grid & panels ---------- */
+.dashboard-welcome { margin-bottom: var(--space-6); }
+.dashboard-grid {
+  display: grid; gap: var(--space-5); align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+}
+.dashboard-panel { display: flex; flex-direction: column; }
+.dashboard-panel__header {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border);
+}
+.dashboard-panel__header .card__title { display: flex; align-items: center; gap: var(--space-2); font-size: 1.3rem; }
+.dashboard-panel__header .card__title .icon { color: var(--color-primary); }
+.dashboard-panel.card--olive .card__title .icon { color: var(--color-accent); }
+.dashboard-panel.card--mustard .card__title .icon { color: var(--color-warning); }
+.dashboard-panel__count {
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; min-width: 24px; text-align: center;
+  padding: 1px 8px; border-radius: var(--radius-pill); background: var(--color-surface-2); color: var(--color-text-muted);
+}
+.dashboard-panel .list__item { padding: var(--space-3) var(--space-5); }
+.dashboard-panel .empty-state {
+  border: 0; border-radius: 0; background: transparent; padding: var(--space-5) var(--space-5) var(--space-6);
+}
+.dashboard-panel .empty-state__title { font-size: 1.3rem; }
+.dashboard-panel .empty-state__body { font-size: 0.92rem; margin-bottom: var(--space-3); }
+.dashboard-panel .empty-state__action { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+.dashboard-welcome .empty-state__action { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+
+/* ---------- Task rows ---------- */
+.dashboard-task { align-items: flex-start; }
+.dashboard-task form.button_to { margin-top: 2px; }
+.dashboard-task__check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0; border-radius: 50%; cursor: pointer;
+  border: 1.5px solid var(--color-border-strong); background: var(--color-surface); color: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.dashboard-task__check:hover, .dashboard-task__check:focus-visible {
+  border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent);
+}
+.dashboard-task__due { display: inline-flex; align-items: center; gap: 4px; }
+.dashboard-task--overdue .dashboard-task__due { color: var(--color-danger); font-weight: 500; }
+.dashboard-task__progress { display: grid; gap: 4px; margin-top: var(--space-2); max-width: 360px; }
+
+/* ---------- Reminders on the dashboard ---------- */
+.dashboard-reminder__time {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 56px; padding: 4px 6px; border-radius: var(--radius-sm);
+  background: var(--color-primary-soft); color: var(--color-primary); line-height: 1.15;
+}
+.dashboard-reminder__day { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.dashboard-reminder__hour { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; }
+
+/* A button that reads as a link (used for "open & mark read"). */
+.dashboard-link-button {
+  background: none; border: 0; padding: 0; font: inherit; font-weight: 500; text-align: left;
+  color: var(--color-text); cursor: pointer;
+}
+.dashboard-link-button:hover { color: var(--color-primary); text-decoration: underline; }
+
+/* ---------- Notifications ---------- */
+.notification-icon {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--color-surface-2); color: var(--color-text-muted);
+}
+.notification-icon--reminder { background: var(--color-primary-soft); color: var(--color-primary); }
+.notification-icon--task-due { background: var(--color-warning-soft); color: var(--color-warning); }
+.notification-icon--application { background: var(--color-accent-soft); color: var(--color-accent); }
+.notification-icon--calendar { background: var(--color-success-soft); color: var(--color-success); }
+
+.notification { align-items: flex-start; }
+.notification--unread { background: color-mix(in srgb, var(--color-primary-soft) 45%, transparent); }
+.notification--unread .list__title { font-weight: 600; }
+.notification__heading { display: flex; align-items: center; gap: var(--space-2); }
+.notification__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; }
+.notification__body { margin: 2px 0 0; color: var(--color-text-muted); font-size: 0.92rem; }
+.notification__actions { flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---------- Reminders section (task page) ---------- */
+.reminders .card__title { display: flex; align-items: center; gap: var(--space-2); }
+.reminders .card__title .icon { color: var(--color-primary); }
+.reminders__list { margin: 0 calc(-1 * var(--space-5)) var(--space-4); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.reminders__list .list__item { padding: var(--space-3) var(--space-5); }
+.reminders__icon {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+  border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); flex-shrink: 0;
+}
+.reminders__icon--email { background: var(--color-accent-soft); color: var(--color-accent); }
+.reminders__item--sent .list__title { color: var(--color-text-muted); }
+.reminders__item--sent .reminders__icon { background: var(--color-surface-2); color: var(--color-text-muted); }
+.reminders__empty { margin-bottom: var(--space-4); }
+.reminders__presets { margin-bottom: var(--space-4); }
+.reminders__presets .field__label { display: block; margin-bottom: var(--space-2); }
+.reminders__form { padding-top: var(--space-4); border-top: 1px dashed var(--color-border); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .dashboard-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .dashboard-stats { gap: var(--space-3); }
+  .dashboard-stat { padding: var(--space-3) var(--space-4); }
+  .dashboard-stat .stat__value { font-size: 2rem; }
+  .dashboard-stat__icon { display: none; }
+  .dashboard-hero .page-header__actions { width: 100%; }
+  .dashboard-hero .page-header__actions .btn { flex: 1; }
+  .notification { flex-wrap: wrap; }
+  .notification__actions { width: 100%; justify-content: flex-start; padding-left: 48px; }
+}

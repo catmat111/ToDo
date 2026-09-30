@@ -1,0 +1,102 @@
+<% content_for :title, "Pesquisas de emprego" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Pesquisas de emprego</h1>
+    <p class="page-header__subtitle">
+      <% if @job_searches.any? %>
+        <%= pluralize(@job_searches.size, "pesquisa guardada", plural: "pesquisas guardadas") %> ·
+        <%= pluralize(@job_searches.count(&:active?), "ativa", plural: "ativas") %>
+      <% else %>
+        Guarda as tuas pesquisas do LinkedIn e do Indeed e abre-as com um clique.
+      <% end %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to job_listings_path, class: "btn btn--outline" do %><%= icon :list %> Vagas guardadas<% end %>
+    <%= link_to new_job_search_path, class: "btn btn--primary" do %><%= icon :plus %> Nova pesquisa<% end %>
+  </div>
+</div>
+
+<div class="job-search-note" role="note">
+  <%= icon :search, size: 20 %>
+  <p>
+    Cada pesquisa abre o site externo num novo separador com os filtros já aplicados.
+    Se for preciso iniciar sessão, fazes isso diretamente no LinkedIn ou no Indeed — o ToDo nunca pede nem guarda essas passwords.
+  </p>
+</div>
+
+<% if @job_searches.any? %>
+  <div class="grid grid--2 job-search-grid">
+    <% @job_searches.each do |job_search| %>
+      <article class="card job-search-card <%= job_search.active? ? "card--accent" : "job-search-card--paused" %>" aria-labelledby="job-search-<%= job_search.id %>-title">
+        <header class="job-search-card__header">
+          <div class="job-search-card__heading">
+            <h2 class="job-search-card__title" id="job-search-<%= job_search.id %>-title">
+              <%= link_to job_search.name, job_search %>
+            </h2>
+            <div class="cluster">
+              <%= job_source_badge(job_search.source) %>
+              <%= job_search_state_badge(job_search) %>
+            </div>
+          </div>
+          <%= link_to edit_job_search_path(job_search), class: "btn btn--ghost btn--icon", title: "Editar pesquisa" do %>
+            <%= icon :edit, title: "Editar #{job_search.name}" %>
+          <% end %>
+        </header>
+
+        <p class="job-search-card__query">
+          <% if job_search.query.present? %>
+            <%= icon :search, size: 15 %> <span><%= job_search.query %></span>
+          <% else %>
+            <span class="muted">Sem termos de pesquisa — só filtros.</span>
+          <% end %>
+        </p>
+
+        <% filters = job_search.job_filters.select { |filter| job_search.allowed_filter_keys.include?(filter.key) } %>
+        <% if filters.any? %>
+          <ul class="job-filter-chips" aria-label="Filtros">
+            <% filters.each do |filter| %>
+              <li><%= job_filter_chip(filter) %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="small muted">Sem filtros.</p>
+        <% end %>
+
+        <dl class="job-search-card__meta">
+          <div>
+            <dt class="sr-only">Última execução</dt>
+            <dd><%= icon :clock, size: 15 %> <%= job_last_run(job_search) %></dd>
+          </div>
+          <div>
+            <dt class="sr-only">Vagas</dt>
+            <dd>
+              <%= icon :list, size: 15 %>
+              <% count = @listing_counts.fetch(job_search.id, 0) %>
+              <% if count.positive? %>
+                <%= link_to job_listings_count_label(count), job_listings_path(job_search_id: job_search.id) %>
+              <% else %>
+                <%= job_listings_count_label(count) %>
+              <% end %>
+            </dd>
+          </div>
+        </dl>
+
+        <footer class="card__footer job-search-card__footer">
+          <%= run_job_search_button(job_search) %>
+          <%= link_to "Filtros e vagas", job_search, class: "btn btn--ghost btn--sm" %>
+          <%= button_to job_search_path(job_search), method: :patch, class: "btn btn--ghost btn--sm job-search-card__toggle",
+                params: { job_search: { active: !job_search.active? }, return_to: "index" } do %>
+            <%= job_search.active? ? "Pausar" : "Reativar" %>
+          <% end %>
+        </footer>
+      </article>
+    <% end %>
+  </div>
+<% else %>
+  <%= render "shared/empty_state",
+        title: "Ainda não tens pesquisas",
+        body: "Cria uma pesquisa com os teus termos e filtros (localização, recência, tipo de contrato…) e abre-a no LinkedIn, no Indeed ou no Google sempre que quiseres.",
+        action: link_to("Criar a primeira pesquisa", new_job_search_path, class: "btn btn--primary") %>
+<% end %>

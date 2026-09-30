@@ -1,0 +1,8 @@
+<%# locals: (task:) %>
+<%= link_to task_path(task), class: calendar_item_classes(task), title: task.title, "aria-label": calendar_task_label(task) do %>
+  <span class="calendar-item__time"><%= calendar_task_time(task) %></span>
+  <span class="calendar-item__title"><%= task.title %></span>
+  <% if task.sync_to_calendar? %>
+    <%= icon :calendar, size: 12, class: "calendar-item__sync" %>
+  <% end %>
+<% end %>

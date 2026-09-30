@@ -1,0 +1,21 @@
+<% content_for :title, "Recuperar password" %>
+<div data-controller="theme" data-theme-name-value="<%= theme_attribute %>" hidden></div>
+
+<div class="auth-intro">
+  <h2 class="auth-intro__title">Recuperar password</h2>
+  <p class="auth-intro__text">Indica o email da tua conta e enviamos-te um link para definires uma nova password.</p>
+</div>
+
+<%= form_with url: passwords_path, class: "form" do |form| %>
+  <div class="field">
+    <%= form.label :email_address, "Email", class: "field__label" %>
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username",
+                         placeholder: "nome@exemplo.pt", value: params[:email_address] %>
+  </div>
+
+  <%= form.submit "Enviar instruções", class: "btn btn--primary btn--block" %>
+<% end %>
+
+<p class="auth__footer">
+  Lembraste-te? <%= link_to "Voltar a entrar", new_session_path %>
+</p>

@@ -1,0 +1,17 @@
+<% content_for :title, "Editar tarefa" %>
+
+<nav class="breadcrumb" aria-label="Caminho">
+  <%= link_to "Tarefas", tasks_path %>
+  <span aria-hidden="true">›</span> <%= link_to @task.title_in_database, task_path(@task) %>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Editar tarefa</h1>
+    <p class="page-header__subtitle"><%= @task.title_in_database %></p>
+  </div>
+</div>
+
+<div class="card task-form-card">
+  <%= render "tasks/form", task: @task %>
+</div>

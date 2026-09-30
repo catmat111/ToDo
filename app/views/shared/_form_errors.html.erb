@@ -1,0 +1,13 @@
+<%# locals: (record:) %>
+<% if record.errors.any? %>
+  <div class="form-errors" role="alert">
+    <p class="form-errors__title">
+      <%= record.errors.count == 1 ? "Há 1 problema a corrigir:" : "Há #{record.errors.count} problemas a corrigir:" %>
+    </p>
+    <ul>
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

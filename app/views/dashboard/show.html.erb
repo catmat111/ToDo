@@ -1,0 +1,160 @@
+<% content_for :title, "Hoje" %>
+
+<section class="dashboard-hero" aria-labelledby="dashboard-greeting">
+  <div class="dashboard-hero__text">
+    <p class="dashboard-hero__date"><%= @dashboard.today_label %></p>
+    <h1 class="dashboard-hero__greeting" id="dashboard-greeting"><%= @dashboard.greeting %></h1>
+    <% if @dashboard.objective %>
+      <figure class="dashboard-hero__objective">
+        <blockquote><p><%= @dashboard.objective %></p></blockquote>
+        <figcaption>O teu objetivo</figcaption>
+      </figure>
+    <% end %>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to new_task_path, class: "btn btn--primary" do %><%= icon :plus %> Nova tarefa<% end %>
+    <%= link_to new_job_search_path, class: "btn btn--outline" do %><%= icon :search %> Nova pesquisa de emprego<% end %>
+  </div>
+</section>
+
+<section class="dashboard-stats" aria-label="Resumo">
+  <% @dashboard.stats.each do |stat| %>
+    <div class="stat stat--<%= stat[:modifier] %> dashboard-stat">
+      <div>
+        <div class="stat__value"><%= stat[:value] %></div>
+        <div class="stat__label"><%= stat[:label] %></div>
+      </div>
+      <%= icon stat[:icon], size: 26, class: "dashboard-stat__icon" %>
+    </div>
+  <% end %>
+</section>
+
+<% unless @dashboard.any_tasks? %>
+  <div class="dashboard-welcome">
+    <%= render "shared/empty_state",
+          title: "Um dia em branco, à tua espera",
+          body: "Ainda não tens tarefas. Cria a primeira para organizar o teu dia, ou começa a acompanhar ofertas de emprego com uma pesquisa.",
+          action: safe_join([
+            link_to(safe_join([ icon(:plus), "Nova tarefa" ], " "), new_task_path, class: "btn btn--primary"),
+            link_to(safe_join([ icon(:search), "Nova pesquisa de emprego" ], " "), new_job_search_path, class: "btn btn--outline")
+          ], " ") %>
+  </div>
+<% end %>
+
+<div class="dashboard-grid">
+  <%= render "dashboard/task_panel",
+        id: "hoje", title: "Hoje", icon_name: :calendar, modifier: "card--accent",
+        tasks: @dashboard.today_tasks, total: @dashboard.today_count,
+        empty_title: "Nada mais para hoje",
+        empty_body: "Não tens mais tarefas com prazo para hoje.",
+        empty_action: link_to(safe_join([ icon(:plus), "Nova tarefa" ], " "), new_task_path, class: "btn btn--sm btn--primary") %>
+
+  <%= render "dashboard/task_panel",
+        id: "atrasadas", title: "Atrasadas", icon_name: :clock, modifier: "card--mustard",
+        tasks: @dashboard.overdue_tasks, total: @dashboard.overdue_count,
+        empty_title: "Tudo em dia",
+        empty_body: "Não tens tarefas em atraso. Continua assim!" %>
+
+  <%= render "dashboard/task_panel",
+        id: "proximos", title: "Próximos 7 dias", icon_name: :list, modifier: "",
+        tasks: @dashboard.upcoming_tasks, total: @dashboard.upcoming_count,
+        empty_title: "Semana tranquila",
+        empty_body: "Nenhuma tarefa com prazo nos próximos 7 dias." %>
+
+  <%= render "dashboard/task_panel",
+        id: "em-curso", title: "Em curso", icon_name: :refresh, modifier: "card--olive",
+        tasks: @dashboard.in_progress_tasks, total: @dashboard.in_progress_count, show_progress: true,
+        empty_title: "Nada em curso",
+        empty_body: "Quando começares uma tarefa, o progresso das subtarefas aparece aqui." %>
+
+  <section class="card card--flush dashboard-panel" aria-labelledby="panel-candidaturas">
+    <header class="dashboard-panel__header">
+      <h2 class="card__title" id="panel-candidaturas"><%= icon :briefcase %> Candidaturas recentes</h2>
+      <%= link_to "Ver todas", job_applications_path, class: "btn btn--ghost btn--sm" %>
+    </header>
+    <% if @dashboard.recent_applications.any? %>
+      <ul class="list">
+        <% @dashboard.recent_applications.each do |application| %>
+          <li class="list__item">
+            <div class="list__main">
+              <%= link_to application.title, job_application_path(application), class: "list__title" %>
+              <div class="list__meta">
+                <% if application.company_name.present? %><span><%= application.company_name %></span><% end %>
+                <span>atualizada há <%= time_ago_in_words(application.updated_at) %></span>
+              </div>
+            </div>
+            <%= status_badge(application.status) %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <%= render "shared/empty_state",
+            title: "Sem candidaturas ativas",
+            body: "Guarda vagas interessantes e acompanha cada candidatura até à resposta.",
+            action: link_to(safe_join([ icon(:search), "Nova pesquisa de emprego" ], " "), new_job_search_path, class: "btn btn--sm btn--secondary") %>
+    <% end %>
+  </section>
+
+  <section class="card card--flush dashboard-panel" aria-labelledby="panel-lembretes">
+    <header class="dashboard-panel__header">
+      <h2 class="card__title" id="panel-lembretes"><%= icon :bell %> Próximos lembretes</h2>
+    </header>
+    <% if @dashboard.upcoming_reminders.any? %>
+      <ul class="list">
+        <% @dashboard.upcoming_reminders.each do |reminder| %>
+          <li class="list__item">
+            <span class="dashboard-reminder__time">
+              <span class="dashboard-reminder__day"><%= l(reminder.remind_at.in_time_zone, format: "%d %b") %></span>
+              <span class="dashboard-reminder__hour"><%= l(reminder.remind_at.in_time_zone, format: "%H:%M") %></span>
+            </span>
+            <div class="list__main">
+              <%= link_to reminder.task.title, task_path(reminder.task), class: "list__title" %>
+              <div class="list__meta">
+                <%= reminder_channel_badge(reminder) %>
+                <span><%= relative_due(reminder.remind_at) %></span>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <%= render "shared/empty_state",
+            title: "Sem lembretes agendados",
+            body: "Abre uma tarefa com prazo e adiciona um lembrete para não te esqueceres." %>
+    <% end %>
+  </section>
+
+  <section class="card card--flush dashboard-panel" aria-labelledby="panel-notificacoes">
+    <header class="dashboard-panel__header">
+      <h2 class="card__title" id="panel-notificacoes">
+        <%= icon :bell %> Notificações por ler
+        <% if @dashboard.unread_notifications_count.positive? %>
+          <span class="badge badge--in-progress"><%= @dashboard.unread_notifications_count %></span>
+        <% end %>
+      </h2>
+      <%= link_to "Ver todas", notifications_path(filter: "unread"), class: "btn btn--ghost btn--sm" %>
+    </header>
+    <% if @dashboard.unread_notifications.any? %>
+      <ul class="list">
+        <% @dashboard.unread_notifications.each do |notification| %>
+          <li class="list__item">
+            <%= notification_icon(notification) %>
+            <div class="list__main">
+              <% if notifiable_path(notification) %>
+                <%= button_to notification.title, read_notification_path(notification), method: :patch,
+                      class: "dashboard-link-button list__title" %>
+              <% else %>
+                <span class="list__title"><%= notification.title %></span>
+              <% end %>
+              <div class="list__meta"><%= notification_time(notification) %></div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <%= render "shared/empty_state",
+            title: "Estás a par de tudo",
+            body: "Não tens notificações por ler." %>
+    <% end %>
+  </section>
+</div>

@@ -1,0 +1,19 @@
+<%# locals: (id:, title:, icon_name:, modifier:, tasks:, total:, empty_title:, empty_body:, empty_action: nil, show_progress: false) %>
+<section class="card card--flush dashboard-panel <%= modifier %>" aria-labelledby="panel-<%= id %>" id="dashboard-<%= id %>">
+  <header class="dashboard-panel__header">
+    <h2 class="card__title" id="panel-<%= id %>">
+      <%= icon icon_name %> <%= title %>
+      <% if total.positive? %><span class="dashboard-panel__count"><%= total %></span><% end %>
+    </h2>
+    <% if total > tasks.size %>
+      <%= link_to "Ver todas", tasks_path, class: "btn btn--ghost btn--sm" %>
+    <% end %>
+  </header>
+  <% if tasks.any? %>
+    <ul class="list">
+      <%= render partial: "dashboard/task", collection: tasks, locals: { show_progress: show_progress } %>
+    </ul>
+  <% else %>
+    <%= render "shared/empty_state", title: empty_title, body: empty_body, action: empty_action %>
+  <% end %>
+</section>

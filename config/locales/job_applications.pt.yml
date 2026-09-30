@@ -1,0 +1,23 @@
+pt:
+  activerecord:
+    models:
+      job_application:
+        one: Candidatura
+        other: Candidaturas
+      job_application_event:
+        one: Evento da candidatura
+        other: Eventos da candidatura
+    attributes:
+      job_application:
+        title: Título
+        company_name: Empresa
+        notes: Notas
+        status: Estado
+        applied_at: Data de envio
+        job_listing: Vaga
+        job_listing_id: Vaga
+      job_application_event:
+        event_type: Tipo
+        occurred_at: Data
+        notes: Notas
+        job_application: Candidatura

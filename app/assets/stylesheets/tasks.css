@@ -1,0 +1,101 @@
+/*
+ * Tasks — list rows, quick actions, task page cards.
+ * Uses only design-system tokens (see application.css).
+ */
+
+/* ---------- Filters ---------- */
+.task-filters__search { flex: 2 1 220px; }
+.task-filters__footer {
+  flex-basis: 100%;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding-top: var(--space-3); border-top: 1px solid var(--color-border);
+}
+
+.task-overdue-link { color: var(--color-danger); font-weight: 500; }
+
+/* ---------- Rows ---------- */
+.task-row { align-items: flex-start; }
+.task-row .list__main { padding-top: 2px; }
+.task-row__title { overflow-wrap: anywhere; }
+.task-row--closed .task-row__title { color: var(--color-text-muted); text-decoration: line-through; text-decoration-color: var(--color-border-strong); }
+.task-row--overdue { box-shadow: inset 3px 0 0 var(--color-danger); }
+.task-row__hint { display: inline-flex; align-items: center; gap: 4px; color: var(--color-text-muted); }
+.task-row__hint a { color: inherit; }
+
+.task-due { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Round "complete" toggle */
+.task-row form.button_to { flex-shrink: 0; }
+.task-check {
+  display: inline-grid; place-items: center;
+  width: 26px; height: 26px; margin-top: 1px; padding: 0;
+  border-radius: 50%; border: 2px solid var(--color-border-strong);
+  background: var(--color-surface); color: transparent; cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.task-check:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-soft); }
+.task-check--done { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-text-inverse); }
+.task-check--done:hover { background: var(--color-surface); color: var(--color-accent); }
+
+/* Subtask progress inside a row */
+.task-progress { display: inline-flex; align-items: center; gap: var(--space-2); }
+.task-progress .progress { width: 72px; height: 6px; }
+.task-progress__count { font-variant-numeric: tabular-nums; }
+
+/* ---------- Task page ---------- */
+.task-header { min-width: 0; }
+.task-header .page-header__title { overflow-wrap: anywhere; }
+.task-header__title--closed { color: var(--color-text-muted); }
+.task-header__meta { margin-top: var(--space-2); font-size: 0.88rem; color: var(--color-text-muted); }
+
+.task-card-title { margin-bottom: var(--space-3); }
+.task-description p:last-child { margin-bottom: 0; }
+
+.task-suggestion {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);
+  margin-bottom: var(--space-5); background: var(--color-warning-soft);
+}
+.task-suggestion__text { display: inline-flex; align-items: center; gap: var(--space-2); margin: 0; font-weight: 500; }
+.task-suggestion__text .icon { color: var(--color-warning); }
+
+.task-subtasks {
+  margin: var(--space-4) calc(-1 * var(--space-5)) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.task-subtasks .list__item { padding-inline: var(--space-5); }
+
+.task-quick-add { display: flex; gap: var(--space-2); margin-top: var(--space-4); }
+.task-quick-add .input { flex: 1; min-width: 0; }
+.task-quick-add__more { margin: var(--space-2) 0 0; }
+
+.task-tag-link { text-decoration: none; }
+.task-tag-link:hover .chip { border-color: var(--chip-color); }
+
+.task-manage form.button_to { display: flex; }
+.task-manage__hint { margin: var(--space-3) 0 0; }
+
+/* ---------- Recurrence card ---------- */
+.task-recurrence__summary { margin-bottom: var(--space-1); }
+.task-recurrence__edit { margin-top: var(--space-3); }
+.task-recurrence__toggle {
+  cursor: pointer; font-weight: 500; color: var(--color-primary);
+  list-style: none; display: inline-flex; align-items: center; gap: var(--space-1);
+}
+.task-recurrence__toggle::-webkit-details-marker { display: none; }
+.task-recurrence__toggle::before { content: "▸"; transition: transform 0.15s ease; }
+.task-recurrence__edit[open] > .task-recurrence__toggle::before { transform: rotate(90deg); }
+.task-recurrence__form { margin-top: var(--space-3); }
+
+/* ---------- Form ---------- */
+.task-form-card { max-width: 860px; }
+.task-form .form__section + .form__section { padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+.task-form__tags { border: 0; padding: 0; margin: 0; }
+.task-form__tags legend { margin-bottom: var(--space-2); }
+.task-tag-option { padding: 2px 0; }
+
+@media (max-width: 600px) {
+  .task-filters .field { min-width: calc(50% - var(--space-3)); }
+  .task-filters__search { flex-basis: 100%; }
+  .task-row .list__actions { display: none; }
+}

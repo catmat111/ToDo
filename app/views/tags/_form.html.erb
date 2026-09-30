@@ -1,0 +1,64 @@
+<%# locals: (tag_record:) %>
+<%= form_with model: tag_record, class: "form tag-form", data: { controller: "tag-form" } do |f| %>
+  <%= render "shared/form_errors", record: tag_record %>
+
+  <div class="field">
+    <%= f.label :name, "Nome", class: "field__label" %>
+    <%= f.text_field :name, required: true, maxlength: 40, autocomplete: "off", autofocus: tag_record.new_record?,
+          placeholder: "ex.: Universidade",
+          "aria-describedby": "tag_name_hint#{' tag_name_error' if tag_record.errors[:name].any?}",
+          "aria-invalid": tag_record.errors[:name].any?,
+          data: { tag_form_target: "name", action: "input->tag-form#preview" } %>
+    <% if tag_record.errors[:name].any? %>
+      <p class="field__error" id="tag_name_error"><%= tag_record.errors.full_messages_for(:name).to_sentence %></p>
+    <% end %>
+    <p class="field__hint" id="tag_name_hint">Até 40 caracteres. Não podes ter duas etiquetas com o mesmo nome (maiúsculas e minúsculas contam como iguais).</p>
+  </div>
+
+  <fieldset class="form__section">
+    <legend>Cor</legend>
+    <div class="swatches">
+      <% Tag::COLORS.each do |hex| %>
+        <label class="swatch" style="<%= swatch_style(hex) %>">
+          <%= f.radio_button :color, hex, id: "tag_color_#{hex.delete('#').downcase}", class: "swatch__input",
+                checked: tag_record.color == hex, data: { action: "change->tag-form#preview" } %>
+          <span class="swatch__dot" aria-hidden="true"></span>
+          <span class="swatch__name"><%= Tag.color_name(hex) %></span>
+        </label>
+      <% end %>
+
+      <label class="swatch swatch--none">
+        <%= f.radio_button :color, "", id: "tag_color_none", class: "swatch__input",
+              checked: tag_record.color.blank?, data: { action: "change->tag-form#preview" } %>
+        <span class="swatch__dot" aria-hidden="true"></span>
+        <span class="swatch__name">Sem cor</span>
+      </label>
+
+      <div class="swatch swatch--custom">
+        <label class="swatch__custom-label">
+          <%= f.radio_button :color, custom_tag_color(tag_record), id: "tag_color_custom", class: "swatch__input",
+                checked: !tag_record.palette_color?,
+                data: { tag_form_target: "customRadio", action: "change->tag-form#preview" } %>
+          <span class="swatch__name">Personalizada</span>
+        </label>
+        <label for="tag_color_picker" class="sr-only">Escolher cor personalizada</label>
+        <input type="color" id="tag_color_picker" class="swatch__picker" value="<%= custom_tag_color(tag_record).downcase %>"
+               data-tag-form-target="picker" data-action="input->tag-form#pick change->tag-form#pick">
+      </div>
+    </div>
+    <% if tag_record.errors[:color].any? %>
+      <p class="field__error"><%= tag_record.errors.full_messages_for(:color).to_sentence %></p>
+    <% end %>
+    <p class="field__hint">Escolhe uma cor da paleta ou define uma cor tua.</p>
+  </fieldset>
+
+  <div class="tag-form__preview" aria-live="polite">
+    <span class="small muted">Pré-visualização</span>
+    <span class="chip" data-tag-form-target="preview" style="<%= tag_color_style(tag_record.color) %>"><%= tag_record.name.presence || "Nova etiqueta" %></span>
+  </div>
+
+  <div class="form__actions">
+    <%= f.submit tag_record.new_record? ? "Criar etiqueta" : "Guardar alterações", class: "btn btn--primary" %>
+    <%= link_to "Cancelar", tags_path, class: "btn btn--ghost" %>
+  </div>
+<% end %>

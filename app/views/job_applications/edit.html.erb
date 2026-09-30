@@ -1,0 +1,17 @@
+<% content_for :title, "Editar candidatura" %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Navegação estrutural">
+      <%= link_to "Candidaturas", job_applications_path %> /
+      <%= link_to @job_application.title_was.to_s.truncate(60), job_application_path(@job_application) %> /
+      <span aria-current="page">Editar</span>
+    </nav>
+    <h1 class="page-header__title">Editar candidatura</h1>
+    <p class="page-header__subtitle">O estado muda-se na página da candidatura, em «Próximo passo».</p>
+  </div>
+</div>
+
+<div class="card ja-form-card">
+  <%= render "form", job_application: @job_application %>
+</div>

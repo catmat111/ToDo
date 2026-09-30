@@ -1,0 +1,26 @@
+<%# locals: (task:, show_parent: false) %>
+<li class="list__item task-row<%= " task-row--closed" if task.closed? %><%= " task-row--overdue" if task.overdue? %>" id="<%= dom_id(task) %>">
+  <%= task_toggle_button(task) %>
+  <div class="list__main">
+    <%= link_to task.title, task, class: "list__title task-row__title" %>
+    <div class="list__meta">
+      <%= status_badge(task.status, task.status_label) %>
+      <%= priority_badge(task) %>
+      <%= task_due(task) %>
+      <% if task.recurrence %>
+        <span class="task-row__hint" title="<%= task_recurrence_summary(task.recurrence) %>"><%= icon :refresh, size: 13 %><span class="sr-only">Repete-se: <%= task_recurrence_summary(task.recurrence) %></span></span>
+      <% end %>
+      <% if show_parent && task.parent_task %>
+        <span class="task-row__hint"><%= icon :list, size: 13 %> em <%= link_to task.parent_task.title, task.parent_task %></span>
+      <% end %>
+      <% if task.archived? %><span class="badge badge--archived">Arquivada</span><% end %>
+      <% task.tags.each do |tag_record| %><%= tag_chip(tag_record) %><% end %>
+      <%= task_subtask_progress(task) %>
+    </div>
+  </div>
+  <div class="list__actions">
+    <%= link_to edit_task_path(task), class: "btn btn--ghost btn--icon", title: "Editar", "aria-label": "Editar «#{task.title}»" do %>
+      <%= icon :edit %>
+    <% end %>
+  </div>
+</li>

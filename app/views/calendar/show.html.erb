@@ -1,0 +1,48 @@
+<% content_for :title, "Calendário" %>
+<% tasks = @agenda.tasks_in_focus %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Calendário</h1>
+    <p class="page-header__subtitle">
+      Prazos e datas de início ·
+      <%= pluralize(tasks.size, "tarefa", plural: "tarefas") %> <%= @period.month? ? "neste mês" : "nesta semana" %>
+    </p>
+  </div>
+  <nav class="page-header__actions calendar-nav" aria-label="Navegação do calendário">
+    <%= link_to calendar_path(@period.previous_params), class: "btn btn--outline btn--icon calendar-nav__arrow",
+                "aria-label": @period.month? ? "Mês anterior" : "Semana anterior", rel: "prev" do %>
+      <span aria-hidden="true">‹</span>
+    <% end %>
+    <%= link_to "Hoje", calendar_path(@period.today_params),
+                class: [ "btn btn--sm", @period.contains_today? ? "btn--secondary" : "btn--outline" ],
+                "aria-current": (@period.contains_today? ? "date" : nil) %>
+    <%= link_to calendar_path(@period.next_params), class: "btn btn--outline btn--icon calendar-nav__arrow",
+                "aria-label": @period.month? ? "Mês seguinte" : "Semana seguinte", rel: "next" do %>
+      <span aria-hidden="true">›</span>
+    <% end %>
+  </nav>
+</div>
+
+<nav class="tabs" aria-label="Vista do calendário">
+  <%= link_to "Mês", calendar_path(@period.month_params), class: [ "tabs__link", ("is-active" if @period.month?) ],
+              "aria-current": (@period.month? ? "page" : nil) %>
+  <%= link_to "Semana", calendar_path(@period.week_params), class: [ "tabs__link", ("is-active" if @period.week?) ],
+              "aria-current": (@period.week? ? "page" : nil) %>
+</nav>
+
+<div class="grid grid--sidebar calendar-layout">
+  <section class="calendar-main" aria-labelledby="calendar-period-title">
+    <h2 class="calendar-period-title" id="calendar-period-title"><%= @period.title %></h2>
+    <% if @period.month? %>
+      <%= render "calendar/month", period: @period, agenda: @agenda %>
+    <% else %>
+      <%= render "calendar/week", period: @period, agenda: @agenda %>
+    <% end %>
+  </section>
+
+  <aside class="stack calendar-aside" aria-label="Resumo e sincronização">
+    <%= render "calendar/sync_card", connection: @connection, configured: @configured %>
+    <%= render "calendar/summary", tasks: tasks, period: @period %>
+  </aside>
+</div>

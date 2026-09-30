@@ -1,0 +1,107 @@
+<% content_for :title, @filter.archived? ? "Tarefas arquivadas" : "Tarefas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Tarefas</h1>
+    <p class="page-header__subtitle">
+      <%= @open_count == 1 ? "1 tarefa em aberto" : "#{@open_count} tarefas em aberto" %>
+      <% if @overdue_count.positive? %>
+        · <%= link_to (@overdue_count == 1 ? "1 em atraso" : "#{@overdue_count} em atraso"), tasks_path(due: "overdue"), class: "task-overdue-link" %>
+      <% end %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to new_task_path, class: "btn btn--primary" do %><%= icon :plus %> Nova tarefa<% end %>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Vista das tarefas">
+  <%= link_to "Ativas", tasks_path(@filter.to_params(archived: nil)),
+              class: [ "tabs__link", ("is-active" unless @filter.archived?) ], "aria-current": (@filter.archived? ? nil : "page") %>
+  <%= link_to tasks_path(@filter.to_params(archived: "1")),
+              class: [ "tabs__link", ("is-active" if @filter.archived?) ], "aria-current": (@filter.archived? ? "page" : nil) do %>
+    <%= icon :archive, size: 15 %> Arquivadas
+  <% end %>
+</nav>
+
+<%= form_with url: tasks_path, method: :get, class: "filters task-filters", role: "search", "aria-label": "Filtrar tarefas",
+              data: { controller: "task-filters", action: "change->task-filters#submit" } do %>
+  <%= hidden_field_tag :archived, "1", id: nil if @filter.archived? %>
+  <div class="field task-filters__search">
+    <%= label_tag :filter_q, "Pesquisar", class: "field__label" %>
+    <%= search_field_tag :q, @filter.q, id: "filter_q", class: "input", placeholder: "Título ou descrição…", maxlength: 100 %>
+  </div>
+  <div class="field">
+    <%= label_tag :filter_status, "Estado", class: "field__label" %>
+    <%= select_tag :status, options_for_select(task_status_filter_options, @filter.status), include_blank: "Todos", id: "filter_status", class: "input" %>
+  </div>
+  <div class="field">
+    <%= label_tag :filter_task_type, "Tipo", class: "field__label" %>
+    <%= select_tag :task_type, options_for_select(task_type_options, @filter.task_type), include_blank: "Todos", id: "filter_task_type", class: "input" %>
+  </div>
+  <div class="field">
+    <%= label_tag :filter_priority, "Prioridade", class: "field__label" %>
+    <%= select_tag :priority, options_for_select(task_priority_options, @filter.priority), include_blank: "Todas", id: "filter_priority", class: "input" %>
+  </div>
+  <% if @tags.any? %>
+    <div class="field">
+      <%= label_tag :filter_tag_id, "Etiqueta", class: "field__label" %>
+      <%= select_tag :tag_id, options_from_collection_for_select(@tags, :id, :name, @filter.tag&.id), include_blank: "Todas", id: "filter_tag_id", class: "input" %>
+    </div>
+  <% end %>
+  <div class="field">
+    <%= label_tag :filter_due, "Prazo", class: "field__label" %>
+    <%= select_tag :due, options_for_select(task_due_filter_options, @filter.due), include_blank: "Qualquer", id: "filter_due", class: "input" %>
+  </div>
+  <div class="field">
+    <%= label_tag :filter_sort, "Ordenar por", class: "field__label" %>
+    <%= select_tag :sort, options_for_select(task_sort_options, @filter.sort), id: "filter_sort", class: "input" %>
+  </div>
+  <div class="task-filters__footer">
+    <label class="check">
+      <%= check_box_tag :subtasks, "1", @filter.subtasks?, id: "filter_subtasks" %> Incluir subtarefas
+    </label>
+    <div class="cluster">
+      <%= submit_tag "Filtrar", name: nil, class: "btn btn--secondary btn--sm" %>
+      <% if @filter.active? %>
+        <%= link_to "Limpar filtros", tasks_path(@filter.archived? ? { archived: "1" } : {}), class: "btn btn--ghost btn--sm" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if @tasks.any? %>
+  <div class="card card--flush">
+    <ul class="list task-list" aria-label="Lista de tarefas">
+      <%= render partial: "tasks/task", collection: @tasks, as: :task,
+                 locals: { show_parent: @filter.subtasks? || @filter.q.present? } %>
+    </ul>
+  </div>
+
+  <% if @filter.previous_page? || @filter.next_page? %>
+    <nav class="pagination" aria-label="Paginação">
+      <% if @filter.previous_page? %>
+        <%= link_to "← Anteriores", tasks_path(@filter.to_params(page: (@filter.page - 1 if @filter.page > 2))),
+                    class: "btn btn--outline btn--sm", rel: "prev" %>
+      <% end %>
+      <span class="btn btn--ghost btn--sm" aria-current="page">Página <%= @filter.page %></span>
+      <% if @filter.next_page? %>
+        <%= link_to "Seguintes →", tasks_path(@filter.to_params(page: @filter.page + 1)), class: "btn btn--outline btn--sm", rel: "next" %>
+      <% end %>
+    </nav>
+  <% end %>
+<% elsif @filter.active? %>
+  <%= render "shared/empty_state",
+             title: "Nenhuma tarefa corresponde aos filtros",
+             body: "Experimenta outra pesquisa ou limpa os filtros para ver todas as tarefas.",
+             action: link_to("Limpar filtros", tasks_path(@filter.archived? ? { archived: "1" } : {}), class: "btn btn--outline") %>
+<% elsif @filter.archived? %>
+  <%= render "shared/empty_state",
+             title: "Nada arquivado",
+             body: "As tarefas que arquivares ficam aqui guardadas, com todo o histórico, sem ocupar a tua lista." %>
+<% else %>
+  <%= render "shared/empty_state",
+             title: "Ainda não tens tarefas",
+             body: "Cria a tua primeira tarefa — um projeto, uma entrega, um exame ou uma rotina.",
+             action: link_to(safe_join([ icon(:plus), "Nova tarefa" ], " "), new_task_path, class: "btn btn--primary") %>
+<% end %>

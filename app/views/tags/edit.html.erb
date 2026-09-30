@@ -1,0 +1,29 @@
+<% content_for :title, "Editar etiqueta" %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Navegação estrutural">
+      <%= link_to "Etiquetas", tags_path %> / Editar
+    </nav>
+    <h1 class="page-header__title">Editar etiqueta</h1>
+    <p class="page-header__subtitle"><%= tag_tasks_count_label(@tag.tasks_count) %></p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to tasks_path(tag_id: @tag.id), class: "btn btn--outline" do %><%= icon :tasks %> Ver tarefas<% end %>
+  </div>
+</div>
+
+<div class="grid grid--sidebar">
+  <div class="card">
+    <%= render "form", tag_record: @tag %>
+  </div>
+
+  <aside class="card card--accent" aria-labelledby="tag-danger-title">
+    <h2 class="card__title" id="tag-danger-title">Eliminar etiqueta</h2>
+    <p class="muted small">As tarefas não são apagadas: apenas deixam de ter esta etiqueta.</p>
+    <%= button_to tag_path(@tag), method: :delete, class: "btn btn--danger btn--block",
+          form: { data: { turbo_confirm: "Eliminar esta etiqueta? Esta ação não pode ser desfeita." } } do %>
+      <%= icon :trash %> Eliminar etiqueta
+    <% end %>
+  </aside>
+</div>

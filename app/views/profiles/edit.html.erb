@@ -1,0 +1,70 @@
+<% content_for :title, "Editar perfil" %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Caminho"><%= link_to "Perfil", profile_path %> / Editar</nav>
+    <h1 class="page-header__title">Editar perfil</h1>
+    <p class="page-header__subtitle">Atualiza os teus dados e a forma como a app se apresenta.</p>
+  </div>
+</div>
+
+<div class="card profile-form">
+  <%# Full page load so a theme change is applied to <html> straight away. %>
+  <%= form_with model: @user, url: profile_path, method: :patch, class: "form", data: { turbo: false } do |form| %>
+    <%= render "shared/form_errors", record: @user %>
+
+    <fieldset class="form__section">
+      <legend>Dados pessoais</legend>
+      <div class="stack">
+        <div class="form__row">
+          <div class="field">
+            <%= form.label :name, "Nome", class: "field__label" %>
+            <%= form.text_field :name, required: true, maxlength: 100, autocomplete: "name" %>
+          </div>
+          <div class="field">
+            <%= form.label :email_address, "Email", class: "field__label" %>
+            <%= form.email_field :email_address, required: true, autocomplete: "email" %>
+          </div>
+        </div>
+
+        <div class="field">
+          <%= form.label :avatar_url, "URL da fotografia", class: "field__label" %>
+          <div class="avatar-field">
+            <%= user_avatar(@user) %>
+            <%= form.url_field :avatar_url, placeholder: "https://…", maxlength: 2000, "aria-describedby": "avatar-hint" %>
+          </div>
+          <p class="field__hint" id="avatar-hint">Opcional. Um link para uma imagem (começa por https://). Sem imagem, mostramos a tua inicial.</p>
+        </div>
+
+        <div class="field">
+          <%= form.label :objective, "Objetivo", class: "field__label" %>
+          <%= form.text_area :objective, rows: 4, maxlength: 2000, "aria-describedby": "objective-hint",
+                             placeholder: "Ex.: Encontrar um estágio em desenvolvimento web até ao verão." %>
+          <p class="field__hint" id="objective-hint">Aparece no teu perfil como lembrete do que queres alcançar.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <hr>
+
+    <fieldset class="form__section">
+      <legend>Preferências</legend>
+      <div class="form__row">
+        <div class="field">
+          <%= form.label :theme, "Tema", class: "field__label" %>
+          <%= form.select :theme, theme_options %>
+        </div>
+        <div class="field">
+          <%= form.label :timezone, "Fuso horário", class: "field__label" %>
+          <%= form.select :timezone, timezone_options, {}, "aria-describedby": "timezone-hint" %>
+          <p class="field__hint" id="timezone-hint">As datas, prazos e lembretes são mostrados neste fuso.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="form__actions">
+      <%= form.submit "Guardar alterações", class: "btn btn--primary" %>
+      <%= link_to "Cancelar", profile_path, class: "btn btn--ghost" %>
+    </div>
+  <% end %>
+</div>
