@@ -1,0 +1,4 @@
+<% content_for :title, "Editar #{@contact.name}" %>
+<p class="breadcrumb"><%= link_to "Contactos", contacts_path %></p>
+<div class="page-header"><h1 class="page-header__title">Editar contacto</h1></div>
+<div class="card"><%= render "form", contact: @contact %></div>

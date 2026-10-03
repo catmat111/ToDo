@@ -1,0 +1,46 @@
+<% content_for :title, "Importar do LinkedIn" %>
+<p class="breadcrumb"><%= link_to "Candidaturas", job_applications_path %></p>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Importar do LinkedIn</h1>
+    <p class="page-header__subtitle">Traz para aqui todas as candidaturas que fizeste no LinkedIn.</p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <section class="card card--accent" aria-labelledby="li-steps">
+    <h2 class="card__title" id="li-steps">1. Pede os teus dados ao LinkedIn</h2>
+    <ol class="li-steps">
+      <li>No LinkedIn, abre <strong>Eu → Definições e privacidade</strong>.</li>
+      <li>Vai a <strong>Privacidade dos dados → Obter uma cópia dos seus dados</strong>.</li>
+      <li>Escolhe <strong>«Quer algo em particular?»</strong> e marca <strong>Candidaturas a empregos</strong> (Job applications).</li>
+      <li>Clica em <strong>Pedir arquivo</strong>. O LinkedIn envia-te um email, normalmente em poucos minutos.</li>
+      <li>Descarrega o ZIP, abre-o e procura <code>Jobs/Job Applications.csv</code>.</li>
+    </ol>
+    <p class="small muted">
+      A app nunca usa a tua password do LinkedIn nem acede à tua conta: só lê o ficheiro que tu escolhes.
+    </p>
+  </section>
+
+  <section class="card card--olive" aria-labelledby="li-upload">
+    <h2 class="card__title" id="li-upload">2. Carrega o ficheiro</h2>
+    <%= form_with url: linkedin_import_path, multipart: true, class: "form", data: { turbo: false } do |f| %>
+      <div class="field">
+        <%= f.label :file, "Job Applications.csv", class: "field__label" %>
+        <%= f.file_field :file, accept: ".csv,text/csv", required: true %>
+        <p class="field__hint">Se o LinkedIn dividir em vários ficheiros (Job Applications_1.csv…), importa um de cada vez.</p>
+      </div>
+      <ul class="small li-what">
+        <li>Cada vaga é criada com o link para o LinkedIn.</li>
+        <li>As candidaturas ficam em «Candidatura enviada», com a data verdadeira no histórico.</li>
+        <li>Empresas e contactos de recrutadores são criados automaticamente.</li>
+        <li>O CV usado fica nas notas.</li>
+        <li>Podes importar outra vez mais tarde: só entram as novas.</li>
+      </ul>
+      <div class="form__actions">
+        <%= f.button type: "submit", class: "btn btn--primary" do %><%= icon :refresh %> Importar<% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

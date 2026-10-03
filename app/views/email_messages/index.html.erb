@@ -1,0 +1,75 @@
+<% content_for :title, "Respostas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Respostas</h1>
+    <p class="page-header__subtitle">
+      <% if @connection&.label_chosen? %>
+        Emails da etiqueta «<%= @connection.label_name %>». Confirma o que cada um diz — nada muda sem a tua confirmação.
+      <% else %>
+        Liga o Gmail para lermos as respostas das empresas.
+      <% end %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <% if @connection&.label_chosen? && @connection.active? %>
+      <%= button_to sync_mailbox_connection_path, class: "btn btn--outline" do %><%= icon :refresh %> Verificar agora<% end %>
+    <% end %>
+    <%= link_to mailbox_connection_path, class: "btn btn--ghost" do %><%= icon :settings %> Gmail<% end %>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Respostas">
+  <%= link_to email_messages_path, class: [ "tabs__link", ("is-active" if @tab == "pending") ] do %>
+    Por rever <% if @pending_count.positive? %><span class="badge badge--in-progress"><%= @pending_count %></span><% end %>
+  <% end %>
+  <%= link_to "Tratadas", email_messages_path(tab: "done"), class: [ "tabs__link", ("is-active" if @tab == "done") ] %>
+</nav>
+
+<% if @emails.any? %>
+  <div class="stack">
+    <% @emails.each do |email| %>
+      <article class="card reply reply--<%= email.outcome %>" id="<%= dom_id(email) %>">
+        <header class="reply__header">
+          <div>
+            <p class="reply__from"><strong><%= email.sender %></strong> <span class="muted small"><%= email.from_email %></span></p>
+            <h2 class="reply__subject"><%= email.subject.presence || "(sem assunto)" %></h2>
+          </div>
+          <span class="muted small nowrap"><%= format_datetime(email.received_at) %></span>
+        </header>
+        <p class="reply__excerpt"><%= email.excerpt %></p>
+
+        <% if email.pending? %>
+          <%= form_with url: confirm_email_message_path(email), method: :patch, class: "reply__form" do |f| %>
+            <div class="field">
+              <%= f.label :outcome, "Parece", class: "field__label", for: "outcome_#{email.id}" %>
+              <%= f.select :outcome, options_for_select(EmailMessage::OUTCOMES.invert.to_a, email.outcome), {}, id: "outcome_#{email.id}" %>
+            </div>
+            <div class="field reply__app">
+              <%= f.label :job_application_id, "Candidatura", class: "field__label", for: "application_#{email.id}" %>
+              <%= f.select :job_application_id,
+                    options_for_select(@applications.map { |a| [ [ a.title, a.company_name ].compact_blank.join(" — "), a.id ] }, email.job_application_id),
+                    { include_blank: "— Nenhuma (só marcar como tratado) —" }, id: "application_#{email.id}" %>
+            </div>
+            <div class="cluster">
+              <%= f.button class: "btn btn--primary" do %><%= icon :check %> Confirmar<% end %>
+            </div>
+          <% end %>
+          <%= button_to "Ignorar", ignore_email_message_path(email), method: :patch, class: "btn btn--ghost btn--sm reply__ignore" %>
+        <% else %>
+          <p class="small">
+            <%= email.confirmed? ? "Confirmado como" : "Ignorado" %>
+            <% if email.confirmed? %><strong><%= email.outcome_label %></strong>
+              <% if email.job_application %>em <%= link_to email.job_application.title, job_application_path(email.job_application) %><% end %>
+            <% end %>
+          </p>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+<% else %>
+  <%= render "shared/empty_state",
+        title: @tab == "done" ? "Nada tratado ainda" : "Sem respostas por rever",
+        body: (@connection&.label_chosen? ? "Quando chegarem emails novos à tua etiqueta, aparecem aqui." : "Liga o Gmail e escolhe a etiqueta onde guardas as respostas das empresas."),
+        action: (link_to("Ligar Gmail", mailbox_connection_path, class: "btn btn--primary") unless @connection&.label_chosen?) %>
+<% end %>

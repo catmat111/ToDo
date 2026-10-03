@@ -1,0 +1,13 @@
+<%# locals: (notification:) %>
+<% target = notifiable_path(notification) %>
+<div class="toast" role="status" data-controller="toast">
+  <%= notification_icon(notification) %>
+  <div class="toast__main">
+    <p class="toast__title"><%= notification.title %></p>
+    <% if notification.body.present? %><p class="toast__body"><%= notification.body.truncate(140) %></p><% end %>
+    <% if target %>
+      <%= link_to notifiable_label(notification), target, class: "toast__link", data: { action: "toast#dismiss" } %>
+    <% end %>
+  </div>
+  <button type="button" class="toast__close" data-action="toast#dismiss" aria-label="Fechar">×</button>
+</div>

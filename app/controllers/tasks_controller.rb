@@ -23,12 +23,29 @@ class TasksController < ApplicationController
     result = Tasks::Create.call(user: Current.user, params: task_params.except(:status))
     @task = result.task
 
+    # Quick-add chat (bottom-right button): answer with Turbo Streams, no page reload.
+    if params[:return_to] == "chat"
+      return respond_to do |format|
+        format.turbo_stream do
+          streams = [ turbo_stream.append("quickadd_messages", partial: "tasks/quickadd_reply",
+                                                               locals: { task: @task, ok: result.success? }) ]
+          streams << turbo_stream.append("home-today-list", partial: "dashboard/task", locals: { task: @task }) if result.success?
+          render turbo_stream: streams
+        end
+        format.html { redirect_back_or_to root_path, (result.success? ? :notice : :alert) => (result.success? ? "Tarefa adicionada." : @task.errors.full_messages.to_sentence) }
+      end
+    end
+
     if result.success?
-      if @task.parent_task
+      if params[:return_to] == "home"
+        redirect_to root_path, notice: "«#{@task.title}» adicionada a hoje."
+      elsif @task.parent_task
         redirect_to @task.parent_task, notice: "Subtarefa «#{@task.title}» criada."
       else
         redirect_to @task, notice: "Tarefa criada."
       end
+    elsif params[:return_to] == "home"
+      redirect_to root_path, alert: result.task.errors.full_messages.to_sentence
     else
       render :new, status: :unprocessable_entity
     end

@@ -1,0 +1,3 @@
+<%# locals: (record:) %>
+<% if record.work_mode.present? %><span class="work-mode work-mode--<%= record.work_mode %>"><%= record.work_mode_label %></span><% end %>
+<% if record.salary? %><span class="salary"><%= record.salary_label %></span><% end %>

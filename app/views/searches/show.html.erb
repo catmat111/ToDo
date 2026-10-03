@@ -1,0 +1,57 @@
+<% content_for :title, "Pesquisa" %>
+<% q = @search.query %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Pesquisa</h1>
+    <p class="page-header__subtitle">
+      <% if !@search.searchable? %>
+        Escreve pelo menos 2 letras.
+      <% elsif @search.total.zero? %>
+        Nada encontrado para «<%= q %>».
+      <% else %>
+        <%= pluralize(@search.total, "resultado", plural: "resultados") %> para «<%= q %>».
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<%= form_with url: search_path, method: :get, class: "searchbar", role: "search" do |f| %>
+  <%= icon :search, size: 20 %>
+  <%= f.label :q, "Procurar em tudo", class: "sr-only" %>
+  <%= f.search_field :q, value: q, autofocus: !@search.searchable?, placeholder: "Tarefa, empresa, vaga, contacto…" %>
+  <%= f.button "Pesquisar", class: "searchbar__button" %>
+<% end %>
+
+<% sections = {
+     tasks: [ "Tarefas", ->(r) { task_path(r) }, ->(r) { safe_join([ status_badge(r.status, r.status_label), relative_due(r.due_at) ], " ") } ],
+     job_applications: [ "Candidaturas", ->(r) { job_application_path(r) }, ->(r) { safe_join([ status_badge(r.status), r.company_name ].compact, " ") } ],
+     job_listings: [ "Vagas", ->(r) { job_listing_path(r) }, ->(r) { [ r.company_name, r.location ].compact_blank.join(" · ") } ],
+     companies: [ "Empresas", ->(r) { company_path(r) }, ->(r) { r.location } ],
+     contacts: [ "Contactos", ->(r) { edit_contact_path(r) }, ->(r) { [ r.role, r.email ].compact_blank.join(" · ") } ]
+   } %>
+
+<% icons = { tasks: :tasks, job_applications: :briefcase, job_listings: :list, companies: :home, contacts: :user } %>
+<div class="search-results">
+<% @search.results.each do |key, records| %>
+  <% next if records.empty? %>
+  <% label, path, meta = sections.fetch(key) %>
+  <section class="search-group search-group--<%= key.to_s.dasherize %>" aria-labelledby="search-<%= key %>">
+    <h2 class="search-group__title" id="search-<%= key %>">
+      <span class="search-group__icon"><%= icon icons.fetch(key), size: 16 %></span>
+      <%= label %>
+      <span class="search-group__count"><%= records.size %></span>
+    </h2>
+    <ul class="list">
+      <% records.each do |record| %>
+        <li class="list__item">
+          <div class="list__main">
+            <%= link_to highlight(record.try(:title) || record.name, q), path.call(record), class: "list__title" %>
+            <div class="list__meta"><%= meta.call(record) %></div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+</div>

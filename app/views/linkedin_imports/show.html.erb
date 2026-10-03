@@ -1,0 +1,36 @@
+<% content_for :title, "Importação concluída" %>
+<p class="breadcrumb"><%= link_to "Candidaturas", job_applications_path %></p>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Importação concluída</h1>
+    <p class="page-header__subtitle"><%= pluralize(@summary.total, "linha lida", plural: "linhas lidas") %> do ficheiro.</p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to "Ver candidaturas", job_applications_path, class: "btn btn--primary" %>
+  </div>
+</div>
+
+<div class="grid grid--3">
+  <div class="stat stat--olive">
+    <div class="stat__value"><%= @summary.created %></div>
+    <div class="stat__label">novas candidaturas</div>
+  </div>
+  <div class="stat stat--mustard">
+    <div class="stat__value"><%= @summary.updated %></div>
+    <div class="stat__label">guardadas que passaram a «enviada»</div>
+  </div>
+  <div class="stat stat--charcoal">
+    <div class="stat__value"><%= @summary.skipped %></div>
+    <div class="stat__label">já existiam (ignoradas)</div>
+  </div>
+</div>
+
+<% if @summary.failed.positive? %>
+  <section class="card card--accent li-errors" aria-labelledby="li-errors">
+    <h2 class="card__title" id="li-errors"><%= pluralize(@summary.failed, "linha não importada", plural: "linhas não importadas") %></h2>
+    <ul class="small">
+      <% @summary.errors.each do |error| %><li><%= error %></li><% end %>
+    </ul>
+  </section>
+<% end %>

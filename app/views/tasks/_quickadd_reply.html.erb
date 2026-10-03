@@ -1,0 +1,11 @@
+<%# locals: (task:, ok:) %>
+<div class="quickadd__msg quickadd__msg--me"><%= task.title.presence || "…" %></div>
+<% if ok %>
+  <div class="quickadd__msg quickadd__msg--app">
+    Adicionei <%= link_to task.title, task_path(task) %> para <strong><%= relative_due(task.due_at) %></strong>. Mais alguma coisa?
+  </div>
+<% else %>
+  <div class="quickadd__msg quickadd__msg--app quickadd__msg--error">
+    Não consegui adicionar: <%= task.errors.full_messages.to_sentence.downcase_first %>.
+  </div>
+<% end %>

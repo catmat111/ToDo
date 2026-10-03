@@ -1,4 +1,5 @@
 class JobApplication < ApplicationRecord
+  include Compensation
   STATUSES = %w[saved applied interview offer rejected withdrawn].freeze
   # Explicit, finite transitions (plan §16).
   TRANSITIONS = {
@@ -21,9 +22,13 @@ class JobApplication < ApplicationRecord
 
   belongs_to :user
   belongs_to :job_listing, optional: true
+  belongs_to :company, optional: true
+  belongs_to :contact, optional: true
   has_many :job_application_events, -> { order(:occurred_at, :id) }, dependent: :destroy
   has_many :tasks, dependent: :nullify
   has_many :links, as: :linkable, dependent: :destroy
+  has_many :shares, as: :shareable, dependent: :nullify
+  has_many :email_messages, dependent: :nullify
 
   enum :status, STATUSES.index_by(&:itself), default: "saved", validate: true
 
@@ -34,13 +39,18 @@ class JobApplication < ApplicationRecord
   validates :notes, length: { maximum: 10_000 }
   validates :job_listing_id, uniqueness: { scope: :user_id, message: "já tem uma candidatura" }, allow_nil: true
   validate :job_listing_belongs_to_user
+  validate :contact_belongs_to_user
+
+  # Links (or creates) the Company whose name matches company_name.
+  before_save :link_company, if: -> { company_name_changed? || company_id.nil? }
 
   scope :recent, -> { order(updated_at: :desc) }
   scope :in_progress, -> { where(status: %w[saved applied interview offer]) }
   scope :search, ->(query) {
     next all if query.blank?
     pattern = "%#{sanitize_sql_like(query.to_s.strip)}%"
-    where("job_applications.title LIKE :q OR job_applications.company_name LIKE :q", q: pattern)
+    # LOWER on both sides: LIKE is case-sensitive in PostgreSQL (not in SQLite).
+    where("LOWER(job_applications.title) LIKE :q OR LOWER(job_applications.company_name) LIKE :q", q: pattern.downcase)
   }
 
   def self.status_label(status)
@@ -73,6 +83,16 @@ class JobApplication < ApplicationRecord
   end
 
   private
+    def link_company
+      name = company_name.to_s.squish
+      self.company = name.blank? ? nil : (user.companies.named(name).first || user.companies.create!(name: name))
+    end
+
+    def contact_belongs_to_user
+      return if contact.nil?
+      errors.add(:contact, "tem de ser teu") if contact.user_id != user_id
+    end
+
     def job_listing_belongs_to_user
       return if job_listing.nil?
       errors.add(:job_listing, "tem de pertencer ao mesmo utilizador") if job_listing.user_id != user_id

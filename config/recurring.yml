@@ -21,6 +21,14 @@ production:
     class: DueTaskNotificationJob
     queue: default
     schedule: every hour
+  mailbox_sync:
+    class: MailboxSyncJob
+    queue: default
+    schedule: every hour at minute 5
+  follow_up_reminders:
+    class: FollowUpReminderJob
+    queue: default
+    schedule: every day at 9am
 
 development:
   reminder_dispatch:
@@ -31,3 +39,11 @@ development:
     class: DueTaskNotificationJob
     queue: default
     schedule: every hour
+  mailbox_sync:
+    class: MailboxSyncJob
+    queue: default
+    schedule: every hour at minute 5
+  follow_up_reminders:
+    class: FollowUpReminderJob
+    queue: default
+    schedule: every day at 9am

@@ -1,0 +1,11 @@
+/* Companies & contacts */
+.company-card__header { padding: var(--space-4) var(--space-5) 0; }
+.company-card__empty { padding: 0 var(--space-5) var(--space-5); margin: 0; }
+.contact-row { padding-inline: 0; }
+
+.contact { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.contact__name { font-weight: 600; }
+.contact__role { color: var(--color-text-muted); font-size: 0.86rem; }
+.contact__links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); font-size: 0.86rem; }
+.contact__links a { overflow-wrap: anywhere; }
+.contact__actions { display: flex; gap: var(--space-1); margin-top: var(--space-2); }

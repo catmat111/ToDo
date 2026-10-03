@@ -48,6 +48,10 @@
         <dd><%= @job_listing.company_name.presence || "—" %></dd>
         <dt>Local</dt>
         <dd><%= @job_listing.location.presence || "—" %></dd>
+        <% if @job_listing.work_mode.present? || @job_listing.salary? %>
+          <dt>Condições</dt>
+          <dd class="cluster"><%= render "shared/compensation_tags", record: @job_listing %></dd>
+        <% end %>
         <dt>Fonte</dt>
         <dd><%= @job_listing.source_label %></dd>
         <dt>Pesquisa</dt>
@@ -81,5 +85,7 @@
         <p class="small">Vais candidatar-te? Guarda a vaga como candidatura para acompanhares o estado, as entrevistas e as tarefas associadas.</p>
       </section>
     <% end %>
+
+    <%= render "shares/form", shareable: @job_listing %>
   </aside>
 </div>

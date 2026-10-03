@@ -1,0 +1,14 @@
+<%# Clickable avatar: hover shows a pencil, click opens the file picker, the chosen image is previewed.
+    form = the profile form builder; autosubmit = save right after choosing. %>
+<%# locals: (form:, user:, autosubmit: false) %>
+<div class="avatar-picker" data-controller="avatar-picker"
+     data-avatar-picker-autosubmit-value="<%= autosubmit %>">
+  <label class="avatar-picker__label" title="Mudar fotografia">
+    <span id="avatar-preview" data-avatar-picker-target="preview"><%= user_avatar(user, size: :lg) %></span>
+    <span class="avatar-picker__overlay" aria-hidden="true"><%= icon :edit, size: 22 %></span>
+    <span class="sr-only">Mudar fotografia de perfil</span>
+    <%= form.file_field :avatar, accept: User::AVATAR_TYPES.join(","), class: "avatar-picker__input",
+          data: { avatar_picker_target: "input", action: "change->avatar-picker#chosen" } %>
+  </label>
+  <p class="avatar-picker__status small muted" data-avatar-picker-target="status" aria-live="polite"></p>
+</div>

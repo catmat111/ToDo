@@ -34,6 +34,12 @@ class Task < ApplicationRecord
   has_many :calendar_events, dependent: :nullify
   has_many :links, as: :linkable, dependent: :destroy
   has_many :notifications, as: :notifiable, dependent: :nullify
+  has_many :shares, as: :shareable, dependent: :nullify
+  # Dependencies: this task waits for its blockers; dependents wait for this task.
+  has_many :task_dependencies, dependent: :destroy
+  has_many :blockers, through: :task_dependencies
+  has_many :blocking_dependencies, class_name: "TaskDependency", foreign_key: :blocker_id, dependent: :destroy, inverse_of: :blocker
+  has_many :dependents, through: :blocking_dependencies, source: :task
   has_one :recurrence, class_name: "TaskRecurrence", dependent: :destroy
 
   enum :status, STATUSES.index_by(&:itself), default: "pending", validate: true
@@ -87,6 +93,15 @@ class Task < ApplicationRecord
 
   def closed?
     completed? || cancelled?
+  end
+
+  # Blockers that still have to be done (cancelled ones don't block).
+  def open_blockers
+    blockers.select { |blocker| blocker.pending? || blocker.in_progress? }
+  end
+
+  def blocked?
+    open_blockers.any?
   end
 
   def archived?

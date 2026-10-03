@@ -1,0 +1,9 @@
+<%# locals: (f:) %>
+<div class="field">
+  <%= f.label :work_mode, "Modalidade", class: "field__label" %>
+  <%= f.select :work_mode, options_for_select([ [ "Todas", "" ] ] + Compensation::WORK_MODES.invert.to_a, params[:work_mode]), {}, class: "input" %>
+</div>
+<div class="field">
+  <%= f.label :min_salary, "Salário mín. (€/mês)", class: "field__label" %>
+  <%= f.number_field :min_salary, value: params[:min_salary], min: 0, step: 50, placeholder: "Ex.: 1200", class: "input" %>
+</div>

@@ -14,6 +14,7 @@
     </p>
   </div>
   <div class="page-header__actions">
+    <%= link_to new_linkedin_import_path, class: "btn btn--outline" do %><%= icon :refresh %> Importar do LinkedIn<% end %>
     <%= link_to job_listings_path, class: "btn btn--outline" do %><%= icon :list %> Ver vagas<% end %>
     <%= link_to new_job_application_path, class: "btn btn--primary" do %><%= icon :plus %> Nova candidatura<% end %>
   </div>
@@ -62,10 +63,15 @@
         <%= f.label :status, "Estado", class: "field__label" %>
         <%= f.select :status, job_application_status_options(@status), {}, class: "input" %>
       </div>
+      <div class="field">
+        <%= f.label :sort, "Ordenar", class: "field__label" %>
+        <%= f.select :sort, options_for_select([ [ "Mais recentes", "" ], [ "Maior salário", "salary" ] ], params[:sort]), {}, class: "input" %>
+      </div>
     <% end %>
+    <%= render "shared/compensation_filters", f: f %>
     <div class="cluster">
       <%= f.button class: "btn btn--secondary" do %><%= icon :search %> Filtrar<% end %>
-      <% if @query.present? || @status.present? %>
+      <% if @query.present? || @status.present? || @work_mode || @min_salary %>
         <%= link_to "Limpar", job_applications_path(view: @view), class: "btn btn--ghost" %>
       <% end %>
     </div>

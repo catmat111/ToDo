@@ -120,7 +120,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update rejects invalid email and avatar values without crashing" do
-    patch profile_path, params: { user: { email_address: "sem-arroba", avatar_url: "javascript:alert(1)" } }
+    patch profile_path, params: { current_password: "password", user: { email_address: "sem-arroba", avatar_url: "javascript:alert(1)" } }
 
     assert_response :unprocessable_entity
     assert_equal "one@example.com", @user.reload.email_address
@@ -129,7 +129,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update rejects an email already used by another account" do
-    patch profile_path, params: { user: { email_address: "two@example.com" } }
+    patch profile_path, params: { current_password: "password", user: { email_address: "two@example.com" } }
 
     assert_response :unprocessable_entity
     assert_equal "one@example.com", @user.reload.email_address
@@ -292,5 +292,24 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     sign_out
     get new_session_path
     assert_select "html[data-theme=system]"
+  end
+
+  test "changing the email requires the current password" do
+    patch profile_path, params: { user: { email_address: "novo@example.com" } }
+    assert_response :unprocessable_entity
+    assert_equal "one@example.com", @user.reload.email_address
+
+    patch profile_path, params: { current_password: "errada", user: { email_address: "novo@example.com" } }
+    assert_equal "one@example.com", @user.reload.email_address
+
+    patch profile_path, params: { current_password: "password", user: { email_address: "novo@example.com" } }
+    assert_redirected_to profile_path
+    assert_equal "novo@example.com", @user.reload.email_address
+  end
+
+  test "other fields don't need the password" do
+    patch profile_path, params: { user: { name: "Ana Maria", email_address: "one@example.com" } }
+    assert_redirected_to profile_path
+    assert_equal "Ana Maria", @user.reload.name
   end
 end

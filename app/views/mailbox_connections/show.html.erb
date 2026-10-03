@@ -1,0 +1,62 @@
+<% content_for :title, "Ligação ao Gmail" %>
+<p class="breadcrumb"><%= link_to "Respostas", email_messages_path %></p>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Ligação ao Gmail</h1>
+    <p class="page-header__subtitle">A app lê só a etiqueta que escolheres, em modo de leitura. Nunca envia, altera ou apaga emails.</p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <section class="card card--accent" aria-labelledby="mb-status">
+    <h2 class="card__title" id="mb-status">Conta</h2>
+    <% if @connection.nil? %>
+      <p>Ainda não ligaste o Gmail.</p>
+      <% if GmailClient.configured? %>
+        <%= button_to mailbox_connection_path, class: "btn btn--primary", form: { data: { turbo: false } } do %>
+          <%= icon :link %> Ligar Gmail
+        <% end %>
+      <% else %>
+        <p class="field__error">A ligação à Google não está configurada (faltam GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET).</p>
+      <% end %>
+    <% else %>
+      <dl class="dl">
+        <dt>Email</dt><dd><%= @connection.email_address || "—" %></dd>
+        <dt>Estado</dt><dd><%= status_badge(@connection.status, @connection.active? ? "Ativa" : "Erro") %></dd>
+        <dt>Última leitura</dt><dd><%= @connection.last_synced_at ? "há #{time_ago_in_words(@connection.last_synced_at)}" : "ainda não" %></dd>
+      </dl>
+      <% if @connection.last_error.present? %><p class="field__error"><%= @connection.last_error %></p><% end %>
+      <div class="cluster mb-actions">
+        <% if @connection.error? %>
+          <%= button_to "Voltar a ligar", mailbox_connection_path, class: "btn btn--primary", form: { data: { turbo: false } } %>
+        <% elsif @connection.label_chosen? %>
+          <%= button_to "Verificar agora", sync_mailbox_connection_path, class: "btn btn--secondary" %>
+        <% end %>
+        <%= button_to "Desligar", mailbox_connection_path, method: :delete, class: "btn btn--danger",
+              form: { data: { turbo_confirm: "Desligar o Gmail? As respostas já lidas ficam guardadas." } } %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="card card--olive" aria-labelledby="mb-label">
+    <h2 class="card__title" id="mb-label">Etiqueta com as respostas</h2>
+    <% if @connection&.active? %>
+      <% if @labels.any? %>
+        <%= form_with url: mailbox_connection_path, method: :patch, class: "form" do |f| %>
+          <div class="field">
+            <%= f.label :label_id, "Etiqueta do Gmail", class: "field__label" %>
+            <%= f.select :label_id, options_for_select(@labels.map { |l| [ l["name"], l["id"] ] }, @connection.label_id),
+                  include_blank: "— Escolhe —" %>
+            <p class="field__hint">A pasta onde guardas as respostas das empresas. Lemos os últimos 4 meses e depois os emails novos, de hora a hora.</p>
+          </div>
+          <div class="form__actions"><%= f.button "Guardar", class: "btn btn--primary" %></div>
+        <% end %>
+      <% else %>
+        <p class="muted">Não encontrámos etiquetas tuas no Gmail. Cria uma (por exemplo «Candidaturas») e move para lá as respostas.</p>
+      <% end %>
+    <% else %>
+      <p class="muted">Liga o Gmail primeiro.</p>
+    <% end %>
+  </section>
+</div>

@@ -17,7 +17,7 @@
     <link rel="apple-touch-icon" href="/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Instrument+Sans:wght@400;500;600&display=swap">
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -28,66 +28,62 @@
     <%# Turbo swaps <body> but not <html>; this keeps data-theme in sync after Turbo visits. %>
     <div data-controller="theme" data-theme-name-value="<%= theme_attribute %>" hidden></div>
     <% if authenticated? %>
-      <div class="app" data-controller="sidebar">
-        <aside class="sidebar" data-sidebar-target="panel" id="sidebar">
-          <%= link_to root_path, class: "brand" do %>
-            <span class="brand__mark">T</span><span class="brand__name">ToDo</span>
-          <% end %>
-          <nav class="nav" aria-label="Principal">
-            <%= nav_link_to "Hoje", root_path, :home %>
-            <%= nav_link_to "Tarefas", tasks_path, :tasks, match: "/tasks" %>
-            <%= nav_link_to "Etiquetas", tags_path, :tag, match: "/tags" %>
-            <%= nav_link_to "Calendário", calendar_path, :calendar, match: "/calendar" %>
-            <p class="nav__section">Emprego</p>
-            <%= nav_link_to "Pesquisas", job_searches_path, :search, match: "/job_searches" %>
-            <%= nav_link_to "Vagas", job_listings_path, :list, match: "/job_listings" %>
-            <%= nav_link_to "Candidaturas", job_applications_path, :briefcase, match: "/applications" %>
-            <p class="nav__section">Conta</p>
-            <%= nav_link_to "Notificações", notifications_path, :bell, badge: unread_notifications_count, match: "/notifications" %>
-            <%= nav_link_to "Definições", profile_path, :settings, match: "/profile" %>
-          </nav>
-        </aside>
+      <%# Live notifications: new ones pop up, update the counter and the notifications page. %>
+      <%= turbo_stream_from Current.user, :notifications %>
+      <div id="toasts" class="toasts" aria-live="polite"></div>
 
-        <div class="main-column">
-          <header class="topbar">
-            <button type="button" class="btn btn--ghost btn--icon topbar__menu" data-action="sidebar#toggle"
-                    aria-controls="sidebar" aria-expanded="false" data-sidebar-target="toggle">
-              <%= icon :menu, title: "Menu" %>
-            </button>
-            <%= form_with url: tasks_path, method: :get, class: "topbar__search", role: "search" do |f| %>
-              <%= icon :search %>
-              <%= f.search_field :q, value: params[:q], placeholder: "Pesquisar tarefas…", "aria-label": "Pesquisar tarefas" %>
+      <header class="masthead">
+        <div class="masthead__inner">
+          <%= link_to root_path, class: "wordmark" do %>todo<span class="wordmark__dot">.</span><% end %>
+          <nav class="mainnav" aria-label="Principal">
+            <% main_sections.each do |section| %>
+              <%= link_to section[:label], section[:path], class: [ "mainnav__link", ("is-active" if section[:active]) ],
+                    "aria-current": (section[:active] ? "page" : nil) %>
             <% end %>
-            <div class="topbar__actions">
-              <%= link_to new_task_path, class: "btn btn--primary btn--sm" do %>
-                <%= icon :plus %><span>Nova tarefa</span>
-              <% end %>
-              <%= theme_toggle_button %>
-              <%= link_to profile_path, class: "avatar", title: Current.user.name do %>
-                <% if Current.user.avatar_url.present? %>
-                  <%= image_tag Current.user.avatar_url, alt: "", referrerpolicy: "no-referrer" %>
-                <% else %>
-                  <%= Current.user.name.to_s.first.upcase %>
+          </nav>
+          <div class="masthead__tools" data-controller="search-shortcut" data-action="keydown@window->search-shortcut#focus">
+            <%= form_with url: search_path, method: :get, class: "masthead__search", role: "search" do |f| %>
+              <%= icon :search, size: 16 %>
+              <%= f.search_field :q, value: (params[:q] if controller_name == "searches"), placeholder: "Pesquisar…",
+                    "aria-label": "Pesquisar em tudo", data: { search_shortcut_target: "input" } %>
+              <kbd class="masthead__search-key" aria-hidden="true">/</kbd>
+            <% end %>
+            <%= link_to notifications_path, class: "masthead__icon", title: "Notificações" do %>
+              <%= icon :bell, title: "Notificações" %>
+              <%= render "notifications/badge", count: unread_notifications_count %>
+            <% end %>
+            <%= theme_toggle_button %>
+            <%= link_to profile_path, class: "masthead__avatar", title: Current.user.name do %>
+              <%= user_avatar(Current.user) %>
+            <% end %>
+          </div>
+        </div>
+        <% if (links = section_links).any? %>
+          <nav class="subnav" aria-label="Secção">
+            <% links.each do |item| %>
+              <% if item[:method] %>
+                <%= button_to item[:label], item[:path], method: item[:method], class: "subnav__link subnav__link--button",
+                      form: { data: { turbo_confirm: item[:confirm] } } %>
+              <% else %>
+                <%= link_to item[:path], class: [ "subnav__link", ("is-active" if item[:active]) ] do %>
+                  <%= item[:label] %><% if item[:badge].to_i.positive? %> <span class="subnav__count"><%= item[:badge] %></span><% end %>
                 <% end %>
               <% end %>
-              <%= button_to session_path, method: :delete, class: "btn btn--ghost btn--icon", title: "Terminar sessão", form: { data: { turbo_confirm: "Terminar sessão?" } } do %>
-                <%= icon :logout, title: "Terminar sessão" %>
-              <% end %>
-            </div>
-          </header>
+            <% end %>
+          </nav>
+        <% end %>
+      </header>
 
-          <main id="main" class="content">
-            <%= render "shared/flash" %>
-            <%= yield %>
-          </main>
-        </div>
-      </div>
+      <main id="main" class="content">
+        <%= render "shared/flash" %>
+        <%= yield %>
+      </main>
+      <%= render "shared/quickadd" %>
     <% else %>
       <main id="main" class="auth">
         <div class="auth__panel">
           <div class="auth__brand">
-            <span class="brand__mark">T</span>
-            <h1 class="auth__title">ToDo</h1>
+            <p class="wordmark wordmark--lg">todo<span class="wordmark__dot">.</span></p>
             <p class="auth__tagline">Tarefas, candidaturas e o teu tempo, num só sítio.</p>
           </div>
           <%= render "shared/flash" %>

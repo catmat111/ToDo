@@ -18,6 +18,6 @@ module JobListingsHelper
   end
 
   def job_listing_filters_applied?
-    params.values_at(:q, :source, :job_search_id, :state).any?(&:present?)
+    params.values_at(:q, :source, :job_search_id, :state, :work_mode, :min_salary).any?(&:present?)
   end
 end

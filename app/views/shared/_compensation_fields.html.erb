@@ -1,0 +1,23 @@
+<%# locals: (f:) %>
+<fieldset class="form__section compensation-fields">
+  <legend>Salário e modalidade</legend>
+  <div class="form__row">
+    <div class="field">
+      <%= f.label :work_mode, "Modalidade", class: "field__label" %>
+      <%= f.select :work_mode, Compensation::WORK_MODES.invert, include_blank: "— Não sei —" %>
+    </div>
+    <div class="field">
+      <%= f.label :salary_min, "Salário mínimo (€)", class: "field__label" %>
+      <%= f.number_field :salary_min, min: 1, step: 1, placeholder: "Ex.: 1200" %>
+    </div>
+    <div class="field">
+      <%= f.label :salary_max, "Salário máximo (€)", class: "field__label" %>
+      <%= f.number_field :salary_max, min: 1, step: 1, placeholder: "Ex.: 1500" %>
+    </div>
+    <div class="field">
+      <%= f.label :salary_period, "Período", class: "field__label" %>
+      <%= f.select :salary_period, Compensation::SALARY_PERIODS.invert %>
+    </div>
+  </div>
+  <p class="field__hint">Valores brutos. Deixa em branco se a vaga não indicar. Salários anuais são comparados em 14 meses.</p>
+</fieldset>

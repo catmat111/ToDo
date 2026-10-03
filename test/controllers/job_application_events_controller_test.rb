@@ -15,8 +15,9 @@ class JobApplicationEventsControllerTest < ActionDispatch::IntegrationTest
                                               notes: "Enviei email ao recrutador" } }
     end
     assert_redirected_to job_application_url(@application, anchor: "historico")
-    event = @application.job_application_events.last
-    assert_equal "follow_up", event.event_type
+    # Look it up by type: .last sorts by occurred_at, and the setup event ("2 days ago")
+    # can fall later on the same day as the fixed date below.
+    event = @application.job_application_events.find_by!(event_type: "follow_up")
     assert_equal Time.zone.local(2026, 9, 28, 11, 0), event.occurred_at
     assert @application.reload.saved?
     assert AuditLog.exists?(action: "job_application.event_added", resource_id: @application.id)

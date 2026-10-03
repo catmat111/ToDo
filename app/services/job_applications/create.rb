@@ -9,7 +9,7 @@ module JobApplications
   # - A listing never gets two applications: the existing one is returned (created: false).
   # - Every new application starts as "saved" with a matching "saved" history event.
   class Create
-    PERMITTED = %i[title company_name notes job_listing_id].freeze
+    PERMITTED = %i[title company_name notes job_listing_id contact_id work_mode salary_min salary_max salary_period].freeze
 
     def self.call(...)
       new(...).call
@@ -61,7 +61,13 @@ module JobApplications
           title: params[:title].presence || listing&.title,
           company_name: params[:company_name].presence || listing&.company_name,
           notes: params[:notes].presence,
-          status: "saved"
+          contact: (user.contacts.find_by(id: params[:contact_id]) if params[:contact_id].present?),
+          status: "saved",
+          # Salary / work mode: what was typed, otherwise copied from the listing.
+          work_mode: params[:work_mode].presence || listing&.work_mode,
+          salary_min: params[:salary_min].presence || listing&.salary_min,
+          salary_max: params[:salary_max].presence || listing&.salary_max,
+          salary_period: params[:salary_period].presence || listing&.salary_period || "month"
         )
       end
   end

@@ -1,5 +1,6 @@
 class JobApplicationsController < ApplicationController
   VIEWS = %w[kanban list].freeze
+  COMPENSATION_FIELDS = %i[work_mode salary_min salary_max salary_period].freeze
 
   before_action :set_job_application, only: %i[show edit update destroy transition create_task]
 
@@ -12,8 +13,17 @@ class JobApplicationsController < ApplicationController
     @status_counts = applications.group(:status).count
     @applied_count = applications.where.not(applied_at: nil).count
 
+    @work_mode = params[:work_mode].presence_in(Compensation::WORK_MODES.keys)
+    @min_salary = params[:min_salary].to_i if params[:min_salary].to_i.positive?
+
     scope = applications.includes(:job_listing).search(@query).recent
-    if @view == "list"
+    scope = scope.with_work_mode(@work_mode) if @work_mode
+    scope = scope.paying_at_least(@min_salary) if @min_salary
+    if @view == "list" && params[:sort] == "salary"
+      # Compare jobs: best monthly salary first, unknown salaries last.
+      list = @status ? scope.where(status: @status) : scope
+      @job_applications = list.to_a.sort_by { |a| -(a.monthly_salary || -1) }
+    elsif @view == "list"
       @job_applications = @status ? scope.where(status: @status) : scope
     else
       @job_applications = scope
@@ -107,12 +117,12 @@ class JobApplicationsController < ApplicationController
     end
 
     def create_params
-      params.expect(job_application: [ :title, :company_name, :notes, :job_listing_id ])
+      params.expect(job_application: [ :title, :company_name, :notes, :job_listing_id, :contact_id, *COMPENSATION_FIELDS ])
     end
 
     # Status only changes through #transition, never through a plain update.
     def update_params
-      params.expect(job_application: [ :title, :company_name, :notes ])
+      params.expect(job_application: [ :title, :company_name, :notes, :contact_id, *COMPENSATION_FIELDS ])
     end
 
     def new_event

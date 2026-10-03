@@ -1,0 +1,4 @@
+<% content_for :title, "Novo contacto" %>
+<p class="breadcrumb"><%= link_to "Contactos", contacts_path %></p>
+<div class="page-header"><h1 class="page-header__title">Novo contacto</h1></div>
+<div class="card"><%= render "form", contact: @contact %></div>

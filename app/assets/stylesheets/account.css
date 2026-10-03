@@ -102,3 +102,19 @@
 .history-entry__resource { text-decoration: none; overflow-wrap: anywhere; }
 a.history-entry__resource:hover { text-decoration: underline; }
 .history-entry__details { color: var(--color-text-muted); overflow-wrap: anywhere; }
+
+/* Clickable profile photo: pencil on hover, opens the file picker. */
+.avatar-picker { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-1); }
+.avatar-picker__label { position: relative; display: inline-block; border-radius: 50%; cursor: pointer; }
+.avatar-picker__input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.avatar-picker__overlay {
+  position: absolute; inset: 0; border-radius: 50%;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--charcoal) 55%, transparent); color: #FBF8F3;
+  opacity: 0; transition: opacity 0.15s ease;
+}
+.avatar-picker__label:hover .avatar-picker__overlay,
+.avatar-picker__label:focus-within .avatar-picker__overlay { opacity: 1; }
+.avatar-picker__label:focus-within { box-shadow: var(--focus-ring); }
+.avatar-picker__status { margin: 0; max-width: 180px; text-align: center; }
+.avatar-picker__status:empty { display: none; }

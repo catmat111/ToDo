@@ -185,3 +185,82 @@
   .ja-kanban { grid-auto-columns: minmax(78vw, 1fr); scroll-snap-type: x mandatory; }
   .ja-column { scroll-snap-align: start; }
 }
+
+/* LinkedIn import */
+.li-steps { padding-left: 1.2rem; margin: 0 0 var(--space-4); }
+.li-steps li { margin-bottom: var(--space-2); }
+.li-what { padding-left: 1.2rem; margin: 0; color: var(--color-text-muted); }
+.li-errors { margin-top: var(--space-5); }
+
+/* Respostas (emails from companies) */
+.reply { border-top-width: 4px; }
+.reply--rejected { border-top-color: var(--terracotta) !important; }
+.reply--interview { border-top-color: var(--charcoal) !important; }
+.reply--offer { border-top-color: var(--olive) !important; }
+.reply--received, .reply--unknown { border-top-color: var(--mustard) !important; }
+.reply__header { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
+.reply__from { margin: 0; }
+.reply__subject { font-size: 1.3rem; margin: var(--space-1) 0 var(--space-2); }
+.reply__excerpt { color: var(--color-text-muted); font-size: 0.92rem; margin-bottom: var(--space-3); }
+.reply__form { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; }
+.reply__form .field { min-width: 180px; }
+.reply__form select { padding: 8px 10px; border: 1px solid var(--color-border-strong); border-radius: var(--radius); background: var(--color-surface); color: var(--color-text); font: inherit; }
+.reply__app { flex: 1; }
+.reply__ignore { margin-top: var(--space-2); }
+.mb-actions { margin-top: var(--space-4); }
+
+/* Estatísticas — simple single-series bar charts. Values and labels use text tokens;
+   the bar colour only marks the data. Thin bars, rounded data-ends, recessive tracks. */
+.stats-tiles { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); margin-bottom: var(--space-5); }
+.stats-months { margin-top: var(--space-5); }
+
+.hbars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.hbars__row { display: grid; grid-template-columns: 100px 1fr auto; align-items: center; gap: var(--space-3); }
+.hbars__row:hover .hbars__bar { filter: brightness(1.1); }
+.hbars__label { font-size: 0.9rem; color: var(--color-text); }
+.hbars__track { height: 14px; background: var(--color-surface-2); border-radius: 4px; overflow: hidden; }
+.hbars__bar { display: block; height: 100%; width: var(--w); min-width: 4px; border-radius: 0 4px 4px 0; }
+.hbars__bar--terracotta { background: var(--color-primary); }
+.hbars__bar--olive { background: var(--color-accent); }
+.hbars__value { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--color-text); min-width: 64px; text-align: right; }
+
+.vbars { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--space-3); align-items: end; height: 200px; padding-top: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.vbars__col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; position: relative; }
+.vbars__bar { width: min(36px, 70%); height: var(--h); min-height: 2px; background: var(--color-warning); border-radius: 4px 4px 0 0; }
+.vbars__col:hover .vbars__bar { filter: brightness(1.1); }
+.vbars__value { font-size: 0.85rem; font-weight: 600; color: var(--color-text); font-variant-numeric: tabular-nums; }
+.vbars__label { position: absolute; bottom: -24px; font-size: 0.78rem; color: var(--color-text-muted); white-space: nowrap; }
+.stats-months .vbars { margin-bottom: 28px; }
+
+/* Status donut. Slot colours validated for colour-blind separation in both themes
+   (dataviz validator, light surface #FBF8F2 / dark #2A211A); withdrawn is a neutral. */
+:root {
+  --pie-applied: light-dark(#A98A0E, #A8901A);
+  --pie-rejected: light-dark(#AE3B33, #D44E66);
+  --pie-interview: light-dark(#2A6FA0, #5A8FC9);
+  --pie-offer: light-dark(#5E8A32, #6E9A40);
+  --pie-withdrawn: light-dark(#A39A8C, #6F6458);
+}
+.donut-card { margin-bottom: var(--space-5); }
+.donut { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); }
+.donut__chart { width: min(240px, 100%); height: auto; flex-shrink: 0; }
+.donut__chart circle { fill: none; stroke-width: 26; transform: rotate(-90deg); transform-origin: 90px 90px; }
+.donut__track { stroke: var(--color-surface-2); }
+.donut__slice { transition: stroke-width 0.15s ease; cursor: default; }
+.donut__slice:hover { stroke-width: 32; }
+.donut__slice--applied, .donut__swatch--applied { stroke: var(--pie-applied); background: var(--pie-applied); }
+.donut__slice--rejected, .donut__swatch--rejected { stroke: var(--pie-rejected); background: var(--pie-rejected); }
+.donut__slice--interview, .donut__swatch--interview { stroke: var(--pie-interview); background: var(--pie-interview); }
+.donut__slice--offer, .donut__swatch--offer { stroke: var(--pie-offer); background: var(--pie-offer); }
+.donut__slice--withdrawn, .donut__swatch--withdrawn { stroke: var(--pie-withdrawn); background: var(--pie-withdrawn); }
+.donut__total { font-family: var(--font-display); font-size: 34px; font-weight: 600; fill: var(--color-text); }
+.donut__caption { font-family: var(--font-body); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--color-text-muted); }
+
+.donut__legend { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 220px; display: grid; gap: var(--space-2); }
+.donut__item { display: grid; grid-template-columns: 14px 1fr auto 48px; align-items: center; gap: var(--space-3); padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+.donut__item:last-child { border-bottom: 0; }
+.donut__item.is-empty { opacity: 0.5; }
+.donut__swatch { width: 14px; height: 14px; border-radius: 4px; }
+.donut__label { color: var(--color-text); }
+.donut__value { font-weight: 700; color: var(--color-text); font-variant-numeric: tabular-nums; }
+.donut__pct { color: var(--color-text-muted); font-variant-numeric: tabular-nums; text-align: right; }

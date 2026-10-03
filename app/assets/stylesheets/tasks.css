@@ -99,3 +99,9 @@
   .task-filters__search { flex-basis: 100%; }
   .task-row .list__actions { display: none; }
 }
+
+/* Dependencies card */
+.deps__heading { font-family: var(--font-body); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin: var(--space-3) 0 var(--space-1); }
+.deps__list .list__item { padding-left: 0; padding-right: 0; }
+.deps__form { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.deps__form select { flex: 1; min-width: 0; padding: 6px 10px; border: 1px solid var(--color-border-strong); border-radius: var(--radius); background: var(--color-surface); color: var(--color-text); font: inherit; }

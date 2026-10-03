@@ -210,12 +210,14 @@ estilo `badge--<estado>` em `application.css`.
 
 | Prioridade | Tarefa | Notas |
 | --- | --- | --- |
-| Alta | **Commit inicial no Git** | Nada está commitado ainda. |
-| Alta | **Jobs em desenvolvimento** | Os lembretes automáticos só correm com `bin/jobs` num segundo terminal. Configurar o Solid Queue em dev (BD `queue` + plugin no Puma) para correr com `bin/dev`. |
-| Alta | **Revisão de segurança** (fase 10) | Ativar Content Security Policy (`config/initializers/content_security_policy.rb`); rever o aviso do brakeman em `job_listings/show` (falso positivo — a URL é validada). |
-| Média | **Remover o modelo antigo `Tarefa`** | Migration `drop_table :tarefas` + apagar `app/models/tarefa.rb`, `test/fixtures/tarefas.yml`, `test/models/tarefa_test.rb`. |
-| Média | **Google Calendar real** | Criar projeto na Google Cloud, OAuth com redirect `…/calendar_connection/callback`, definir `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` e testar à mão. |
-| Média | **PostgreSQL em produção** | Gem `pg`, `database.yml` de produção, `DATABASE_URL`. As migrations já são compatíveis. |
+| ✅Alta | **Commit inicial no Git** | Nada está commitado ainda. |
+| ✅Alta | **Jobs em desenvolvimento** | Os lembretes automáticos só correm com `bin/jobs` num segundo terminal. Configurar o Solid Queue em dev (BD `queue` + plugin no Puma) para correr com `bin/dev`. |
+| ✅Alta | **Revisão de segurança** (fase 10) | Ativar Content Security Policy (`config/initializers/content_security_policy.rb`); rever o aviso do brakeman em `job_listings/show` (falso positivo — a URL é validada). |
+| ✅Média | **Remover o modelo antigo `Tarefa`** | Migration `drop_table :tarefas` + apagar `app/models/tarefa.rb`, `test/fixtures/tarefas.yml`, `test/models/tarefa_test.rb`. |
+
+
+| ✅Média | **Google Calendar real** | Criar projeto na Google Cloud, OAuth com redirect `…/calendar_connection/callback`, definir `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` e testar à mão. |
+| ✅ Feito | **PostgreSQL em produção** | Gem `pg` (grupo production), `database.yml` usa `DATABASE_URL`, Kamal com accessory `postgres:17`, CI testa em PostgreSQL. |
 | Média | **Email em produção** | SMTP em `production.rb` + `MAILER_HOST`/`MAILER_FROM`. |
 | Média | **Testes de sistema (browser)** | Capybara para os fluxos completos (criar tarefa, candidatura). Não há nenhum ainda. |
 | Média | **CI** | Confirmar que o GitHub Actions corre `bin/rails db:test:prepare test`. |
@@ -227,16 +229,18 @@ estilo `badge--<estado>` em `application.css`.
 ## 5. Coisas que o plano não previa e que valem a pena
 
 **Procura de emprego**
-- **Empresas e contactos** (`companies`, `contacts`): o mesmo recrutador/empresa aparece em várias
-  candidaturas; permite notas por empresa e lembrar "a quem enviar follow-up".
-- **Documentos por candidatura** (Active Storage): que versão do CV e carta foram enviadas.
-- **Salário e modalidade** (remoto/híbrido/presencial) nas vagas e candidaturas, para filtrar e comparar.
-- **Estatísticas**: funil (guardadas → enviadas → entrevistas → ofertas), taxa de resposta,
+- ✅ **Empresas e contactos** — *feito.* Menu Emprego → Empresas / Contactos. A empresa é ligada
+  automaticamente pelo nome escrito na candidatura; cada candidatura pode ter um contacto e o botão
+  "Follow-up" cria a tarefa. Ficheiros: `app/models/company.rb`, `contact.rb`,
+  `app/controllers/companies_controller.rb`, `contacts_controller.rb`, `app/views/companies/`, `app/views/contacts/`.
+- ✅ **Documentos por candidatura** (Active Storage): que versão do CV e carta foram enviadas.
+- ✅ **Salário e modalidade** (remoto/híbrido/presencial) nas vagas e candidaturas, para filtrar e comparar.
+- ✅ **Estatísticas**: funil (guardadas → enviadas → entrevistas → ofertas), taxa de resposta,
   tempo médio até resposta.
-- **Lembrete automático de follow-up** se uma candidatura estiver em "enviada" há X dias sem eventos.
+- ✅ **Lembrete automático de follow-up** se uma candidatura estiver em "enviada" há X dias sem eventos.
 
 **Tarefas e produtividade**
-- **Dependências entre tarefas** ("bloqueada por"), além de pai/filho.
+- ✅ **Dependências entre tarefas** ("bloqueada por"), além de pai/filho.
 - **Estimativa e tempo gasto** (ou um temporizador tipo Pomodoro).
 - **Lixo com restauro**: hoje apagar é definitivo; um "apagado há 30 dias" evita acidentes.
 - **Pesquisa global** (tarefas + vagas + candidaturas) na barra de topo.
@@ -258,6 +262,12 @@ estilo `badge--<estado>` em `application.css`.
 - **Atalhos de teclado** (ex.: `n` nova tarefa, `/` pesquisar).
 
 **Coisas que eu lembrei**
-- **Interatividade com outro utilizador** Ser possível colocar coisas para o outro utilizador ver, como candidaturas que ele poderia ver, tarefas para ele fazer, dar para aceitar ou nao essas coisas. 
-- **Colocar Imagemns nos utilizadores** ainda nao da para eu colocar a minha foto de perfil
-- **Mudar o estilo do site** o esquema base do site está muito "um site que o claude fez por mim" quero que seje mais original
+- ✅ **Interatividade com outro utilizador** Ser possível colocar coisas para o outro utilizador ver, como candidaturas que ele poderia ver, tarefas para ele fazer, dar para aceitar ou nao essas coisas. 
+- ✅ **Colocar Imagemns nos utilizadores** ainda nao da para eu colocar a minha foto de perfil
+- ✅ **Mudar o estilo do site** o esquema base do site está muito "um site que o claude fez por mim" quero que seje mais original
+
+
+
+echo 'export GOOGLE_CLIENT_ID=649750695539-tmu9rhk33r5utcjnsouj2sekfmgrckun.apps.googleusercontent.com' >> ~/.bashrc
+echo 'export GOOGLE_CLIENT_SECRET=<SEGREDO-REMOVIDO>' >> ~/.bashrc
+source ~/.bashrc

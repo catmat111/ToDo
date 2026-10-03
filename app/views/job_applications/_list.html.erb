@@ -13,6 +13,7 @@
           <tr>
             <th scope="col">Candidatura</th>
             <th scope="col">Estado</th>
+            <th scope="col">Condições</th>
             <th scope="col">Enviada em</th>
             <th scope="col">Próxima tarefa</th>
             <th scope="col">Atualizada</th>
@@ -29,6 +30,7 @@
                 <% end %>
               </td>
               <td><%= status_badge(job_application.status) %></td>
+              <td class="small"><div class="cluster"><%= render "shared/compensation_tags", record: job_application %></div></td>
               <td class="nowrap"><%= format_date(job_application.applied_at) %></td>
               <td>
                 <% if next_task %>

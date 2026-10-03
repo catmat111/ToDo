@@ -66,3 +66,7 @@ group :test do
 end
 
 gem "rails-i18n", "~> 8.1"
+
+gem "csv", "~> 3.3"
+
+gem "pg", "~> 1.7", group: :production
