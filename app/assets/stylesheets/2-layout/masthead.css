@@ -1,0 +1,113 @@
+/* Masthead: charcoal bar (same in both themes) with the wordmark, the four main
+   sections, the tools (search, bell, theme, avatar), then the section's sub-nav
+   and the page content width. */
+
+/* --- Bar --- */
+.masthead {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--charcoal);
+  border-bottom: 3px solid var(--terracotta);
+}
+.masthead__inner {
+  max-width: 1080px; margin: 0 auto; padding: var(--space-3) var(--space-5);
+  display: flex; align-items: center; gap: var(--space-6);
+}
+
+/* --- Wordmark "todo." (also used large on the sign-in page) --- */
+.wordmark {
+  font-family: var(--font-display); font-style: italic; font-weight: 600;
+  font-size: 1.9rem; line-height: 1; letter-spacing: -0.01em;
+  color: #F6F1E7; text-decoration: none;
+}
+.wordmark__dot { color: var(--terracotta); }
+.wordmark--lg { font-size: 3.4rem; margin: 0; }
+.auth .wordmark { color: var(--color-text); }
+
+/* --- Main navigation --- */
+.mainnav { display: flex; gap: var(--space-5); flex: 1; overflow-x: auto; scrollbar-width: none; }
+.mainnav__link {
+  color: rgba(246, 241, 231, 0.7); text-decoration: none; font-weight: 500;
+  padding: var(--space-2) 0; border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.mainnav__link:hover { color: #F6F1E7; }
+.mainnav__link.is-active { color: #F6F1E7; border-bottom-color: var(--mustard); }
+
+/* --- Tools: search, bell, theme, avatar --- */
+.masthead__tools { display: flex; align-items: center; gap: var(--space-2); }
+.masthead__tools form { margin: 0; }
+.masthead__icon {
+  position: relative; display: inline-flex; padding: 8px; border-radius: var(--radius);
+  color: rgba(246, 241, 231, 0.8);
+}
+.masthead__icon:hover, .masthead .btn--ghost:hover { color: #F6F1E7; background: rgba(246, 241, 231, 0.1); }
+.masthead .btn--ghost { color: rgba(246, 241, 231, 0.8); }
+
+.nav__badge {
+  display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--color-warning); color: #FBF8F3; font-size: 0.72rem; font-weight: 600; text-align: center;
+}
+.masthead__icon .nav__badge {
+  position: absolute; top: 2px; right: 0; min-width: 16px; padding: 0 4px;
+  font-size: 0.65rem; line-height: 16px;
+}
+
+/* Search: cream pill, terracotta lens, "/" key hint, mustard focus ring. */
+.masthead__search {
+  display: flex; align-items: center; gap: 8px; margin: 0;
+  background: #F6F1E7; border: 2px solid transparent;
+  border-radius: 999px; padding: 5px 8px 5px 12px; color: var(--terracotta);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.masthead__search input {
+  width: 160px; border: 0; background: transparent; color: #382C23; font: inherit; font-size: 0.9rem;
+  transition: width 0.2s ease;
+}
+.masthead__search input::placeholder { color: #8A7F6A; }
+.masthead__search input::-webkit-search-cancel-button { filter: sepia(1) saturate(3) hue-rotate(-20deg); }
+.masthead__search input:focus { outline: none; width: 230px; }
+.masthead__search:focus-within { border-color: var(--mustard); box-shadow: 0 0 0 3px rgba(176, 126, 30, 0.35); }
+.masthead__search-key {
+  font: 600 0.72rem/1 var(--font-body); color: #6F6155;
+  border: 1px solid #D1C7B5; border-bottom-width: 2px; border-radius: 4px; padding: 2px 6px; background: #FBF8F3;
+}
+.masthead__search:focus-within .masthead__search-key { display: none; }
+
+/* --- Sub-navigation (second row, per section) --- */
+.subnav {
+  display: flex; gap: var(--space-1) var(--space-4); flex-wrap: wrap; align-items: center;
+  padding: var(--space-2) max(var(--space-5), calc((100% - 1080px) / 2 + var(--space-5)));
+  background: var(--color-surface-2);
+}
+.subnav form { margin: 0; display: inline; }
+.subnav__link {
+  font: inherit; font-size: 0.9rem; color: var(--color-text-muted); text-decoration: none;
+  padding: 4px 12px; border-radius: 999px; background: none; border: 0; cursor: pointer;
+}
+.subnav__link:hover { color: var(--color-text); background: var(--color-surface-3); }
+.subnav__link.is-active { background: var(--olive); color: #F6F1E7; font-weight: 600; }
+.subnav__link--button:hover { color: var(--color-danger); }
+.subnav__count { font-size: 0.75rem; color: var(--color-warning); font-weight: 600; }
+
+/* --- Avatar --- */
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+  display: inline-grid; place-items: center;
+  background: var(--olive); color: #FBF8F3; font-weight: 600; text-decoration: none; font-size: 0.9rem;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar--lg { width: 72px; height: 72px; font-size: 1.8rem; font-family: var(--font-display); }
+.masthead__avatar { display: inline-flex; text-decoration: none; border-radius: 50%; }
+.masthead .avatar { background: var(--mustard); box-shadow: 0 0 0 2px var(--charcoal), 0 0 0 3px var(--mustard); }
+
+/* --- Page content --- */
+.content { padding: var(--space-6) var(--space-5) var(--space-7); max-width: 1080px; width: 100%; margin: 0 auto; }
+
+/* --- Phones --- */
+@media (max-width: 700px) {
+  .masthead__inner { gap: var(--space-4); padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
+  .mainnav { order: 3; flex-basis: 100%; gap: var(--space-4); }
+  .masthead__tools { margin-left: auto; }
+  .masthead__search input, .masthead__search input:focus { width: 110px; }
+  .masthead__search-key { display: none; }
+  .content { padding: var(--space-5) var(--space-4) var(--space-6); }
+}

@@ -247,7 +247,7 @@
       <% end %>
     </section>
 
-    <%= render "links/section", linkable: @job_application if lookup_context.exists?("section", [ "links" ], true) %>
+    <%= render "links/section", linkable: @job_application %>
     <%= render "shares/form", shareable: @job_application %>
   </aside>
 </div>

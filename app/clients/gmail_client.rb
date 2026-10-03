@@ -1,19 +1,10 @@
-# Read-only Gmail client. Reuses GoogleCalendarClient's OAuth, token refresh, HTTP and
-# typed errors (same Google Cloud project / GOOGLE_CLIENT_ID); only the scope and the
-# Gmail endpoints differ. It can list labels and read messages — never send or delete.
-class GmailClient < GoogleCalendarClient
-  GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly".freeze
+# Read-only Gmail: list the user's labels and read messages from one of them —
+# never send, change or delete. OAuth, HTTP and errors come from GoogleClient
+# (same Google Cloud project / GOOGLE_CLIENT_ID as the calendar).
+class GmailClient < GoogleClient
+  SCOPE = "https://www.googleapis.com/auth/gmail.readonly email".freeze
   GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me".freeze
   BODY_LIMIT = 4000
-
-  def authorization_url(state:, redirect_uri:)
-    ensure_configured!
-    query = URI.encode_www_form(
-      client_id: @client_id, redirect_uri: redirect_uri, response_type: "code",
-      scope: "#{GMAIL_SCOPE} email", access_type: "offline", prompt: "consent", state: state
-    )
-    "#{AUTH_URL}?#{query}"
-  end
 
   def profile(access_token:)
     request(:get, "#{GMAIL_API}/profile", access_token: access_token)

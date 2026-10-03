@@ -3,7 +3,7 @@
 #
 #   fake = FakeGoogleCalendarClient.new
 #   Calendar.client_builder = -> { fake }
-#   fake.fail_next(:refresh, GoogleCalendarClient::AuthError.new("invalid_grant"))
+#   fake.fail_next(:refresh, GoogleClient::AuthError.new("invalid_grant"))
 #   fake.change_remotely(event_id, start: t1, end: t2)
 class FakeGoogleCalendarClient
   Call = Struct.new(:name, :args)
@@ -16,10 +16,10 @@ class FakeGoogleCalendarClient
     @events = {}
     @failures = Hash.new { |hash, key| hash[key] = [] }
     @sequence = 0
-    @refresh_tokens = GoogleCalendarClient::TokenSet.new(
+    @refresh_tokens = GoogleClient::TokenSet.new(
       access_token: "refreshed-access-token", refresh_token: nil, expires_at: 1.hour.from_now, scope: GoogleCalendarClient::SCOPE
     )
-    @exchange_tokens = GoogleCalendarClient::TokenSet.new(
+    @exchange_tokens = GoogleClient::TokenSet.new(
       access_token: "fresh-access-token", refresh_token: "fresh-refresh-token", expires_at: 1.hour.from_now, scope: GoogleCalendarClient::SCOPE
     )
   end
@@ -63,7 +63,7 @@ class FakeGoogleCalendarClient
 
   def refresh(refresh_token:)
     record(:refresh, refresh_token: refresh_token)
-    raise GoogleCalendarClient::AuthError, "Sem refresh token disponível" if refresh_token.blank?
+    raise GoogleClient::AuthError, "Sem refresh token disponível" if refresh_token.blank?
     refresh_tokens
   end
 
@@ -81,9 +81,9 @@ class FakeGoogleCalendarClient
 
   def update_event(calendar_id:, access_token:, event_id:, body:, etag: nil)
     record(:update_event, calendar_id: calendar_id, access_token: access_token, event_id: event_id, body: body, etag: etag)
-    existing = events[event_id] or raise GoogleCalendarClient::NotFoundError.new("Google respondeu 404", status: 404)
+    existing = events[event_id] or raise GoogleClient::NotFoundError.new("Google respondeu 404", status: 404)
     if etag.present? && etag != existing["etag"]
-      raise GoogleCalendarClient::ConflictError.new("Google respondeu 412", status: 412)
+      raise GoogleClient::ConflictError.new("Google respondeu 412", status: 412)
     end
     events[event_id] = body.deep_stringify_keys.merge("id" => event_id, "etag" => next_etag, "status" => "confirmed")
     events[event_id].deep_dup
@@ -91,13 +91,13 @@ class FakeGoogleCalendarClient
 
   def get_event(calendar_id:, access_token:, event_id:)
     record(:get_event, calendar_id: calendar_id, access_token: access_token, event_id: event_id)
-    existing = events[event_id] or raise GoogleCalendarClient::NotFoundError.new("Google respondeu 404", status: 404)
+    existing = events[event_id] or raise GoogleClient::NotFoundError.new("Google respondeu 404", status: 404)
     existing.deep_dup
   end
 
   def delete_event(calendar_id:, access_token:, event_id:)
     record(:delete_event, calendar_id: calendar_id, access_token: access_token, event_id: event_id)
-    events.delete(event_id) or raise GoogleCalendarClient::NotFoundError.new("Google respondeu 404", status: 404)
+    events.delete(event_id) or raise GoogleClient::NotFoundError.new("Google respondeu 404", status: 404)
     true
   end
 

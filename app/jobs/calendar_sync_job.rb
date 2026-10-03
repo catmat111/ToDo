@@ -8,11 +8,11 @@ class CalendarSyncJob < ApplicationJob
 
   discard_on ActiveRecord::RecordNotFound
   discard_on Calendar::AuthorizationError
-  discard_on GoogleCalendarClient::Error do |job, error|
+  discard_on GoogleClient::Error do |job, error|
     job.logger.warn("[calendar] sync discarded: #{error.class}")
   end
-  # Declared last so it wins over the generic GoogleCalendarClient::Error handler.
-  retry_on GoogleCalendarClient::NetworkError, attempts: 3, wait: :polynomially_longer do |job, error|
+  # Declared last so it wins over the generic GoogleClient::Error handler.
+  retry_on GoogleClient::NetworkError, attempts: 3, wait: :polynomially_longer do |job, error|
     CalendarConnection.find_by(id: job.arguments.first)&.update(last_error: "Falha de rede ao contactar a Google. Tenta sincronizar mais tarde.")
     job.logger.warn("[calendar] sync gave up after retries: #{error.class}")
   end

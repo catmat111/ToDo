@@ -181,9 +181,9 @@ class Calendar::TaskSyncTest < ActiveSupport::TestCase
   end
 
   test "API errors are recorded on the mapping and re-raised" do
-    @fake.fail_next(:insert_event, GoogleCalendarClient::Error.new("Google respondeu 400 (invalid)", status: 400))
+    @fake.fail_next(:insert_event, GoogleClient::Error.new("Google respondeu 400 (invalid)", status: 400))
 
-    assert_raises(GoogleCalendarClient::Error) { sync }
+    assert_raises(GoogleClient::Error) { sync }
 
     event = @connection.calendar_events.find_by!(task: @task)
     assert event.sync_error?
@@ -195,9 +195,9 @@ class Calendar::TaskSyncTest < ActiveSupport::TestCase
   end
 
   test "authentication errors are not recorded as task errors" do
-    @fake.fail_next(:insert_event, GoogleCalendarClient::AuthError.new("Google respondeu 401", status: 401))
+    @fake.fail_next(:insert_event, GoogleClient::AuthError.new("Google respondeu 401", status: 401))
 
-    assert_raises(GoogleCalendarClient::AuthError) { sync }
+    assert_raises(GoogleClient::AuthError) { sync }
     assert_nil CalendarEvent.find_by(task: @task)
   end
 end

@@ -5,10 +5,10 @@ class CalendarEventDeleteJob < ApplicationJob
   queue_as :default
 
   discard_on Calendar::AuthorizationError
-  discard_on GoogleCalendarClient::Error do |job, error|
+  discard_on GoogleClient::Error do |job, error|
     job.logger.warn("[calendar] event delete discarded: #{error.class}")
   end
-  retry_on GoogleCalendarClient::NetworkError, attempts: 3, wait: :polynomially_longer
+  retry_on GoogleClient::NetworkError, attempts: 3, wait: :polynomially_longer
 
   def perform(connection_id, external_event_id)
     connection = CalendarConnection.find_by(id: connection_id)

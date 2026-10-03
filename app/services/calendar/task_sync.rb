@@ -58,9 +58,9 @@ module Calendar
         else
           pull_remote_changes!
         end
-      rescue GoogleCalendarClient::AuthError
+      rescue GoogleClient::AuthError
         raise
-      rescue GoogleCalendarClient::Error => e
+      rescue GoogleClient::Error => e
         record_error!(e.message)
         raise
       end
@@ -83,9 +83,9 @@ module Calendar
                                      event_id: event.external_event_id, body: payload, etag: etag)
         mark_synced!(remote)
         :updated
-      rescue GoogleCalendarClient::NotFoundError
+      rescue GoogleClient::NotFoundError
         insert!
-      rescue GoogleCalendarClient::ConflictError
+      rescue GoogleClient::ConflictError
         resolve_remote_change!
       end
 
@@ -121,7 +121,7 @@ module Calendar
       def fetch_remote
         remote = client.get_event(calendar_id: calendar_id, access_token: access_token, event_id: event.external_event_id)
         remote["status"] == "cancelled" ? nil : remote
-      rescue GoogleCalendarClient::NotFoundError
+      rescue GoogleClient::NotFoundError
         nil
       end
 
@@ -137,7 +137,7 @@ module Calendar
         AuditLog.record("calendar.imported", resource: task, user: connection.user, fields: attributes.keys.map(&:to_s))
         true
       rescue ActiveRecord::RecordInvalid => e
-        raise GoogleCalendarClient::Error, "Não foi possível importar a alteração do Google: #{e.record.errors.full_messages.to_sentence}"
+        raise GoogleClient::Error, "Não foi possível importar a alteração do Google: #{e.record.errors.full_messages.to_sentence}"
       end
 
       def imported_attributes(start_at, end_at)
@@ -206,7 +206,7 @@ module Calendar
         if existing.external_event_id.present?
           begin
             client.delete_event(calendar_id: calendar_id, access_token: access_token, event_id: existing.external_event_id)
-          rescue GoogleCalendarClient::NotFoundError
+          rescue GoogleClient::NotFoundError
             # Already gone in Google: nothing to do.
           end
         end

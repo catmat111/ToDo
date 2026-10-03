@@ -25,7 +25,7 @@ module Calendar
 
         @client.revoke(token: token)
         true
-      rescue GoogleCalendarClient::Error => e
+      rescue GoogleClient::Error => e
         Rails.logger.info("[calendar] revoke failed (ignored): #{e.class}")
         false
       end

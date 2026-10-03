@@ -6,7 +6,7 @@ class InboxTest < ActiveSupport::TestCase
     def initialize(messages) = @messages = messages
     def message_ids(**) = @messages.keys
     def message(id:, **) = @messages.fetch(id)
-    def refresh(**) = GoogleCalendarClient::TokenSet.new(access_token: "new", refresh_token: nil, expires_at: 1.hour.from_now, scope: nil)
+    def refresh(**) = GoogleClient::TokenSet.new(access_token: "new", refresh_token: nil, expires_at: 1.hour.from_now, scope: nil)
   end
 
   setup do
@@ -58,7 +58,7 @@ class InboxTest < ActiveSupport::TestCase
 
   test "an expired grant marks the connection as error without raising" do
     gmail = FakeGmail.new({})
-    def gmail.message_ids(**) = raise(GoogleCalendarClient::AuthError, "invalid_grant")
+    def gmail.message_ids(**) = raise(GoogleClient::AuthError, "invalid_grant")
     Inbox::Sync.call(@connection, client: gmail)
     assert @connection.reload.error?
   end

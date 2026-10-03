@@ -67,7 +67,7 @@ module CalendarHelper
   def calendar_task_label(task)
     kind = task.due_at.present? ? "prazo" : "início"
     "#{task.title} — #{kind} às #{Calendar::Agenda.time_of(task).in_time_zone.strftime("%H:%M")}, " \
-      "#{ApplicationHelper::STATUS_LABELS.fetch(task.status, task.status).downcase}"
+      "#{BadgesHelper::STATUS_LABELS.fetch(task.status, task.status).downcase}"
   end
 
   def calendar_last_synced(connection)

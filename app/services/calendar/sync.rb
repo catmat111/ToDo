@@ -73,7 +73,7 @@ module Calendar
       # a second rejection is final.
       def with_authorization
         yield
-      rescue GoogleCalendarClient::AuthError
+      rescue GoogleClient::AuthError
         if @forced_refresh
           AuthFailure.call(connection)
           raise AuthorizationError, AuthFailure::MESSAGE
@@ -94,9 +94,9 @@ module Calendar
       def sync_eligible_tasks
         eligible_tasks.find_each do |task|
           count task_sync(task).call
-        rescue GoogleCalendarClient::AuthError, GoogleCalendarClient::NetworkError
+        rescue GoogleClient::AuthError, GoogleClient::NetworkError
           raise
-        rescue GoogleCalendarClient::Error, ActiveRecord::ActiveRecordError, ArgumentError => e
+        rescue GoogleClient::Error, ActiveRecord::ActiveRecordError, ArgumentError => e
           result.failed += 1
           Rails.logger.warn("[calendar] task #{task.id} failed to sync: #{e.class}")
         end
@@ -109,9 +109,9 @@ module Calendar
           delete_remote(calendar_event.external_event_id)
           calendar_event.destroy!
           count :removed
-        rescue GoogleCalendarClient::AuthError, GoogleCalendarClient::NetworkError
+        rescue GoogleClient::AuthError, GoogleClient::NetworkError
           raise
-        rescue GoogleCalendarClient::Error, ActiveRecord::ActiveRecordError => e
+        rescue GoogleClient::Error, ActiveRecord::ActiveRecordError => e
           result.failed += 1
           Rails.logger.warn("[calendar] event #{calendar_event.id} could not be removed: #{e.class}")
         end
@@ -122,7 +122,7 @@ module Calendar
 
         client.delete_event(calendar_id: connection.calendar_id.presence || "primary",
                             access_token: access_token, event_id: external_event_id)
-      rescue GoogleCalendarClient::NotFoundError
+      rescue GoogleClient::NotFoundError
         nil
       end
 
