@@ -29,6 +29,15 @@
   </div>
 
   <div class="field">
+    <%= f.label :contact_id, "Contacto" %>
+    <%= f.collection_select :contact_id, Current.user.contacts.includes(:company).alphabetical, :id, :label,
+          include_blank: "— Nenhum —" %>
+    <p class="field__hint">Recrutador ou pessoa de referência. <%= link_to "Novo contacto", new_contact_path %></p>
+  </div>
+
+  <%= render "shared/compensation_fields", f: f %>
+
+  <div class="field">
     <%= f.label :notes, "Notas" %>
     <%= f.text_area :notes, rows: 5, "aria-describedby": "job_application_notes_hint",
           placeholder: "Contactos, requisitos, salário, impressões…" %>

@@ -1,0 +1,24 @@
+<% content_for :title, "Contactos" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Contactos</h1>
+    <p class="page-header__subtitle">Recrutadores e pessoas com quem falaste.</p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to companies_path, class: "btn btn--outline" do %><%= icon :briefcase %> Empresas<% end %>
+    <%= link_to new_contact_path, class: "btn btn--primary" do %><%= icon :plus %> Novo contacto<% end %>
+  </div>
+</div>
+
+<% if @contacts.any? %>
+  <div class="grid grid--3">
+    <% @contacts.each do |contact| %>
+      <div class="card"><%= render "contacts/contact", contact: contact %></div>
+    <% end %>
+  </div>
+<% else %>
+  <%= render "shared/empty_state", title: "Sem contactos",
+        body: "Guarda aqui o recrutador de cada candidatura para saberes a quem enviar follow-up.",
+        action: link_to("Novo contacto", new_contact_path, class: "btn btn--primary") %>
+<% end %>

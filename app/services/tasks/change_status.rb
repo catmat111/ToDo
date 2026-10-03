@@ -27,6 +27,7 @@ module Tasks
       return failure(unknown_status) if Task::STATUSES.exclude?(to)
       return failure(already_there) if from == to
       return failure(forbidden(from)) unless task.can_transition_to?(to)
+      return failure(blocked) if %w[in_progress completed].include?(to) && task.blocked?
 
       task.status = to
       unless task.save
@@ -36,6 +37,7 @@ module Tasks
       end
 
       AuditLog.record(AUDIT_ACTIONS.fetch(to), resource: task, user: task.user, from: from, to: to)
+      notify_unblocked if to == "completed"
       Result.new(success: true, task: task)
     end
 
@@ -44,6 +46,22 @@ module Tasks
 
       def failure(message)
         Result.new(success: false, task: task, error: message)
+      end
+
+      def blocked
+        "Primeiro conclui: #{task.open_blockers.map { |b| "«#{b.title}»" }.to_sentence(last_word_connector: " e ")}."
+      end
+
+      # Tasks that were only waiting for this one can now go ahead.
+      def notify_unblocked
+        task.dependents.includes(:blockers).each do |dependent|
+          next unless (dependent.pending? || dependent.in_progress?) && !dependent.blocked?
+          task.user.notifications.create!(
+            notification_type: "task_due", notifiable: dependent,
+            title: "«#{dependent.title}» já pode avançar",
+            body: "Concluíste «#{task.title}», a última tarefa de que dependia."
+          )
+        end
       end
 
       def unknown_status

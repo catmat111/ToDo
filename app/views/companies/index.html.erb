@@ -1,0 +1,42 @@
+<% content_for :title, "Empresas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Empresas</h1>
+    <p class="page-header__subtitle">Criadas automaticamente a partir das tuas candidaturas, ou à mão.</p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to contacts_path, class: "btn btn--outline" do %><%= icon :user %> Contactos<% end %>
+    <%= link_to new_company_path, class: "btn btn--primary" do %><%= icon :plus %> Nova empresa<% end %>
+  </div>
+</div>
+
+<%= form_with url: companies_path, method: :get, class: "filters" do |f| %>
+  <div class="field">
+    <%= f.label :q, "Pesquisar", class: "field__label" %>
+    <%= f.search_field :q, value: params[:q], class: "input", placeholder: "Nome da empresa" %>
+  </div>
+  <%= f.button "Filtrar", class: "btn btn--outline", name: nil %>
+<% end %>
+
+<% if @companies.any? %>
+  <div class="card card--flush">
+    <ul class="list">
+      <% @companies.each do |company| %>
+        <li class="list__item">
+          <div class="list__main">
+            <%= link_to company.name, company, class: "list__title" %>
+            <div class="list__meta">
+              <% if company.location.present? %><span><%= company.location %></span> ·<% end %>
+              <span><%= pluralize(company.applications_count, "candidatura", plural: "candidaturas") %></span>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% else %>
+  <%= render "shared/empty_state", title: "Sem empresas",
+        body: "Quando escreves a empresa numa candidatura, ela aparece aqui.",
+        action: link_to("Nova empresa", new_company_path, class: "btn btn--primary") %>
+<% end %>

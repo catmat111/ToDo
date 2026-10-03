@@ -6,6 +6,7 @@
     <div class="list__meta">
       <%= status_badge(task.status, task.status_label) %>
       <%= priority_badge(task) %>
+      <% if task.open? && task.blocked? %><span class="badge badge--overdue">Bloqueada</span><% end %>
       <%= task_due(task) %>
       <% if task.recurrence %>
         <span class="task-row__hint" title="<%= task_recurrence_summary(task.recurrence) %>"><%= icon :refresh, size: 13 %><span class="sr-only">Repete-se: <%= task_recurrence_summary(task.recurrence) %></span></span>

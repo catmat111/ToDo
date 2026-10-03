@@ -25,15 +25,33 @@
             <%= form.label :email_address, "Email", class: "field__label" %>
             <%= form.email_field :email_address, required: true, autocomplete: "email" %>
           </div>
+          <div class="field">
+            <%= label_tag :current_password, "Password atual", class: "field__label" %>
+            <%= password_field_tag :current_password, nil, autocomplete: "current-password", "aria-describedby": "current-password-hint" %>
+            <p class="field__hint" id="current-password-hint">Só é necessária se mudares o email.</p>
+          </div>
         </div>
 
         <div class="field">
-          <%= form.label :avatar_url, "URL da fotografia", class: "field__label" %>
+          <span class="field__label">Fotografia de perfil</span>
           <div class="avatar-field">
-            <%= user_avatar(@user) %>
-            <%= form.url_field :avatar_url, placeholder: "https://…", maxlength: 2000, "aria-describedby": "avatar-hint" %>
+            <%= render "profiles/avatar_picker", form: form, user: @user %>
+            <div class="stack--sm">
+              <% if @user.avatar.attached? %>
+                <label class="check"><%= check_box_tag :remove_avatar, "1", false %> Remover fotografia atual</label>
+              <% end %>
+            </div>
           </div>
-          <p class="field__hint" id="avatar-hint">Opcional. Um link para uma imagem (começa por https://). Sem imagem, mostramos a tua inicial.</p>
+          <p class="field__hint" id="avatar-hint">PNG, JPG, WebP ou GIF, até 5 MB. Sem fotografia, mostramos a tua inicial.</p>
+        </div>
+
+        <div class="field">
+          <%= form.label :avatar_url, "Ou um link para uma fotografia", class: "field__label" %>
+          <div data-controller="avatar-url-preview">
+            <%= form.url_field :avatar_url, placeholder: "https://…", maxlength: 2000, "aria-describedby": "avatar-url-hint",
+                  data: { avatar_url_preview_target: "input", action: "keydown.enter->avatar-url-preview#preview:prevent change->avatar-url-preview#preview" } %>
+            <p class="field__hint" id="avatar-url-hint" data-avatar-url-preview-target="status">Carrega Enter para pré-visualizar. Funciona com links diretos para imagens e links do Giphy.</p>
+          </div>
         </div>
 
         <div class="field">
@@ -58,6 +76,11 @@
           <%= form.label :timezone, "Fuso horário", class: "field__label" %>
           <%= form.select :timezone, timezone_options, {}, "aria-describedby": "timezone-hint" %>
           <p class="field__hint" id="timezone-hint">As datas, prazos e lembretes são mostrados neste fuso.</p>
+        </div>
+        <div class="field">
+          <%= form.label :follow_up_after_days, "Lembrete de follow-up (dias)", class: "field__label" %>
+          <%= form.number_field :follow_up_after_days, min: 0, max: 90, step: 1, "aria-describedby": "follow-up-hint" %>
+          <p class="field__hint" id="follow-up-hint">Se uma candidatura enviada ficar estes dias sem novidades, crio uma tarefa de follow-up. 0 desliga.</p>
         </div>
       </div>
     </fieldset>

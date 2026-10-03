@@ -1,0 +1,64 @@
+/* Floating post-it button + quick-add chat (bottom-right, every page). */
+.quickadd {
+  position: fixed; right: var(--space-5); bottom: var(--space-5); z-index: 70;
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-3);
+}
+
+.quickadd__fab {
+  padding: 0; border: 0; background: none; cursor: pointer; line-height: 0;
+  filter: drop-shadow(0 6px 10px rgba(56, 44, 35, 0.35));
+  transition: transform 0.15s ease;
+}
+.quickadd__fab:hover { transform: translateY(-4px) rotate(-6deg); }
+.quickadd__fab:active { transform: translateY(1px); }
+.quickadd.is-open .quickadd__fab { transform: rotate(8deg) scale(0.9); }
+.quickadd__panel[hidden] { display: none; }
+
+.quickadd__panel {
+  width: min(360px, calc(100vw - 2 * var(--space-4)));
+  display: flex; flex-direction: column; max-height: min(480px, 70vh);
+  background: var(--color-surface); border: 3px solid var(--charcoal); border-radius: 14px;
+  box-shadow: 0 6px 0 var(--charcoal); overflow: hidden;
+  animation: quickadd-in 0.18s ease-out;
+}
+@keyframes quickadd-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+.quickadd__header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--terracotta); color: #FBF8F3; padding: var(--space-3) var(--space-4);
+}
+.quickadd__title { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 1.5rem; font-weight: 600; }
+.quickadd__close { background: none; border: 0; color: #FBF8F3; font-size: 1.6rem; line-height: 1; cursor: pointer; }
+
+.quickadd__messages {
+  flex: 1; overflow-y: auto; padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  background:
+    repeating-linear-gradient(transparent 0 27px, color-mix(in srgb, var(--cream) 55%, transparent) 27px 28px),
+    var(--color-surface);
+}
+.quickadd__msg { max-width: 85%; padding: var(--space-2) var(--space-3); border-radius: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.quickadd__msg--app { align-self: flex-start; background: var(--color-surface-2); color: var(--color-text); border-bottom-left-radius: 4px; }
+.quickadd__msg--app a { color: var(--color-primary); font-weight: 600; }
+.quickadd__msg--me { align-self: flex-end; background: var(--olive); color: #FBF8F3; border-bottom-right-radius: 4px; }
+.quickadd__msg--error { background: var(--color-danger-soft); color: var(--color-danger); }
+
+.quickadd__form { display: flex; gap: var(--space-2); padding: var(--space-3); border-top: 2px solid var(--charcoal); background: var(--color-surface); }
+.quickadd__form input[type="text"] {
+  flex: 1; min-width: 0; border: 2px solid var(--color-border-strong); border-radius: 999px;
+  padding: 8px 14px; font: inherit; background: var(--color-bg); color: var(--color-text);
+}
+.quickadd__form input[type="text"]:focus { outline: none; border-color: var(--mustard); }
+.quickadd__send {
+  width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--terracotta); color: #FBF8F3; font-size: 1.05rem;
+}
+.quickadd__send:hover { background: var(--charcoal); }
+
+/* Live-notification toasts sit above the button. */
+.toasts { bottom: calc(var(--space-5) + 110px); }
+
+@media (max-width: 600px) {
+  .quickadd { right: var(--space-4); bottom: var(--space-4); }
+  .quickadd__fab svg { width: 80px; height: 80px; }
+}

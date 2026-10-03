@@ -1,0 +1,104 @@
+<% content_for :title, "Estatísticas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Estatísticas</h1>
+    <p class="page-header__subtitle">Como estão a correr as tuas candidaturas.</p>
+  </div>
+</div>
+
+<% if @stats.any? %>
+  <%# Headline numbers %>
+  <div class="grid grid--3 stats-tiles">
+    <div class="stat stat--terracotta">
+      <div class="stat__value"><%= @stats.sent_count %></div>
+      <div class="stat__label">candidaturas enviadas</div>
+    </div>
+    <div class="stat stat--olive">
+      <div class="stat__value"><%= @stats.response_rate ? "#{@stats.response_rate}%" : "—" %></div>
+      <div class="stat__label">taxa de resposta</div>
+    </div>
+    <div class="stat stat--mustard">
+      <div class="stat__value"><%= @stats.average_days_to_response || "—" %></div>
+      <div class="stat__label">dias, em média, até à resposta</div>
+    </div>
+    <div class="stat stat--charcoal">
+      <div class="stat__value"><%= @stats.interviews_count %> · <%= @stats.offers_count %></div>
+      <div class="stat__label">entrevistas · ofertas</div>
+    </div>
+  </div>
+
+  <%= render "application_stats/donut", breakdown: @stats.status_breakdown %>
+
+  <div class="grid grid--2">
+    <%# Funnel: one series, magnitude → single hue, direct labels (count + % of saved). %>
+    <section class="card" aria-labelledby="st-funnel">
+      <h2 class="card__title" id="st-funnel">Funil</h2>
+      <ul class="hbars" role="list">
+        <% @stats.funnel.each do |label, count, pct| %>
+          <li class="hbars__row" title="<%= label %>: <%= count %> (<%= pct %>%)">
+            <span class="hbars__label"><%= label %></span>
+            <span class="hbars__track"><span class="hbars__bar hbars__bar--terracotta" style="--w: <%= pct %>%"></span></span>
+            <span class="hbars__value"><%= count %> <span class="muted">· <%= pct %>%</span></span>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+
+    <section class="card" aria-labelledby="st-source">
+      <h2 class="card__title" id="st-source">Por origem</h2>
+      <% max = [ @stats.per_source.map(&:last).max.to_i, 1 ].max %>
+      <ul class="hbars" role="list">
+        <% @stats.per_source.each do |label, count| %>
+          <li class="hbars__row" title="<%= label %>: <%= count %>">
+            <span class="hbars__label"><%= label %></span>
+            <span class="hbars__track"><span class="hbars__bar hbars__bar--olive" style="--w: <%= (count * 100.0 / max).round %>%"></span></span>
+            <span class="hbars__value"><%= count %></span>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  </div>
+
+  <%# Applications per month: vertical bars, one hue, value above each bar. %>
+  <section class="card stats-months" aria-labelledby="st-months">
+    <h2 class="card__title" id="st-months">Candidaturas por mês</h2>
+    <% months = @stats.per_month %>
+    <% top = [ months.map(&:last).max.to_i, 1 ].max %>
+    <div class="vbars" role="img" aria-label="<%= months.map { |m, c| "#{m}: #{c}" }.join(", ") %>">
+      <% months.each do |month, count| %>
+        <div class="vbars__col" title="<%= month %>: <%= count %>">
+          <span class="vbars__value"><%= count %></span>
+          <span class="vbars__bar" style="--h: <%= (count * 100.0 / top).round %>%"></span>
+          <span class="vbars__label"><%= month %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <% silent = @stats.silent %>
+  <% if silent.any? %>
+    <section class="card card--mustard" aria-labelledby="st-silent">
+      <h2 class="card__title" id="st-silent">Sem resposta há mais de 2 semanas</h2>
+      <p class="small muted">Boas candidatas a um email de follow-up.</p>
+      <ul class="list">
+        <% silent.first(10).each do |application| %>
+          <li class="list__item">
+            <div class="list__main">
+              <%= link_to application.title, job_application_path(application), class: "list__title" %>
+              <div class="list__meta">
+                <% if application.company_name.present? %><span><%= application.company_name %></span> ·<% end %>
+                <span>enviada há <%= time_ago_in_words(application.applied_at) %></span>
+              </div>
+            </div>
+            <%= button_to create_task_job_application_path(application), class: "btn btn--outline btn--sm" do %><%= icon :clock, size: 14 %> Criar tarefa<% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+<% else %>
+  <%= render "shared/empty_state", title: "Ainda sem números",
+        body: "Quando tiveres candidaturas, aparecem aqui o funil, a taxa de resposta e o tempo até responderem.",
+        action: link_to("Importar do LinkedIn", new_linkedin_import_path, class: "btn btn--primary") %>
+<% end %>

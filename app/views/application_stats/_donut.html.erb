@@ -1,0 +1,44 @@
+<%# Status donut: one ring split by status, 2px surface gaps between slices, total in the centre,
+    legend with label, count and percentage (identity never by colour alone). %>
+<%# locals: (breakdown:) %>
+<% total = breakdown.sum { |row| row[2] } %>
+<% radius = 70.0 %>
+<% circumference = 2 * Math::PI * radius %>
+<% gap = breakdown.count { |row| row[2].positive? } > 1 ? 2.0 : 0.0 %>
+<section class="card donut-card" aria-labelledby="st-donut">
+  <h2 class="card__title" id="st-donut">Estado das candidaturas</h2>
+  <% if total.zero? %>
+    <p class="muted">Ainda não enviaste nenhuma candidatura.</p>
+  <% else %>
+    <div class="donut">
+      <svg class="donut__chart" viewBox="0 0 180 180" role="img"
+           aria-label="<%= breakdown.select { |r| r[2].positive? }.map { |_, l, c, p| "#{l}: #{c} (#{p}%)" }.join(", ") %>">
+        <circle class="donut__track" cx="90" cy="90" r="<%= radius %>" />
+        <% offset = 0.0 %>
+        <% breakdown.each do |status, label, count, pct| %>
+          <% next if count.zero? %>
+          <% length = circumference * count / total %>
+          <circle class="donut__slice donut__slice--<%= status %>" cx="90" cy="90" r="<%= radius %>"
+                  stroke-dasharray="<%= [ length - gap, 0.5 ].max.round(2) %> <%= (circumference - [ length - gap, 0.5 ].max).round(2) %>"
+                  stroke-dashoffset="<%= (-offset).round(2) %>">
+            <title><%= label %>: <%= count %> (<%= pct %>%)</title>
+          </circle>
+          <% offset += length %>
+        <% end %>
+        <text class="donut__total" x="90" y="88" text-anchor="middle"><%= total %></text>
+        <text class="donut__caption" x="90" y="108" text-anchor="middle">enviadas</text>
+      </svg>
+
+      <ul class="donut__legend" role="list">
+        <% breakdown.each do |status, label, count, pct| %>
+          <li class="donut__item<%= " is-empty" if count.zero? %>">
+            <span class="donut__swatch donut__swatch--<%= status %>" aria-hidden="true"></span>
+            <span class="donut__label"><%= label %></span>
+            <span class="donut__value"><%= count %></span>
+            <span class="donut__pct"><%= pct %>%</span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</section>

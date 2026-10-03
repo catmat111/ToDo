@@ -144,3 +144,15 @@
   .job-search-card__toggle { margin-left: 0; }
   .job-listing-item__mark { display: none; }
 }
+
+/* Salary + work mode tags (listings, applications, kanban) */
+.work-mode {
+  display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #FBF8F3;
+}
+.work-mode--remote { background: var(--olive); }
+.work-mode--hybrid { background: var(--mustard); }
+.work-mode--onsite { background: var(--charcoal); }
+.salary { font-weight: 600; color: var(--color-primary); white-space: nowrap; }
+.ja-card__comp { margin: var(--space-1) 0 0; font-size: 0.82rem; gap: var(--space-1) var(--space-2); }
+.compensation-fields { margin-top: var(--space-2); }

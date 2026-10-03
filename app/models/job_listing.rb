@@ -1,10 +1,12 @@
 class JobListing < ApplicationRecord
+  include Compensation
   SOURCES = %w[linkedin indeed other].freeze
   TRACKING_PARAMS = %w[ref refid trk trackingid fbclid gclid].freeze
 
   belongs_to :user
   belongs_to :job_search, optional: true
   has_many :job_applications, dependent: :nullify
+  has_many :shares, as: :shareable, dependent: :nullify
 
   enum :source, SOURCES.index_by(&:itself), prefix: :source, validate: true
 

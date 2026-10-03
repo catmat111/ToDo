@@ -10,7 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_02_100000) do
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "audit_logs", force: :cascade do |t|
     t.integer "user_id"
     t.string "action", null: false
@@ -57,6 +85,53 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.index ["task_id"], name: "index_calendar_events_on_task_id"
   end
 
+  create_table "companies", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "name", null: false
+    t.string "website"
+    t.string "location"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "name"], name: "index_companies_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_companies_on_user_id"
+  end
+
+  create_table "contacts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "company_id"
+    t.string "name", null: false
+    t.string "role"
+    t.string "email"
+    t.string "phone"
+    t.string "linkedin_url"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id"], name: "index_contacts_on_company_id"
+    t.index ["user_id"], name: "index_contacts_on_user_id"
+  end
+
+  create_table "email_messages", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "job_application_id"
+    t.string "external_id", null: false
+    t.string "from_name"
+    t.string "from_email"
+    t.string "subject"
+    t.text "excerpt"
+    t.datetime "received_at"
+    t.string "outcome", default: "unknown", null: false
+    t.string "review_status", default: "pending", null: false
+    t.datetime "reviewed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_application_id"], name: "index_email_messages_on_job_application_id"
+    t.index ["user_id", "external_id"], name: "index_email_messages_on_user_id_and_external_id", unique: true
+    t.index ["user_id", "review_status"], name: "index_email_messages_on_user_id_and_review_status"
+    t.index ["user_id"], name: "index_email_messages_on_user_id"
+  end
+
   create_table "job_application_events", force: :cascade do |t|
     t.integer "job_application_id", null: false
     t.string "event_type", null: false
@@ -78,10 +153,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "company_id"
+    t.integer "contact_id"
+    t.string "work_mode"
+    t.integer "salary_min"
+    t.integer "salary_max"
+    t.string "salary_period", default: "month", null: false
+    t.datetime "follow_up_suggested_at"
+    t.index ["company_id"], name: "index_job_applications_on_company_id"
+    t.index ["contact_id"], name: "index_job_applications_on_contact_id"
     t.index ["job_listing_id"], name: "index_job_applications_on_job_listing_id"
     t.index ["user_id", "job_listing_id"], name: "index_job_applications_on_user_id_and_job_listing_id", unique: true
     t.index ["user_id", "status"], name: "index_job_applications_on_user_id_and_status"
     t.index ["user_id"], name: "index_job_applications_on_user_id"
+    t.index ["work_mode"], name: "index_job_applications_on_work_mode"
   end
 
   create_table "job_filters", force: :cascade do |t|
@@ -110,11 +195,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.datetime "discovered_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "work_mode"
+    t.integer "salary_min"
+    t.integer "salary_max"
+    t.string "salary_period", default: "month", null: false
     t.index ["job_search_id"], name: "index_job_listings_on_job_search_id"
     t.index ["source", "external_id"], name: "index_job_listings_on_source_and_external_id"
     t.index ["user_id", "normalized_url"], name: "index_job_listings_on_user_id_and_normalized_url", unique: true
     t.index ["user_id", "source", "external_id"], name: "index_job_listings_on_user_id_and_source_and_external_id", unique: true
     t.index ["user_id"], name: "index_job_listings_on_user_id"
+    t.index ["work_mode"], name: "index_job_listings_on_work_mode"
   end
 
   create_table "job_searches", force: :cascade do |t|
@@ -139,6 +229,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.datetime "updated_at", null: false
     t.index ["linkable_type", "linkable_id"], name: "index_links_on_linkable"
     t.index ["user_id"], name: "index_links_on_user_id"
+  end
+
+  create_table "mailbox_connections", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "email_address"
+    t.text "access_token"
+    t.text "refresh_token"
+    t.datetime "expires_at"
+    t.string "label_id"
+    t.string "label_name"
+    t.string "status", default: "active", null: false
+    t.text "last_error"
+    t.datetime "last_synced_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_mailbox_connections_on_user_id", unique: true
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -179,6 +285,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "shares", force: :cascade do |t|
+    t.integer "sender_id", null: false
+    t.integer "recipient_id", null: false
+    t.string "shareable_type"
+    t.integer "shareable_id"
+    t.string "title", null: false
+    t.text "message"
+    t.string "status", default: "pending", null: false
+    t.datetime "responded_at"
+    t.string "copy_type"
+    t.integer "copy_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["copy_type", "copy_id"], name: "index_shares_on_copy"
+    t.index ["recipient_id", "status"], name: "index_shares_on_recipient_id_and_status"
+    t.index ["recipient_id"], name: "index_shares_on_recipient_id"
+    t.index ["sender_id"], name: "index_shares_on_sender_id"
+    t.index ["shareable_type", "shareable_id"], name: "index_shares_on_shareable"
+  end
+
   create_table "tags", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "name", null: false
@@ -189,15 +315,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.index ["user_id"], name: "index_tags_on_user_id"
   end
 
-  create_table "tarefas", force: :cascade do |t|
-    t.string "nome"
-    t.boolean "concluido"
-    t.date "data_inicio"
-    t.date "data_fim"
-    t.date "data_criado"
-    t.string "tipo"
+  create_table "task_dependencies", force: :cascade do |t|
+    t.integer "task_id", null: false
+    t.integer "blocker_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["blocker_id"], name: "index_task_dependencies_on_blocker_id"
+    t.index ["task_id", "blocker_id"], name: "index_task_dependencies_on_task_id_and_blocker_id", unique: true
+    t.index ["task_id"], name: "index_task_dependencies_on_task_id"
   end
 
   create_table "task_recurrences", force: :cascade do |t|
@@ -255,14 +380,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
     t.string "timezone", default: "Europe/Lisbon", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "follow_up_after_days", default: 7, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "audit_logs", "users", on_delete: :nullify
   add_foreign_key "calendar_connections", "users"
   add_foreign_key "calendar_events", "calendar_connections"
   add_foreign_key "calendar_events", "tasks", on_delete: :nullify
+  add_foreign_key "companies", "users"
+  add_foreign_key "contacts", "companies", on_delete: :nullify
+  add_foreign_key "contacts", "users"
+  add_foreign_key "email_messages", "job_applications", on_delete: :nullify
+  add_foreign_key "email_messages", "users"
   add_foreign_key "job_application_events", "job_applications"
+  add_foreign_key "job_applications", "companies", on_delete: :nullify
+  add_foreign_key "job_applications", "contacts", on_delete: :nullify
   add_foreign_key "job_applications", "job_listings", on_delete: :nullify
   add_foreign_key "job_applications", "users"
   add_foreign_key "job_filters", "job_searches"
@@ -270,10 +405,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_220802) do
   add_foreign_key "job_listings", "users"
   add_foreign_key "job_searches", "users"
   add_foreign_key "links", "users"
+  add_foreign_key "mailbox_connections", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "reminders", "tasks"
   add_foreign_key "sessions", "users"
+  add_foreign_key "shares", "users", column: "recipient_id"
+  add_foreign_key "shares", "users", column: "sender_id"
   add_foreign_key "tags", "users"
+  add_foreign_key "task_dependencies", "tasks"
+  add_foreign_key "task_dependencies", "tasks", column: "blocker_id"
   add_foreign_key "task_recurrences", "tasks"
   add_foreign_key "task_tags", "tags"
   add_foreign_key "task_tags", "tasks"

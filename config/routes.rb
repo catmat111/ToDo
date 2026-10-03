@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   root "dashboard#show"
+  resource :search, only: :show # global search (masthead)
 
   # Identity
   resource :session, only: %i[new create destroy]
@@ -16,6 +17,7 @@ Rails.application.routes.draw do
   resources :tasks do
     resources :reminders, only: %i[create destroy]
     resource :recurrence, only: %i[create update destroy], controller: "task_recurrences"
+    resources :dependencies, only: %i[create destroy], controller: "task_dependencies", as: :dependencies
     member do
       patch :complete
       patch :reopen
@@ -34,6 +36,8 @@ Rails.application.routes.draw do
     member { post :run }
   end
   resources :job_listings, only: %i[index show new create destroy]
+  # Before the resources below, so "stats" is not taken as an application id.
+  get "applications/stats", to: "application_stats#show", as: :application_stats
   resources :job_applications, path: "applications" do
     resources :job_application_events, only: %i[create destroy], path: "events"
     member do
@@ -47,6 +51,31 @@ Rails.application.routes.draw do
   resource :calendar_connection, only: %i[show create destroy] do
     get :callback
     post :sync
+  end
+
+  resource :linkedin_import, only: %i[new create], path: "applications/import"
+  # Gmail (read-only): replies from companies → suggested status changes
+  resource :mailbox_connection, only: %i[show create update destroy] do
+    get :callback
+    post :sync
+  end
+  resources :email_messages, only: :index, path: "replies" do
+    member do
+      patch :confirm
+      patch :ignore
+    end
+  end
+  resources :companies
+  resources :contacts, except: :show do
+    member { post :follow_up }
+  end
+
+  # Sharing with other users
+  resources :shares, only: %i[index create destroy] do
+    member do
+      patch :accept
+      patch :decline
+    end
   end
 
   # Notifications

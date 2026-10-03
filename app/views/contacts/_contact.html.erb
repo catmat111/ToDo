@@ -1,0 +1,20 @@
+<%# locals: (contact:, job_application: nil) %>
+<div class="contact">
+  <span class="contact__name"><%= contact.name %></span>
+  <% if contact.role.present? || contact.company %>
+    <span class="contact__role"><%= [ contact.role.presence, contact.company&.name ].compact.join(" · ") %></span>
+  <% end %>
+  <div class="contact__links">
+    <% if contact.email.present? %><%= mail_to contact.email %><% end %>
+    <% if contact.phone.present? %><span><%= contact.phone %></span><% end %>
+    <% if contact.linkedin_url.present? %>
+      <%= link_to "LinkedIn", contact.linkedin_url, target: "_blank", rel: "noopener noreferrer" %>
+    <% end %>
+  </div>
+  <div class="contact__actions">
+    <%= button_to follow_up_contact_path(contact, job_application_id: job_application&.id), class: "btn btn--secondary btn--sm" do %>
+      <%= icon :clock, size: 14 %> Follow-up
+    <% end %>
+    <%= link_to edit_contact_path(contact), class: "btn btn--ghost btn--sm", title: "Editar contacto" do %><%= icon :edit, size: 14 %><% end %>
+  </div>
+</div>

@@ -2,8 +2,15 @@
 # and seeing results in the browser, you must do so from the web console (running inside the dev process),
 # not a terminal started via bin/rails console! Add "console" to any action or any ERB template view
 # to make the web console appear.
+# Development uses the database too: notifications are created by the Solid Queue
+# worker (another process), and the async adapter only reaches its own process.
 development:
-  adapter: async
+  adapter: solid_cable
+  connects_to:
+    database:
+      writing: cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day
 
 test:
   adapter: test

@@ -11,6 +11,9 @@
   <% if job_application.company_name.present? %>
     <p class="ja-card__company"><%= icon :briefcase, size: 14 %> <%= job_application.company_name %></p>
   <% end %>
+  <% if job_application.work_mode.present? || job_application.salary? %>
+    <p class="cluster ja-card__comp"><%= render "shared/compensation_tags", record: job_application %></p>
+  <% end %>
   <p class="ja-card__meta"><%= icon :clock, size: 14 %> <%= job_application_activity(job_application) %></p>
   <% if next_task %>
     <p class="ja-card__task <%= 'ja-card__task--overdue' if next_task.overdue? %>">

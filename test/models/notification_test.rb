@@ -1,6 +1,9 @@
 require "test_helper"
+require "turbo/broadcastable/test_helper"
 
 class NotificationTest < ActiveSupport::TestCase
+  include Turbo::Broadcastable::TestHelper
+
   setup do
     @user = users(:one)
   end
@@ -45,5 +48,18 @@ class NotificationTest < ActiveSupport::TestCase
   test "type_label is in Portuguese" do
     assert_equal "Lembrete", build_notification(notification_type: "reminder").type_label
     assert_equal "Prazo", build_notification(notification_type: "task_due").type_label
+  end
+
+  test "creating a notification broadcasts the row, the pop-up and the counter live" do
+    assert_turbo_stream_broadcasts [ @user, :notifications ], count: 3 do
+      @user.notifications.create!(notification_type: "reminder", title: "Lembrete: Estudar")
+    end
+  end
+
+  test "reading a notification refreshes the live counter" do
+    notification = @user.notifications.create!(notification_type: "reminder", title: "Lembrete: Estudar")
+    assert_turbo_stream_broadcasts [ @user, :notifications ], count: 1 do
+      notification.mark_read!
+    end
   end
 end

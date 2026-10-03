@@ -1,0 +1,72 @@
+<% content_for :title, @company.name %>
+<p class="breadcrumb"><%= link_to "Empresas", companies_path %></p>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title"><%= @company.name %></h1>
+    <p class="page-header__subtitle">
+      <%= safe_join([ @company.location.presence, (link_to("Website", @company.website, target: "_blank", rel: "noopener noreferrer") if @company.website.present?) ].compact, " · ") %>
+    </p>
+  </div>
+  <div class="page-header__actions">
+    <%= link_to edit_company_path(@company), class: "btn btn--outline" do %><%= icon :edit %> Editar<% end %>
+    <%= button_to company_path(@company), method: :delete, class: "btn btn--danger",
+          form: { data: { turbo_confirm: "Eliminar esta empresa? As candidaturas e contactos ficam." } } do %>
+      <%= icon :trash %> Eliminar
+    <% end %>
+  </div>
+</div>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <section class="card card--flush">
+      <div class="card__header company-card__header">
+        <h2 class="card__title">Candidaturas</h2>
+      </div>
+      <% if @applications.any? %>
+        <ul class="list">
+          <% @applications.each do |application| %>
+            <li class="list__item">
+              <div class="list__main">
+                <%= link_to application.title, job_application_path(application), class: "list__title" %>
+                <div class="list__meta">
+                  <%= status_badge(application.status, application.status_label) %>
+                  <span>atualizada há <%= time_ago_in_words(application.updated_at) %></span>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted company-card__empty">Ainda sem candidaturas nesta empresa.</p>
+      <% end %>
+    </section>
+
+    <% if @company.notes.present? %>
+      <section class="card">
+        <h2 class="card__title">Notas</h2>
+        <%= simple_format(@company.notes) %>
+      </section>
+    <% end %>
+  </div>
+
+  <aside class="stack">
+    <section class="card card--olive">
+      <div class="card__header">
+        <h2 class="card__title">Contactos</h2>
+        <%= link_to new_contact_path(company_id: @company.id), class: "btn btn--ghost btn--sm" do %><%= icon :plus, size: 14 %> Novo<% end %>
+      </div>
+      <% if @contacts.any? %>
+        <ul class="list">
+          <% @contacts.each do |contact| %>
+            <li class="list__item contact-row">
+              <%= render "contacts/contact", contact: contact %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="muted small">Adiciona o recrutador ou quem te entrevistou.</p>
+      <% end %>
+    </section>
+  </aside>
+</div>

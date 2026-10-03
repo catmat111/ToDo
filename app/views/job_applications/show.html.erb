@@ -155,6 +155,10 @@
       <% if listing %>
         <p class="ja-listing__title"><%= link_to listing.title, job_listing_path(listing) %></p>
         <dl class="dl">
+        <% if @job_application.work_mode.present? || @job_application.salary? %>
+          <dt>Condições</dt>
+          <dd class="cluster"><%= render "shared/compensation_tags", record: @job_application %></dd>
+        <% end %>
           <dt>Empresa</dt>
           <dd><%= listing.company_name.presence || "—" %></dd>
           <dt>Local</dt>
@@ -200,6 +204,21 @@
       <% end %>
     </section>
 
+    <section class="card card--olive" aria-labelledby="ja-contact">
+      <div class="card__header">
+        <h2 class="card__title" id="ja-contact">Contacto</h2>
+        <% if @job_application.company %>
+          <%= link_to @job_application.company.name, @job_application.company, class: "small" %>
+        <% end %>
+      </div>
+      <% if @job_application.contact %>
+        <%= render "contacts/contact", contact: @job_application.contact, job_application: @job_application %>
+      <% else %>
+        <p class="muted small">Sem contacto associado. Escolhe um em «Editar» para saberes a quem enviar follow-up.</p>
+        <%= link_to new_contact_path(company_id: @job_application.company_id), class: "btn btn--ghost btn--sm" do %><%= icon :plus, size: 14 %> Novo contacto<% end %>
+      <% end %>
+    </section>
+
     <section class="card" aria-labelledby="ja-tasks">
       <div class="card__header">
         <h2 class="card__title" id="ja-tasks">Tarefas associadas</h2>
@@ -229,5 +248,6 @@
     </section>
 
     <%= render "links/section", linkable: @job_application if lookup_context.exists?("section", [ "links" ], true) %>
+    <%= render "shares/form", shareable: @job_application %>
   </aside>
 </div>

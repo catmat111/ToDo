@@ -1,2 +1,5 @@
 #!/usr/bin/env ruby
+# Development server with the Solid Queue worker inside Puma, so background jobs
+# and the recurring tasks in config/recurring.yml (reminders) run automatically.
+ENV["SOLID_QUEUE_IN_PUMA"] ||= "1"
 exec "./bin/rails", "server", *ARGV

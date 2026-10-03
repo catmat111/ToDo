@@ -1,23 +1,10 @@
-<%# locals: (task:, show_progress: false) %>
-<li class="list__item dashboard-task<%= " dashboard-task--overdue" if task.overdue? %>">
-  <%= button_to complete_task_path(task), method: :patch, class: "dashboard-task__check",
+<%# locals: (task:) %>
+<li class="home-task<%= " home-task--overdue" if task.overdue? %>">
+  <%= button_to complete_task_path(task), method: :patch, class: "home-task__check",
         title: "Marcar como concluída", "aria-label": "Marcar “#{task.title}” como concluída" do %>
-    <%= icon :check, size: 14 %>
+    <%= icon :check, size: 16 %>
   <% end %>
-  <div class="list__main">
-    <%= link_to task.title, task_path(task), class: "list__title" %>
-    <div class="list__meta">
-      <span class="dashboard-task__due"><%= icon :clock, size: 14 %> <%= dashboard_due_label(task) %></span>
-      <%= priority_badge(task) %>
-      <% task.tags.first(3).each do |tag_record| %>
-        <%= tag_chip(tag_record) %>
-      <% end %>
-    </div>
-    <% if show_progress %>
-      <div class="dashboard-task__progress">
-        <%= progress_bar(task.progress_percent, label: "Progresso de #{task.title}") %>
-        <span class="small muted"><%= subtask_summary(task) || "Sem subtarefas" %> · <%= task.progress_percent %>%</span>
-      </div>
-    <% end %>
-  </div>
+  <%= link_to task.title, task_path(task), class: "home-task__title" %>
+  <% if task.blocked? %><span class="badge badge--overdue" title="À espera de outra tarefa">bloqueada</span><% end %>
+  <span class="home-task__due"><%= task.overdue? ? "atrasada" : relative_due(task.due_at) %></span>
 </li>

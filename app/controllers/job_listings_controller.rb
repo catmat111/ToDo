@@ -53,7 +53,8 @@ class JobListingsController < ApplicationController
 
     def job_listing_params
       params.expect(job_listing: [ :url, :title, :company_name, :location, :source, :job_search_id,
-                                   :published_at, :external_id, :description ])
+                                   :published_at, :external_id, :description,
+                                   :work_mode, :salary_min, :salary_max, :salary_period ])
     end
 
     def filtered_listings
@@ -61,6 +62,8 @@ class JobListingsController < ApplicationController
       scope = scope.matching(params[:q]) if params[:q].present?
       scope = scope.where(source: params[:source]) if params[:source].presence_in(JobListing::SOURCES)
       scope = scope.where(job_search_id: params[:job_search_id]) if params[:job_search_id].present?
+      scope = scope.with_work_mode(params[:work_mode]) if params[:work_mode].presence_in(Compensation::WORK_MODES.keys)
+      scope = scope.paying_at_least(params[:min_salary]) if params[:min_salary].to_i.positive?
       case params[:state]
       when "saved" then scope.with_application_for(Current.user)
       when "new" then scope.without_application_for(Current.user)

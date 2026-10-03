@@ -1,0 +1,51 @@
+<%# "Bloqueada por" / "Bloqueia" card on the task page. %>
+<%# locals: (task:) %>
+<section class="card card--mustard" aria-labelledby="deps-title">
+  <div class="card__header">
+    <h2 class="card__title" id="deps-title">Dependências</h2>
+    <% if task.blocked? %><span class="badge badge--overdue">Bloqueada</span><% end %>
+  </div>
+
+  <h3 class="deps__heading">Bloqueada por</h3>
+  <% if task.task_dependencies.any? %>
+    <ul class="list deps__list">
+      <% task.task_dependencies.includes(:blocker).each do |dependency| %>
+        <li class="list__item">
+          <div class="list__main">
+            <%= link_to dependency.blocker.title, dependency.blocker, class: "list__title" %>
+            <div class="list__meta"><%= status_badge(dependency.blocker.status, dependency.blocker.status_label) %></div>
+          </div>
+          <%= button_to task_dependency_path(task, dependency), method: :delete, class: "btn btn--ghost btn--sm",
+                title: "Remover dependência", "aria-label": "Remover dependência de «#{dependency.blocker.title}»" do %>
+            <%= icon :trash, size: 14 %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="small muted">Nada — esta tarefa pode avançar.</p>
+  <% end %>
+
+  <% candidates = Current.user.tasks.active.open.where.not(id: [ task.id, *task.blockers.ids ]).order(:title) %>
+  <% if candidates.any? %>
+    <%= form_with url: task_dependencies_path(task), scope: :task_dependency, class: "deps__form" do |f| %>
+      <%= f.label :blocker_id, "Adicionar tarefa que tem de ser feita antes", class: "sr-only" %>
+      <%= f.select :blocker_id, candidates.map { |t| [ t.title.truncate(60), t.id ] }, { include_blank: "— Tem de ser feita antes… —" }, required: true %>
+      <%= f.button class: "btn btn--outline btn--sm" do %><%= icon :plus, size: 14 %> Adicionar<% end %>
+    <% end %>
+  <% end %>
+
+  <% if task.dependents.any? %>
+    <h3 class="deps__heading">Bloqueia</h3>
+    <ul class="list deps__list">
+      <% task.dependents.each do |dependent| %>
+        <li class="list__item">
+          <div class="list__main">
+            <%= link_to dependent.title, dependent, class: "list__title" %>
+            <div class="list__meta"><%= status_badge(dependent.status, dependent.status_label) %></div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

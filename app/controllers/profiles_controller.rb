@@ -1,7 +1,10 @@
 class ProfilesController < ApplicationController
-  PROFILE_FIELDS = %w[name email_address avatar_url objective theme timezone].freeze
+  PROFILE_FIELDS = %w[name email_address avatar_url objective theme timezone follow_up_after_days].freeze
 
   before_action :set_user
+  # These actions check the current password: slow down guessing.
+  rate_limit to: 10, within: 3.minutes, only: %i[update update_password destroy],
+             with: -> { redirect_to profile_path, alert: "Demasiadas tentativas. Espera uns minutos e tenta outra vez." }
 
   def show
     @calendar_connection = @user.google_calendar
@@ -12,8 +15,24 @@ class ProfilesController < ApplicationController
   end
 
   def update
+    new_photo = profile_params[:avatar].present?
+    # Changing the login email needs the current password (otherwise anyone with an open
+    # session could take over the account via "forgot password" on a new address).
+    if email_change_without_password?
+      @user.assign_attributes(profile_params.except(:avatar))
+      @user.errors.add(:base, "Para mudares o email, confirma a tua password atual.")
+      return render :edit, status: :unprocessable_entity
+    end
+
     if @user.update(profile_params)
+      # The last choice wins: an uploaded photo clears the link, a new link replaces the upload.
+      if new_photo
+        @user.update_column(:avatar_url, nil)
+      elsif params[:remove_avatar] == "1" || (@user.saved_change_to_avatar_url? && @user.avatar_url.present?)
+        @user.avatar.purge_later if @user.avatar.attached?
+      end
       changed = @user.saved_changes.keys & PROFILE_FIELDS
+      changed << "avatar" if new_photo || params[:remove_avatar] == "1"
       AuditLog.record("user.updated", resource: @user, fields: changed) if changed.any?
       redirect_to profile_path, notice: "Perfil atualizado."
     else
@@ -68,7 +87,12 @@ class ProfilesController < ApplicationController
     end
 
     def profile_params
-      params.expect(user: [ :name, :email_address, :avatar_url, :objective, :theme, :timezone ])
+      params.expect(user: [ :name, :email_address, :avatar_url, :avatar, :objective, :theme, :timezone, :follow_up_after_days ])
+    end
+
+    def email_change_without_password?
+      new_email = profile_params[:email_address].to_s.strip.downcase
+      new_email.present? && new_email != @user.email_address && !@user.authenticate(params[:current_password].to_s)
     end
 
     def password_params

@@ -1,7 +1,7 @@
 module NotificationsHelper
   NOTIFICATION_ICONS = {
     "reminder" => :bell, "task_due" => :clock, "application" => :briefcase,
-    "calendar" => :calendar, "system" => :settings
+    "calendar" => :calendar, "share" => :user, "system" => :settings
   }.freeze
 
   # Path of the record a notification points to, or nil when there is none
@@ -14,6 +14,7 @@ module NotificationsHelper
     when JobListing then job_listing_path(record)
     when JobSearch then job_search_path(record)
     when CalendarConnection then calendar_connection_path
+    when Share then shares_path(tab: (notification.user_id == record.sender_id ? "sent" : nil))
     end
   end
 
@@ -24,6 +25,7 @@ module NotificationsHelper
     when JobListing then "Ver vaga"
     when JobSearch then "Ver pesquisa"
     when CalendarConnection then "Ver ligação"
+    when Share then "Ver partilhas"
     end
   end
 

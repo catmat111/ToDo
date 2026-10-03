@@ -1,0 +1,33 @@
+<%# locals: (notification:) %>
+<% target = notifiable_path(notification) %>
+<li class="list__item notification<%= " notification--unread" unless notification.read? %>" id="<%= dom_id(notification) %>">
+  <%= notification_icon(notification) %>
+  <div class="list__main">
+    <div class="notification__heading">
+      <% if target %>
+        <%= link_to notification.title, target, class: "list__title" %>
+      <% else %>
+        <span class="list__title"><%= notification.title %></span>
+      <% end %>
+      <% unless notification.read? %><span class="notification__dot" title="Por ler"><span class="sr-only">Por ler</span></span><% end %>
+    </div>
+    <% if notification.body.present? %>
+      <p class="notification__body"><%= notification.body %></p>
+    <% end %>
+    <div class="list__meta">
+      <span class="badge badge--type"><%= notification.type_label %></span>
+      <%= notification_time(notification) %>
+    </div>
+  </div>
+  <div class="list__actions notification__actions">
+    <% if target %>
+      <%= link_to target, class: "btn btn--ghost btn--sm" do %><%= icon :external, size: 14 %> <%= notifiable_label(notification) %><% end %>
+    <% end %>
+    <% unless notification.read? %>
+      <%= button_to read_notification_path(notification), method: :patch, params: { stay: 1 },
+            class: "btn btn--outline btn--sm", "aria-label": "Marcar “#{notification.title}” como lida" do %>
+        <%= icon :check, size: 14 %> Marcar como lida
+      <% end %>
+    <% end %>
+  </div>
+</li>

@@ -1,0 +1,26 @@
+<%# locals: (company:) %>
+<%= form_with model: company, class: "form" do |f| %>
+  <%= render "shared/form_errors", record: company %>
+  <div class="form__row">
+    <div class="field">
+      <%= f.label :name, "Nome" %>
+      <%= f.text_field :name, required: true, maxlength: 200, autofocus: company.new_record?, placeholder: "Ex.: ACME, Lda." %>
+    </div>
+    <div class="field">
+      <%= f.label :location, "Localização" %>
+      <%= f.text_field :location, placeholder: "Ex.: Lisboa" %>
+    </div>
+  </div>
+  <div class="field">
+    <%= f.label :website, "Website" %>
+    <%= f.url_field :website, placeholder: "https://…" %>
+  </div>
+  <div class="field">
+    <%= f.label :notes, "Notas" %>
+    <%= f.text_area :notes, rows: 5, placeholder: "Cultura, salários, processo de recrutamento, impressões…" %>
+  </div>
+  <div class="form__actions">
+    <%= f.button type: "submit", class: "btn btn--primary" do %><%= icon :check %> Guardar<% end %>
+    <%= link_to "Cancelar", company.persisted? ? company_path(company) : companies_path, class: "btn btn--ghost" %>
+  </div>
+<% end %>

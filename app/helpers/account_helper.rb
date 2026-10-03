@@ -33,11 +33,14 @@ module AccountHelper
     end.freeze
   end
 
-  # Round avatar with the user's photo or initial. Only absolute http(s) URLs are rendered,
-  # so an invalid value being re-shown on a failed form never reaches image_tag's asset lookup.
+  # Round avatar: uploaded photo first, then the photo URL, then the initial. Only absolute
+  # http(s) URLs are rendered, so an invalid value re-shown on a failed form never reaches
+  # image_tag's asset lookup.
   def user_avatar(user, size: nil)
     tag.span(class: [ "avatar", ("avatar--#{size}" if size) ], "aria-hidden": "true") do
-      if user.avatar_url.to_s.match?(%r{\Ahttps?://\S+\z}i)
+      if user.avatar.attached? && user.avatar.blob.persisted? && user.errors[:avatar].empty?
+        image_tag(url_for(user.avatar), alt: "")
+      elsif user.avatar_url.to_s.match?(%r{\Ahttps?://\S+\z}i)
         image_tag(user.avatar_url, alt: "", referrerpolicy: "no-referrer")
       else
         user.name.to_s.first.to_s.upcase

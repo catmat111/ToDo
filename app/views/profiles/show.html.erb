@@ -15,7 +15,10 @@
 <div class="grid grid--sidebar">
   <div class="stack">
     <section class="card card--accent profile-hero" aria-labelledby="profile-name">
-      <%= user_avatar(@user, size: :lg) %>
+      <%# Click the photo to change it; saved right away. %>
+      <%= form_with model: @user, url: profile_path, method: :patch, data: { turbo: false } do |form| %>
+        <%= render "profiles/avatar_picker", form: form, user: @user, autosubmit: true %>
+      <% end %>
       <div class="profile-hero__body">
         <h2 class="profile-hero__name" id="profile-name"><%= @user.name %></h2>
         <p class="profile-hero__email"><%= @user.email_address %></p>
@@ -47,6 +50,8 @@
         <dd><span class="theme-swatch theme-swatch--<%= @user.theme %>" aria-hidden="true"></span><%= theme_label(@user.theme) %></dd>
         <dt>Fuso horário</dt>
         <dd><%= timezone_label(@user.timezone) %></dd>
+        <dt>Follow-up</dt>
+        <dd><%= @user.follow_up_after_days.zero? ? "Desligado" : "Ao fim de #{@user.follow_up_after_days} dias sem resposta" %></dd>
         <dt>Hora local</dt>
         <dd><%= l(Time.current, format: "%H:%M") %></dd>
       </dl>

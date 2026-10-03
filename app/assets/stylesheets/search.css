@@ -1,0 +1,64 @@
+/* Search results: each record type has a fixed palette colour + icon,
+   used for the group's top rule, icon chip and counter. */
+.search-results { display: grid; gap: var(--space-5); }
+
+.search-group {
+  --type: var(--terracotta);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--type);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.search-group--tasks { --type: var(--terracotta); }
+.search-group--job-applications { --type: var(--olive); }
+.search-group--job-listings { --type: var(--mustard); }
+.search-group--companies { --type: light-dark(var(--charcoal), var(--cream)); }
+.search-group--contacts { --type: color-mix(in srgb, var(--olive) 70%, var(--charcoal)); }
+
+.search-group__title {
+  display: flex; align-items: center; gap: var(--space-2);
+  margin: 0; padding: var(--space-3) var(--space-4);
+  font-size: 1.35rem; font-style: italic;
+  background: color-mix(in srgb, var(--type) 9%, var(--color-surface));
+  border-bottom: 1px solid var(--color-border);
+}
+.search-group__icon {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--type); color: #FBF8F3;
+}
+.search-group__count {
+  margin-left: auto; min-width: 28px; padding: 2px 10px; border-radius: 999px; text-align: center;
+  font-family: var(--font-body); font-style: normal; font-size: 0.8rem; font-weight: 700;
+  color: var(--type); border: 1.5px solid var(--type);
+}
+
+.search-group .list__item { padding: var(--space-3) var(--space-4); border-left: 3px solid transparent; }
+.search-group .list__item:hover { border-left-color: var(--type); background: color-mix(in srgb, var(--type) 6%, transparent); }
+.search-group .list__title { font-size: 1.02rem; }
+.search-group mark {
+  background: color-mix(in srgb, var(--mustard) 32%, transparent); color: inherit;
+  border-radius: 3px; padding: 0 2px;
+}
+.search-group--companies .search-group__icon { color: light-dark(#FBF8F3, #1F1812); }
+
+/* Big search bar on the results page — same cream pill as the masthead box. */
+.searchbar {
+  display: flex; align-items: center; gap: var(--space-3);
+  background: var(--color-surface); border: 2px solid var(--color-border-strong);
+  border-radius: 999px; padding: 6px 6px 6px var(--space-5); margin-bottom: var(--space-6);
+  color: var(--color-primary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.searchbar:focus-within { border-color: var(--mustard); box-shadow: 0 0 0 4px color-mix(in srgb, var(--mustard) 30%, transparent); }
+.searchbar input {
+  flex: 1; min-width: 0; border: 0; background: transparent; color: var(--color-text);
+  font: inherit; font-size: 1.15rem; padding: var(--space-2) 0;
+}
+.searchbar input:focus { outline: none; }
+.searchbar input::placeholder { color: var(--color-text-muted); font-family: var(--font-display); font-style: italic; font-size: 1.25rem; }
+.searchbar__button {
+  border: 0; cursor: pointer; border-radius: 999px; padding: 10px 22px;
+  background: var(--terracotta); color: #FBF8F3; font: inherit; font-weight: 600;
+}
+.searchbar__button:hover { background: var(--charcoal); }

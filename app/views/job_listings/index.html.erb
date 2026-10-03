@@ -36,6 +36,7 @@
     <%= f.label :state, "Estado", class: "field__label" %>
     <%= f.select :state, options_for_select(job_listing_state_options, params[:state]) %>
   </div>
+  <%= render "shared/compensation_filters", f: f %>
   <div class="cluster">
     <%= f.submit "Filtrar", class: "btn btn--secondary", name: nil %>
     <% if job_listing_filters_applied? %>
@@ -58,6 +59,7 @@
             <div class="list__meta">
               <% if listing.company_name.present? %><span class="job-listing-item__company"><%= listing.company_name %></span><% end %>
               <% if listing.location.present? %><span><%= listing.location %></span><% end %>
+              <%= render "shared/compensation_tags", record: listing %>
               <%= job_source_badge(listing.source) %>
               <% if listing.job_search %>
                 <%= link_to listing.job_search.name, listing.job_search, class: "job-listing-item__search" %>

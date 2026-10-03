@@ -81,6 +81,8 @@
 
     <%= render "reminders/section", task: @task if lookup_context.exists?("section", [ "reminders" ], true) %>
     <%= render "links/section", linkable: @task if lookup_context.exists?("section", [ "links" ], true) %>
+    <%= render "task_dependencies/section", task: @task %>
+    <%= render "shares/form", shareable: @task %>
   </div>
 
   <aside class="stack" aria-label="Detalhes da tarefa">

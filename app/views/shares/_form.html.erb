@@ -1,0 +1,24 @@
+<%# locals: (shareable:) %>
+<section class="card" aria-labelledby="share-title-<%= dom_id(shareable) %>">
+  <div class="card__header">
+    <h2 class="card__title" id="share-title-<%= dom_id(shareable) %>">Partilhar</h2>
+  </div>
+  <p class="muted small">
+    A pessoa recebe uma cópia na conta dela se aceitar. As tuas notas, estado e histórico não são partilhados.
+  </p>
+  <%= form_with scope: :share, url: shares_path, class: "form" do |f| %>
+    <%= f.hidden_field :shareable_type, value: shareable.class.name %>
+    <%= f.hidden_field :shareable_id, value: shareable.id %>
+    <div class="field">
+      <%= f.label :email, "Email da pessoa", class: "field__label" %>
+      <%= f.email_field :email, required: true, autocomplete: "off", placeholder: "nome@exemplo.pt" %>
+    </div>
+    <div class="field">
+      <%= f.label :message, "Mensagem (opcional)", class: "field__label" %>
+      <%= f.text_area :message, rows: 2, maxlength: 1000, placeholder: "Ex.: Achei que esta vaga era para ti!" %>
+    </div>
+    <div class="form__actions">
+      <%= f.button type: "submit", class: "btn btn--secondary btn--sm" do %><%= icon :user %> Enviar<% end %>
+    </div>
+  <% end %>
+</section>

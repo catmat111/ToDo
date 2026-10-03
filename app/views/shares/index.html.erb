@@ -1,0 +1,63 @@
+<% content_for :title, "Partilhas" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Partilhas</h1>
+    <p class="page-header__subtitle">
+      <%= @pending_count.zero? ? "Nada à tua espera." : "#{@pending_count} por responder" %>
+    </p>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Tipo de partilha">
+  <%= link_to shares_path, class: [ "tabs__link", ("is-active" if @tab == "received") ],
+        "aria-current": (@tab == "received" ? "page" : nil) do %>
+    Recebidas <% if @pending_count.positive? %><span class="badge badge--in-progress"><%= @pending_count %></span><% end %>
+  <% end %>
+  <%= link_to "Enviadas", shares_path(tab: "sent"), class: [ "tabs__link", ("is-active" if @tab == "sent") ],
+        "aria-current": (@tab == "sent" ? "page" : nil) %>
+</nav>
+
+<% if @shares.any? %>
+  <div class="card card--flush">
+    <ul class="list">
+      <% @shares.each do |share| %>
+        <li class="list__item" id="<%= dom_id(share) %>">
+          <div class="list__main">
+            <span class="list__title"><%= share.title %></span>
+            <div class="list__meta">
+              <span class="badge badge--type"><%= share.kind_label %></span>
+              <%= status_badge(share.status == "declined" ? "rejected" : share.status == "accepted" ? "completed" : "pending", share.status_label) %>
+              <% if @tab == "received" %>
+                de <strong><%= share.sender.name %></strong>
+              <% else %>
+                para <strong><%= share.recipient.name %></strong>
+              <% end %>
+              · há <%= time_ago_in_words(share.created_at) %>
+            </div>
+            <% if share.message.present? %>
+              <p class="notification__body">“<%= share.message %>”</p>
+            <% end %>
+          </div>
+          <div class="list__actions">
+            <% if @tab == "received" && share.pending? %>
+              <%= button_to accept_share_path(share), method: :patch, class: "btn btn--primary btn--sm" do %>
+                <%= icon :check, size: 14 %> Aceitar
+              <% end %>
+              <%= button_to "Recusar", decline_share_path(share), method: :patch, class: "btn btn--outline btn--sm" %>
+            <% elsif @tab == "received" && share.accepted? && share.copy %>
+              <%= link_to "Abrir", share.copy, class: "btn btn--ghost btn--sm" %>
+            <% elsif @tab == "sent" && share.pending? %>
+              <%= button_to "Cancelar", share_path(share), method: :delete, class: "btn btn--danger btn--sm",
+                    form: { data: { turbo_confirm: "Cancelar esta partilha?" } } %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% else %>
+  <%= render "shared/empty_state",
+        title: @tab == "sent" ? "Ainda não partilhaste nada" : "Sem partilhas recebidas",
+        body: "Numa tarefa, vaga ou candidatura, usa o cartão «Partilhar» para enviar a outra pessoa." %>
+<% end %>
