@@ -139,6 +139,6 @@ module AuditLogsHelper
 
     def audit_value_label(value)
       return "—" if value.blank?
-      ApplicationHelper::STATUS_LABELS[value.to_s] || JobApplication::STATUS_LABELS[value.to_s] || value.to_s.humanize
+      BadgesHelper::STATUS_LABELS[value.to_s] || JobApplication::STATUS_LABELS[value.to_s] || value.to_s.humanize
     end
 end

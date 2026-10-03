@@ -1,7 +1,7 @@
 <% content_for :title, "Hoje" %>
-<% today_list = @dashboard.overdue_tasks + @dashboard.today_tasks %>
-<% upcoming = @dashboard.upcoming_tasks.first(5) %>
-<% open_applications = Current.user.job_applications.in_progress.count %>
+<% today_list = @dashboard.today_tasks %>
+<% upcoming = @dashboard.upcoming_tasks %>
+<% open_applications = @dashboard.open_applications_count %>
 
 <div class="home">
   <header class="home__header">

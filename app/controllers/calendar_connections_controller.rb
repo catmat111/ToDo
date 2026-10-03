@@ -42,7 +42,7 @@ class CalendarConnectionsController < ApplicationController
     tokens = Calendar.client.exchange_code(code: params[:code].to_s, redirect_uri: callback_calendar_connection_url)
     Calendar::Connect.call(user: Current.user, tokens: tokens)
     redirect_to calendar_connection_path, notice: "Google Calendar ligado. A primeira sincronização já começou."
-  rescue GoogleCalendarClient::Error => e
+  rescue GoogleClient::Error => e
     Rails.logger.warn("[calendar] OAuth callback failed: #{e.class}")
     redirect_to calendar_connection_path, alert: "Não foi possível ligar ao Google Calendar. Tenta novamente."
   end

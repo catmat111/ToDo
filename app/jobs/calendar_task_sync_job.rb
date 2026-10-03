@@ -5,10 +5,10 @@ class CalendarTaskSyncJob < ApplicationJob
 
   discard_on ActiveRecord::RecordNotFound
   discard_on Calendar::AuthorizationError
-  discard_on GoogleCalendarClient::Error do |job, error|
+  discard_on GoogleClient::Error do |job, error|
     job.logger.warn("[calendar] task sync discarded: #{error.class}")
   end
-  retry_on GoogleCalendarClient::NetworkError, attempts: 3, wait: :polynomially_longer
+  retry_on GoogleClient::NetworkError, attempts: 3, wait: :polynomially_longer
 
   def perform(task_id)
     task = Task.find_by(id: task_id)

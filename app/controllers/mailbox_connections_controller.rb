@@ -38,7 +38,7 @@ class MailboxConnectionsController < ApplicationController
     )
     AuditLog.record("mailbox.connected", resource: connection)
     redirect_to mailbox_connection_path, notice: "Gmail ligado. Agora escolhe a etiqueta onde guardas as respostas."
-  rescue GoogleCalendarClient::Error => e
+  rescue GoogleClient::Error => e
     Rails.logger.warn("[gmail] OAuth callback failed: #{e.class}")
     redirect_to mailbox_connection_path, alert: "Não foi possível ligar ao Gmail. Tenta novamente."
   end
@@ -75,10 +75,10 @@ class MailboxConnectionsController < ApplicationController
       connection = @connection || Current.user.mailbox_connection
       token = connection.token_expired? ? refresh(connection) : connection.access_token
       GmailClient.new.labels(access_token: token)
-    rescue GoogleCalendarClient::AuthError
+    rescue GoogleClient::AuthError
       connection.mark_error!("Autorização expirada — volta a ligar o Gmail.")
       []
-    rescue GoogleCalendarClient::Error
+    rescue GoogleClient::Error
       []
     end
 

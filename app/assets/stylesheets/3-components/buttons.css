@@ -1,0 +1,33 @@
+/* Buttons: rectangular, semi-bold.
+   primary = terracotta (main action) · secondary = olive · warning = mustard
+   outline = charcoal border, fills on hover · ghost = no background · danger = red outline */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  padding: 9px 16px; border-radius: var(--radius); border: 1px solid transparent;
+  font: inherit; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer;
+  background: var(--color-surface-2); color: var(--color-text);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.btn:hover { background: var(--color-surface-3); color: var(--color-text); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+
+.btn--primary { background: var(--color-primary); color: var(--color-text-inverse); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15); }
+.btn--primary:hover { background: var(--color-primary-hover); color: var(--color-text-inverse); }
+.btn--secondary { background: var(--color-accent); color: var(--color-text-inverse); }
+.btn--secondary:hover { background: var(--color-accent-hover); color: var(--color-text-inverse); }
+.btn--warning { background: var(--color-warning); color: var(--color-text-inverse); }
+.btn--outline { background: transparent; border-color: var(--color-text); }
+.btn--outline:hover { background: var(--color-text); color: var(--color-bg); }
+.btn--ghost { background: transparent; }
+.btn--ghost:hover { background: var(--color-surface-2); }
+.btn--danger { background: transparent; color: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 40%, transparent); }
+.btn--danger:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+
+.btn--sm { padding: 6px 12px; font-size: 0.88rem; }
+.btn--icon { padding: 8px; }
+.btn--block { width: 100%; }
+
+/* Rails' button_to wraps the button in a form. */
+.button_to { display: inline; margin: 0; }
+form.button_to { display: inline-flex; }

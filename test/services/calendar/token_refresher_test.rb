@@ -29,7 +29,7 @@ class Calendar::TokenRefresherTest < ActiveSupport::TestCase
 
   test "stores a rotated refresh token" do
     @connection.update!(expires_at: 1.minute.ago)
-    @fake.refresh_tokens = GoogleCalendarClient::TokenSet.new(access_token: "a2", refresh_token: "r2", expires_at: 1.hour.from_now, scope: nil)
+    @fake.refresh_tokens = GoogleClient::TokenSet.new(access_token: "a2", refresh_token: "r2", expires_at: 1.hour.from_now, scope: nil)
 
     Calendar::TokenRefresher.call(@connection, client: @fake)
 
@@ -43,7 +43,7 @@ class Calendar::TokenRefresherTest < ActiveSupport::TestCase
 
   test "an auth failure marks the connection, notifies once and raises a non-retryable error" do
     @connection.update!(expires_at: 1.minute.ago)
-    @fake.fail_next(:refresh, GoogleCalendarClient::AuthError.new("Google respondeu 400 (invalid_grant)"))
+    @fake.fail_next(:refresh, GoogleClient::AuthError.new("Google respondeu 400 (invalid_grant)"))
 
     assert_difference -> { Notification.where(user: users(:one), notification_type: "calendar").count }, 1 do
       error = assert_raises(Calendar::AuthorizationError) { Calendar::TokenRefresher.call(@connection, client: @fake) }
@@ -63,9 +63,9 @@ class Calendar::TokenRefresherTest < ActiveSupport::TestCase
 
   test "network errors propagate untouched so the job can retry" do
     @connection.update!(expires_at: 1.minute.ago)
-    @fake.fail_next(:refresh, GoogleCalendarClient::NetworkError.new("timeout"))
+    @fake.fail_next(:refresh, GoogleClient::NetworkError.new("timeout"))
 
-    assert_raises(GoogleCalendarClient::NetworkError) { Calendar::TokenRefresher.call(@connection, client: @fake) }
+    assert_raises(GoogleClient::NetworkError) { Calendar::TokenRefresher.call(@connection, client: @fake) }
     assert @connection.reload.active?
   end
 end

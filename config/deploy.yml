@@ -39,20 +39,30 @@ registry:
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
   secret:
-      - RAILS_MASTER_KEY
-      # PostgreSQL connection for the main database (see .kamal/secrets).
-      - DATABASE_URL
-      # Keys that encrypt OAuth tokens at rest (bin/rails db:encryption:init).
-      - AR_ENCRYPTION_PRIMARY_KEY
-      - AR_ENCRYPTION_DETERMINISTIC_KEY
-      - AR_ENCRYPTION_KEY_DERIVATION_SALT
-      # Google Calendar / Gmail integration (optional).
-      - GOOGLE_CLIENT_ID
-      - GOOGLE_CLIENT_SECRET
+    - RAILS_MASTER_KEY
+    # PostgreSQL connection for the main database (see .kamal/secrets).
+    - DATABASE_URL
+    # Keys that encrypt OAuth tokens at rest (bin/rails db:encryption:init).
+    - AR_ENCRYPTION_PRIMARY_KEY
+    - AR_ENCRYPTION_DETERMINISTIC_KEY
+    - AR_ENCRYPTION_KEY_DERIVATION_SALT
+    # Google Calendar / Gmail integration (optional).
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    # Outgoing email (SMTP login of your email provider).
+    - SMTP_USERNAME
+    - SMTP_PASSWORD
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
     SOLID_QUEUE_IN_PUMA: true
+
+    # Public address of the app (links in emails, allowed Host header) and email settings.
+    APP_HOST: o-teu-dominio.pt
+    MAILER_HOST: o-teu-dominio.pt
+    MAILER_FROM: "ToDo <o-teu-email@gmail.com>"
+    SMTP_ADDRESS: smtp.gmail.com
+    SMTP_PORT: 587
 
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3

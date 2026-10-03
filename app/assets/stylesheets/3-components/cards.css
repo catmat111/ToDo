@@ -1,0 +1,31 @@
+/* Cards and stat tiles.
+   Cards are light surfaces on the cream background with a 3px coloured top rule.
+   Colour comes from a modifier (--accent / --olive / --mustard) or, inside a grid or
+   stack, cycles terracotta → olive → mustard so neighbouring cards differ. */
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-border-strong);
+  border-radius: var(--radius); padding: var(--space-5); box-shadow: var(--shadow-sm);
+}
+.card--flush { padding: 0; overflow: hidden; }
+.grid > .card:nth-child(3n + 1), .stack > .card:nth-child(3n + 1) { border-top-color: var(--terracotta); }
+.grid > .card:nth-child(3n + 2), .stack > .card:nth-child(3n + 2) { border-top-color: var(--olive); }
+.grid > .card:nth-child(3n + 3), .stack > .card:nth-child(3n + 3) { border-top-color: var(--mustard); }
+.card--accent { border-top-color: var(--terracotta); }
+.card--olive { border-top-color: var(--olive); }
+.card--mustard { border-top-color: var(--mustard); }
+.card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+.card__title { font-size: 1.35rem; margin: 0; color: var(--color-text); }
+.card__footer { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+
+/* Stat tile: big number + label; solid palette variants for headline numbers. */
+.stat { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-4) var(--space-5); }
+.stat__value { font-family: var(--font-display); font-size: 2.4rem; font-weight: 600; line-height: 1; }
+.stat__label { color: var(--color-text-muted); font-size: 0.88rem; margin-top: var(--space-1); }
+.stat--terracotta { background: var(--terracotta); border-color: transparent; color: #FBF8F3; }
+.stat--olive { background: var(--olive); border-color: transparent; color: #FBF8F3; }
+.stat--mustard { background: var(--mustard); border-color: transparent; color: #FBF8F3; }
+.stat--charcoal { background: var(--charcoal); border-color: transparent; color: #FBF8F3; }
+.stat--terracotta .stat__label, .stat--olive .stat__label,
+.stat--mustard .stat__label, .stat--charcoal .stat__label { color: rgba(251, 248, 243, 0.82); }

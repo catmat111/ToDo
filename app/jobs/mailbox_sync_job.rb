@@ -2,7 +2,7 @@
 # arguments (hourly, config/recurring.yml) syncs every active connection.
 class MailboxSyncJob < ApplicationJob
   queue_as :default
-  retry_on GoogleCalendarClient::NetworkError, attempts: 3, wait: :polynomially_longer
+  retry_on GoogleClient::NetworkError, attempts: 3, wait: :polynomially_longer
   discard_on ActiveRecord::RecordNotFound
 
   def perform(connection_id = nil)

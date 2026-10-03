@@ -33,7 +33,7 @@ module Inbox
       Inbox::Rematch.call(@user) # earlier emails may now match newly added applications
       notify(created) if created.positive?
       created
-    rescue GoogleCalendarClient::AuthError
+    rescue GoogleClient::AuthError
       @connection.mark_error!("Autorização expirada — volta a ligar o Gmail.")
       0
     end

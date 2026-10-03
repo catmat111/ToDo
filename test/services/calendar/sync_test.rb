@@ -71,7 +71,7 @@ class Calendar::SyncTest < ActiveSupport::TestCase
   test "expired token and failed refresh mark the connection as error and notify once" do
     @connection.update!(expires_at: 1.minute.ago)
     eligible_task
-    @fake.fail_next(:refresh, GoogleCalendarClient::AuthError.new("Google respondeu 400 (invalid_grant)", status: 400), times: 2)
+    @fake.fail_next(:refresh, GoogleClient::AuthError.new("Google respondeu 400 (invalid_grant)", status: 400), times: 2)
 
     assert_difference -> { users(:one).notifications.where(notification_type: "calendar").count }, 1 do
       assert_raises(Calendar::AuthorizationError) { run_sync }
@@ -92,7 +92,7 @@ class Calendar::SyncTest < ActiveSupport::TestCase
 
   test "a rejected access token is refreshed once and the sync retried" do
     eligible_task
-    @fake.fail_next(:insert_event, GoogleCalendarClient::AuthError.new("Google respondeu 401", status: 401))
+    @fake.fail_next(:insert_event, GoogleClient::AuthError.new("Google respondeu 401", status: 401))
 
     result = run_sync
 
@@ -103,7 +103,7 @@ class Calendar::SyncTest < ActiveSupport::TestCase
 
   test "a second rejection after refreshing is final" do
     eligible_task
-    @fake.fail_next(:insert_event, GoogleCalendarClient::AuthError.new("Google respondeu 401", status: 401), times: 2)
+    @fake.fail_next(:insert_event, GoogleClient::AuthError.new("Google respondeu 401", status: 401), times: 2)
 
     assert_raises(Calendar::AuthorizationError) { run_sync }
     assert @connection.reload.error?
@@ -112,7 +112,7 @@ class Calendar::SyncTest < ActiveSupport::TestCase
   test "per-task errors do not abort the run" do
     failing = eligible_task
     ok = eligible_task(due_at: 3.days.from_now)
-    @fake.fail_next(:insert_event, GoogleCalendarClient::Error.new("Google respondeu 400 (badRequest)", status: 400))
+    @fake.fail_next(:insert_event, GoogleClient::Error.new("Google respondeu 400 (badRequest)", status: 400))
 
     result = run_sync
 
@@ -126,9 +126,9 @@ class Calendar::SyncTest < ActiveSupport::TestCase
 
   test "network errors abort the run so the job can retry it" do
     eligible_task
-    @fake.fail_next(:insert_event, GoogleCalendarClient::NetworkError.new("Falha de rede"))
+    @fake.fail_next(:insert_event, GoogleClient::NetworkError.new("Falha de rede"))
 
-    assert_raises(GoogleCalendarClient::NetworkError) { run_sync }
+    assert_raises(GoogleClient::NetworkError) { run_sync }
     assert_nil @connection.reload.last_synced_at
   end
 

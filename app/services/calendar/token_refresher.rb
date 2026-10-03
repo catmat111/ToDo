@@ -24,7 +24,7 @@ module Calendar
       attributes[:scope] = tokens.scope if tokens.scope.present?
       @connection.update!(attributes)
       @connection.access_token
-    rescue GoogleCalendarClient::AuthError
+    rescue GoogleClient::AuthError
       AuthFailure.call(@connection)
       raise AuthorizationError, AuthFailure::MESSAGE
     end

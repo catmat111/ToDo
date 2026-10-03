@@ -79,8 +79,8 @@
       <% end %>
     </section>
 
-    <%= render "reminders/section", task: @task if lookup_context.exists?("section", [ "reminders" ], true) %>
-    <%= render "links/section", linkable: @task if lookup_context.exists?("section", [ "links" ], true) %>
+    <%= render "reminders/section", task: @task %>
+    <%= render "links/section", linkable: @task %>
     <%= render "task_dependencies/section", task: @task %>
     <%= render "shares/form", shareable: @task %>
   </div>
@@ -139,7 +139,7 @@
 
     <%= render "task_recurrences/card", task: @task, recurrence: recurrence_form %>
 
-    <%= render "calendar_events/task_status", task: @task if lookup_context.exists?("task_status", [ "calendar_events" ], true) %>
+    <%= render "calendar_events/task_status", task: @task %>
 
     <section class="card" aria-labelledby="task-manage-heading">
       <h2 class="card__title task-card-title" id="task-manage-heading">Gerir</h2>

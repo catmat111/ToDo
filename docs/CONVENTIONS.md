@@ -1,7 +1,7 @@
 # Convenções do projeto ToDo
 
-Referência rápida para quem escreve código nesta app. A arquitetura completa está no
-plano de arquitetura (Plano_ToDo_Rails_Arquitetura.pdf).
+Referência rápida para quem escreve código nesta app: regras e componentes visuais.
+A organização do código (camadas, domínios, onde pôr cada coisa) está em [ARQUITETURA.md](ARQUITETURA.md).
 
 ## Stack
 
@@ -30,13 +30,15 @@ plano de arquitetura (Plano_ToDo_Rails_Arquitetura.pdf).
 
 ## UI (pt-PT)
 
-Todo o texto visível em português de Portugal. Design system em
-`app/assets/stylesheets/application.css`; estilos específicos de uma área vão num ficheiro próprio
-(`tasks.css`, `jobs.css`, …) e usam apenas os tokens (`var(--color-primary)`, …), nunca hex soltos.
+Todo o texto visível em português de Portugal. Design system em camadas, em
+`app/assets/stylesheets/` (`1-base/` tokens → `2-layout/` → `3-components/` → `4-pages/`);
+estilos de uma só área vão para `4-pages/<área>.css` e usam apenas os tokens
+(`var(--color-primary)`, …), nunca hex soltos.
 
 Paleta: Terracotta `#9C5D3C` (primária) · Olive Green `#6E6B41` (acento) · Warm Cream `#D1C7B5`
-(bordas/superfícies) · Mustard Gold `#B07E1E` (aviso/destaque) · Charcoal Brown `#382C23` (texto/sidebar).
-Tema claro e escuro via `data-theme` no `<html>` (preferência `users.theme`).
+(bordas/superfícies) · Mustard Gold `#B07E1E` (aviso/destaque) · Charcoal Brown `#382C23` (texto/cabeçalho).
+Tema claro, escuro ou automático via `data-theme` no `<html>` (preferência `users.theme`);
+cada cor é definida uma vez com `light-dark(claro, escuro)` em `1-base/tokens.css`.
 
 ### Estrutura típica de página
 
@@ -85,10 +87,11 @@ Tema claro e escuro via `data-theme` no `<html>` (preferência `users.theme`).
 | `timeline`, `timeline__item`, `timeline__date` | Histórico |
 | `grid grid--2/3`, `grid--sidebar`, `stack`, `cluster`, `spread`, `muted`, `small`, `sr-only` | Layout |
 
-### Helpers (`ApplicationHelper`)
+### Helpers
 
-`icon(:name)`, `status_badge(status)`, `priority_badge(task)`, `tag_chip(tag)`, `format_datetime(t)`,
-`format_date(d)`, `relative_due(t)`, `progress_bar(pct)`, `nav_link_to`, `unread_notifications_count`.
+`icon(:name)` (IconsHelper) · `status_badge`, `priority_badge`, `tag_chip`, `progress_bar` (BadgesHelper) ·
+`format_datetime`, `format_date`, `relative_due` (FormattingHelper) · `section_links`,
+`unread_notifications_count` (NavigationHelper) · `theme_toggle_button` (ThemeHelper).
 Partials: `shared/form_errors` (`record:`), `shared/empty_state` (`title:, body:, action:`), `shared/flash`.
 
 Ícones disponíveis: home, tasks, calendar, briefcase, search, list, bell, settings, tag, plus, check,

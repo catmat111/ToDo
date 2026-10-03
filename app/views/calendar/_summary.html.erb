@@ -25,7 +25,7 @@
   <h3 class="calendar-legend__title">Legenda</h3>
   <ul class="calendar-legend">
     <% Task::STATUSES.each do |status| %>
-      <li><span class="calendar-legend__swatch calendar-item--<%= status.dasherize %>" aria-hidden="true"></span><%= ApplicationHelper::STATUS_LABELS[status] %></li>
+      <li><span class="calendar-legend__swatch calendar-item--<%= status.dasherize %>" aria-hidden="true"></span><%= BadgesHelper::STATUS_LABELS[status] %></li>
     <% end %>
     <li><span class="calendar-legend__swatch calendar-item--overdue" aria-hidden="true"></span>Em atraso</li>
     <li><%= icon :calendar, size: 13, class: "calendar-legend__icon" %>Sincroniza com o Google</li>

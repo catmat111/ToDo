@@ -33,6 +33,9 @@ Tarefas demoradas (sincronizar calendário, enviar lembretes) correm em **jobs**
 
 ## 2. Estrutura de pastas e ficheiros
 
+> A organização geral (camadas, domínios, onde pôr cada coisa nova) está em
+> [ARQUITETURA.md](ARQUITETURA.md). Esta secção é o mapa ficheiro a ficheiro.
+
 ### 2.1 Base de dados — `db/`
 
 | Ficheiro | Para que serve |
@@ -140,10 +143,10 @@ Cada serviço tem um método `.call` e devolve um resultado (`success?`, `error`
 | `mailers/notification_mailer.rb` | Email de lembrete (vistas em `views/notification_mailer`). |
 | `mailers/passwords_mailer.rb` | Email de recuperação de password. |
 | `presenters/dashboard_presenter.rb` | Prepara todos os dados da página "Hoje" (saudação, contadores, listas). |
-| `helpers/application_helper.rb` | Funções usadas nas views: `icon`, `status_badge`, `relative_due`, `progress_bar`, botão de tema… |
+| `helpers/{icons,navigation,badges,formatting,theme}_helper.rb` | Funções partilhadas pelas views: ícones, menu, badges, datas, tema (ver ARQUITETURA.md §6). |
 | `helpers/*_helper.rb` | Rótulos em português e pequenas funções de cada área (tarefas, emprego, calendário…). |
-| `javascript/controllers/*.js` | Comportamentos Stimulus: menu lateral, mensagens, tema, filtros automáticos de tarefas, kanban com arrastar-e-largar, formulário de filtros de emprego, copiar URL, pré-visualização de etiquetas. |
-| `views/layouts/application.html.erb` | Moldura de todas as páginas: menu lateral, barra de topo (pesquisa, nova tarefa, tema, avatar, sair) ou painel de login. |
+| `javascript/controllers/*.js` | Comportamentos Stimulus: post-it, avatar, pesquisa (/), mensagens, tema, filtros automáticos de tarefas, kanban com arrastar-e-largar, formulário de filtros de emprego, copiar URL, pré-visualização de etiquetas. |
+| `views/layouts/application.html.erb` | Moldura de todas as páginas: cabeçalho (nome, 4 secções, pesquisa, sino, tema, avatar), segunda linha da secção, post-it; ou painel de login. |
 | `views/shared/` | Partes reutilizáveis: mensagens, erros de formulário, estado vazio. |
 | `views/<área>/` | Páginas de cada área. Ficheiros com `_` no início são *partials* (pedaços reutilizados). |
 
@@ -151,11 +154,18 @@ Cada serviço tem um método `.call` e devolve um resultado (`success?`, `error`
 
 | Ficheiro | Conteúdo |
 | --- | --- |
-| `application.css` | **Design system**: cores (tokens), tipografia, layout, botões, cartões, formulários, badges, listas, kanban… |
-| `tasks.css`, `dashboard.css`, `jobs.css`, `applications.css`, `calendar.css`, `tags.css`, `account.css` | Estilos específicos de cada área, sempre usando os tokens. |
+| Pasta | Conteúdo |
+| --- | --- |
+| `1-base/` | `tokens.css` (todas as cores, letras e espaços), `elements.css` (HTML base), `utilities.css` |
+| `2-layout/` | `masthead.css` (cabeçalho), `auth.css` (login), `page-header.css` |
+| `3-components/` | Botões, cartões, badges, formulários, listas, separadores, kanban, avisos… |
+| `4-pages/` | Um ficheiro por área: `home`, `tasks`, `jobs`, `applications`, `calendar`, `search`, `quickadd`… |
 
-**Cores e tema:** cada cor é definida uma vez como `light-dark(<claro>, <escuro>)` no topo de
-`application.css`. O atributo `data-theme` do `<html>` escolhe:
+As pastas são numeradas porque o Rails carrega os ficheiros por ordem alfabética: cada camada
+pode usar as anteriores.
+
+**Cores e tema:** cada cor é definida uma vez como `light-dark(<claro>, <escuro>)` em
+`1-base/tokens.css`. O atributo `data-theme` do `<html>` escolhe:
 `light` (sempre claro), `dark` (sempre escuro) ou `system` (segue o sistema operativo).
 Para mudar uma cor da app inteira basta mudar o token.
 
@@ -192,7 +202,7 @@ Comandos: `bin/rails test` (testes), `bin/rubocop` (estilo), `bin/brakeman` (seg
 5. `config/locales/pt.yml`: nome do campo em português.
 6. Um teste em `test/models/task_test.rb`.
 
-**Mudar uma cor** → token em `application.css` (os dois valores de `light-dark`).
+**Mudar uma cor** → token em `1-base/tokens.css` (os dois valores de `light-dark`).
 
 **Nova página** → rota em `routes.rb` → controller → view em `app/views/<nome>/` → link no menu
 (`layouts/application.html.erb`, com `nav_link_to`).
@@ -202,7 +212,7 @@ Comandos: `bin/rails test` (testes), `bin/rubocop` (estilo), `bin/brakeman` (seg
 `JobFilter::ALLOWED_KEYS`.
 
 **Novo estado de candidatura** → `JobApplication::STATUSES`, `TRANSITIONS`, `STATUS_LABELS`,
-estilo `badge--<estado>` em `application.css`.
+estilo `badge--<estado>` em `3-components/badges.css`.
 
 ---
 
@@ -218,9 +228,9 @@ estilo `badge--<estado>` em `application.css`.
 
 | ✅Média | **Google Calendar real** | Criar projeto na Google Cloud, OAuth com redirect `…/calendar_connection/callback`, definir `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` e testar à mão. |
 | ✅ Feito | **PostgreSQL em produção** | Gem `pg` (grupo production), `database.yml` usa `DATABASE_URL`, Kamal com accessory `postgres:17`, CI testa em PostgreSQL. |
-| Média | **Email em produção** | SMTP em `production.rb` + `MAILER_HOST`/`MAILER_FROM`. |
-| Média | **Testes de sistema (browser)** | Capybara para os fluxos completos (criar tarefa, candidatura). Não há nenhum ainda. |
-| Média | **CI** | Confirmar que o GitHub Actions corre `bin/rails db:test:prepare test`. |
+| ✅ Feito | **Email em produção** | SMTP por variáveis (`SMTP_ADDRESS`, `SMTP_USERNAME`, `SMTP_PASSWORD`…), `MAILER_FROM`/`MAILER_HOST`; em dev sem SMTP os emails ficam em `tmp/mails/`. |
+| ✅ Média | **Testes de sistema (browser)** | Capybara para os fluxos completos (criar tarefa, candidatura). Não há nenhum ainda. |
+| ✅ Feito | **CI** | GitHub Actions: segurança (brakeman, bundler-audit, importmap), rubocop, testes em SQLite e em PostgreSQL. Os testes de browser são ignorados até existir `test/system`. |
 | Baixa | **Deploy** | `config/deploy.yml` (Kamal) ainda tem os valores de exemplo. Backups da BD. |
 | Baixa | **Ordenação manual** | A coluna `tasks.position` existe mas ainda não há arrastar-e-largar na lista. |
 
@@ -268,6 +278,3 @@ estilo `badge--<estado>` em `application.css`.
 
 
 
-echo 'export GOOGLE_CLIENT_ID=649750695539-tmu9rhk33r5utcjnsouj2sekfmgrckun.apps.googleusercontent.com' >> ~/.bashrc
-echo 'export GOOGLE_CLIENT_SECRET=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' >> ~/.bashrc
-source ~/.bashrc
