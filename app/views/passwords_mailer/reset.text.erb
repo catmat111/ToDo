@@ -1,6 +1,6 @@
 Olá, <%= @user.first_name %>!
 
-Recebemos um pedido para redefinir a password da tua conta no ToDo.
+Recebemos um pedido para redefinir a password da tua conta no Tu Do.
 Para escolheres uma nova password, abre este link:
 
 <%= edit_password_url(@user.password_reset_token) %>
@@ -9,4 +9,4 @@ O link expira dentro de <%= distance_of_time_in_words(0, @user.password_reset_to
 
 Se não foste tu que pediste esta alteração, podes ignorar este email: a tua password continua igual.
 
-— A equipa ToDo
+— A equipa Tu Do

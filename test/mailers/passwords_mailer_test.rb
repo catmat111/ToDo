@@ -5,7 +5,7 @@ class PasswordsMailerTest < ActionMailer::TestCase
     user = users(:one)
     mail = PasswordsMailer.reset(user)
 
-    assert_equal "Redefinir a tua password do ToDo", mail.subject
+    assert_equal "Redefinir a tua password do Tu Do", mail.subject
     assert_equal [ "one@example.com" ], mail.to
 
     [ mail.html_part.body.to_s, mail.text_part.body.to_s ].each do |body|

@@ -1,4 +1,4 @@
-# Arquitetura do ToDo
+# Arquitetura do Tu Do
 
 Como a aplicação está organizada, porquê, e onde pôr cada coisa nova.
 Para o aspeto visual (componentes, cores, helpers de UI) ver [CONVENTIONS.md](CONVENTIONS.md);

@@ -1,4 +1,4 @@
-# Guia do projeto ToDo
+# Guia do projeto TuDo
 
 Este guia explica para que serve cada ficheiro, como os pedidos atravessam a aplicação,
 como fazer as alterações mais comuns, o que falta fazer e ideias que valem a pena.
@@ -253,10 +253,10 @@ estilo `badge--<estado>` em `3-components/badges.css`.
 - ✅ **Dependências entre tarefas** ("bloqueada por"), além de pai/filho.
 - **Estimativa e tempo gasto** (ou um temporizador tipo Pomodoro).
 - **Lixo com restauro**: hoje apagar é definitivo; um "apagado há 30 dias" evita acidentes.
-- **Pesquisa global** (tarefas + vagas + candidaturas) na barra de topo.
+- ✅ **Pesquisa global** (tarefas + vagas + candidaturas) na barra de topo.
 
 **Calendário**
-- **Feed ICS só de leitura** (`/calendar.ics?token=…`): qualquer calendário (Google, Apple, Outlook)
+- ✅ **Feed ICS só de leitura** (`/calendar.ics?token=…`): qualquer calendário (Google, Apple, Outlook)
   subscreve sem OAuth. Muito mais simples do que a integração completa e útil já.
 - **Webhooks do Google** (push) em vez de sincronizações periódicas.
 

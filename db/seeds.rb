@@ -1,4 +1,4 @@
-# Dados de demonstração para o ToDo.
+# Dados de demonstração para o Tu Do.
 #
 #   bin/rails db:seed                          # desenvolvimento
 #   RAILS_ENV=test bin/rails db:seed:replant   # CI
@@ -207,7 +207,7 @@ Time.use_zone("Europe/Lisbon") do
 
     # ----------------------------------------------------------------- Notificações
     [
-      { title: "Bem-vinda ao ToDo, Catarina!", notification_type: "system", read_at: DemoSeeds.at(-7, 10),
+      { title: "Bem-vinda ao Tu Do, Catarina!", notification_type: "system", read_at: DemoSeeds.at(-7, 10),
         body: "Começa por criar etiquetas e as tarefas desta semana." },
       { title: "Prazo hoje: Entregar relatório de Sistemas Distribuídos", notification_type: "task_due",
         notifiable: relatorio, body: "Entrega até às 23:59." },

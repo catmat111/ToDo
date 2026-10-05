@@ -100,8 +100,8 @@
           <h2 class="card__title" id="calendar-problems-title">Tarefas com problemas</h2>
           <% if @problem_events.any?(&:conflict?) && @connection.active? %>
             <%= button_to sync_calendar_connection_path(resolve: "todo"), class: "btn btn--warning btn--sm",
-                          form: { data: { turbo_confirm: "Substituir os eventos em conflito pela versão do ToDo?" } } do %>
-              Resolver conflitos com a versão do ToDo
+                          form: { data: { turbo_confirm: "Substituir os eventos em conflito pela versão do Tu Do?" } } do %>
+              Resolver conflitos com a versão do Tu Do
             <% end %>
           <% end %>
         </div>
@@ -132,7 +132,7 @@
         <div class="calendar-connect__icon" aria-hidden="true"><%= icon :calendar, size: 32 %></div>
         <h2 class="card__title" id="calendar-connect-title">Ligar a conta Google</h2>
         <p class="muted">
-          Autoriza o ToDo a criar e atualizar eventos no teu calendário. Só pedimos acesso aos eventos
+          Autoriza o Tu Do a criar e atualizar eventos no teu calendário. Só pedimos acesso aos eventos
           (<code>calendar.events</code>) — nunca aos teus contactos, email ou ficheiros.
         </p>
         <% if @configured %>

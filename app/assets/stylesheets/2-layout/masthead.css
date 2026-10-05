@@ -13,15 +13,13 @@
   display: flex; align-items: center; gap: var(--space-6);
 }
 
-/* --- Wordmark "todo." (also used large on the sign-in page) --- */
+/* --- Wordmark "Tu Do." — upright serif in the logo's cream (#EFE7DD) --- */
 .wordmark {
-  font-family: var(--font-display); font-style: italic; font-weight: 600;
-  font-size: 1.9rem; line-height: 1; letter-spacing: -0.01em;
-  color: #F6F1E7; text-decoration: none;
+  font-family: var(--font-display); font-style: normal; font-weight: 600;
+  font-size: 1.9rem; line-height: 1; letter-spacing: -0.01em; white-space: nowrap;
+  color: #EFE7DD; text-decoration: none;
 }
-.wordmark__dot { color: var(--terracotta); }
-.wordmark--lg { font-size: 3.4rem; margin: 0; }
-.auth .wordmark { color: var(--color-text); }
+.wordmark .wordmark__dot { color: inherit; }
 
 /* --- Main navigation --- */
 .mainnav { display: flex; gap: var(--space-5); flex: 1; overflow-x: auto; scrollbar-width: none; }

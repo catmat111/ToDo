@@ -1,22 +1,21 @@
 {
-  "name": "ToDo",
-  "icons": [
-    {
-      "src": "/icon.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    },
-    {
-      "src": "/icon.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "maskable"
-    }
-  ],
+  "name": "Tu Do. — tarefas e candidaturas",
+  "short_name": "Tu Do",
+  "description": "Tarefas, candidaturas e o teu tempo, num só sítio.",
+  "lang": "pt-PT",
   "start_url": "/",
-  "display": "standalone",
   "scope": "/",
-  "description": "ToDo.",
-  "theme_color": "red",
-  "background_color": "red"
+  "display": "standalone",
+  "theme_color": "#382C23",
+  "background_color": "#9B4922",
+  "icons": [
+    { "src": "/tudo-icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/tudo-icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "/tudo-icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Hoje", "url": "/" },
+    { "name": "Tarefas", "url": "/tasks" },
+    { "name": "Candidaturas", "url": "/applications" }
+  ]
 }

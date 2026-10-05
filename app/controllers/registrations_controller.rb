@@ -17,7 +17,7 @@ class RegistrationsController < ApplicationController
     if @user.save
       start_new_session_for @user
       AuditLog.record("user.registered", resource: @user, user: @user)
-      redirect_to root_path, notice: "Bem-vindo(a) ao ToDo, #{@user.first_name}! A tua conta foi criada."
+      redirect_to root_path, notice: "Bem-vindo(a) ao Tu Do, #{@user.first_name}! A tua conta foi criada."
     else
       render :new, status: :unprocessable_entity
     end

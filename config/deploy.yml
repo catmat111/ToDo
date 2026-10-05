@@ -60,7 +60,7 @@ env:
     # Public address of the app (links in emails, allowed Host header) and email settings.
     APP_HOST: o-teu-dominio.pt
     MAILER_HOST: o-teu-dominio.pt
-    MAILER_FROM: "ToDo <o-teu-email@gmail.com>"
+    MAILER_FROM: "Tu Do <o-teu-email@gmail.com>"
     SMTP_ADDRESS: smtp.gmail.com
     SMTP_PORT: 587
 

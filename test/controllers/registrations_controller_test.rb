@@ -45,7 +45,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
     user = User.order(:id).last
     assert_redirected_to root_path
-    assert_match "Bem-vindo(a) ao ToDo, Carla!", flash[:notice]
+    assert_match "Bem-vindo(a) ao Tu Do, Carla!", flash[:notice]
     assert cookies[:session_id]
     assert_equal 1, user.sessions.count
     assert_equal "carla@example.com", user.email_address
