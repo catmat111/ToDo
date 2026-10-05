@@ -55,7 +55,7 @@ class CalendarConnectionsController < ApplicationController
     resolve = params[:resolve] == "todo"
     CalendarSyncJob.perform_later(@connection.id, resolve_conflicts: resolve)
     AuditLog.record("calendar.sync_requested", resource: @connection, resolve_conflicts: resolve)
-    notice = resolve ? "Sincronização agendada — os conflitos vão ser resolvidos com a versão do ToDo." : "Sincronização agendada. Os eventos vão ser atualizados dentro de instantes."
+    notice = resolve ? "Sincronização agendada — os conflitos vão ser resolvidos com a versão do Tu Do." : "Sincronização agendada. Os eventos vão ser atualizados dentro de instantes."
     redirect_back_or_to calendar_connection_path, notice: notice
   end
 

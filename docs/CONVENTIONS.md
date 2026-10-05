@@ -1,4 +1,4 @@
-# Convenções do projeto ToDo
+# Convenções do projeto Tu Do
 
 Referência rápida para quem escreve código nesta app: regras e componentes visuais.
 A organização do código (camadas, domínios, onde pôr cada coisa) está em [ARQUITETURA.md](ARQUITETURA.md).
