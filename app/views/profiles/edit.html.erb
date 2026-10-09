@@ -82,6 +82,12 @@
           <%= form.number_field :follow_up_after_days, min: 0, max: 90, step: 1, "aria-describedby": "follow-up-hint" %>
           <p class="field__hint" id="follow-up-hint">Se uma candidatura enviada ficar estes dias sem novidades, crio uma tarefa de follow-up. 0 desliga.</p>
         </div>
+        <div class="field">
+          <%= form.label :linkedin_app, "App do LinkedIn", class: "field__label" %>
+          <%= form.select :linkedin_app, [ [ "Perguntar quando abrir uma pesquisa", "" ], [ "Tenho a app (abrir na app)", "true" ], [ "Não tenho (abrir no browser)", "false" ] ],
+                          { selected: @user.linkedin_app.nil? ? "" : @user.linkedin_app.to_s }, "aria-describedby": "linkedin-app-hint" %>
+          <p class="field__hint" id="linkedin-app-hint">Define onde abrem as pesquisas do LinkedIn.</p>
+        </div>
       </div>
     </fieldset>
 

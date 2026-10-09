@@ -1,0 +1,13 @@
+<% content_for :title, "Abrir no LinkedIn" %>
+
+<div class="card" style="max-width: 32rem; margin: var(--space-6, 2rem) auto;">
+  <h1 class="card__title">Tens a app do LinkedIn?</h1>
+  <p>
+    Se tiveres, abro as pesquisas do LinkedIn sempre na app. Se não, abro no browser.
+    Guardo a tua resposta e podes mudá-la no teu perfil.
+  </p>
+  <div class="cluster">
+    <%= button_to "Sim, tenho a app", run_job_search_path(@job_search), params: { linkedin_app: "yes" }, class: "btn btn--primary" %>
+    <%= button_to "Não, usar o browser", run_job_search_path(@job_search), params: { linkedin_app: "no" }, class: "btn btn--outline" %>
+  </div>
+</div>

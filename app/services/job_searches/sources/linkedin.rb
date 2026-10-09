@@ -3,6 +3,7 @@ module JobSearches
     # https://www.linkedin.com/jobs/search/?keywords=...&location=...&f_TPR=r604800&f_JT=F&f_WT=2&f_E=2
     class Linkedin < Base
       BASE_URL = "https://www.linkedin.com/jobs/search/".freeze
+      APP_URL = "linkedin://jobs/search".freeze
       RECENCY = {
         "24h" => "r86400", "3d" => "r259200", "week" => "r604800", "2weeks" => "r1209600", "month" => "r2592000"
       }.freeze
@@ -27,6 +28,12 @@ module JobSearches
 
       def label
         "LinkedIn"
+      end
+
+      # Same search, but through the LinkedIn app's URL scheme instead of the website.
+      def app_url
+        query = URI.encode_www_form(params.compact_blank)
+        query.empty? ? APP_URL : "#{APP_URL}?#{query}"
       end
 
       private

@@ -1,0 +1,13 @@
+<% content_for :title, "A abrir o LinkedIn" %>
+<% content_for :head do %>
+  <meta http-equiv="refresh" content="0;url=<%= @app_url %>">
+<% end %>
+
+<div class="card" style="max-width: 32rem; margin: var(--space-6, 2rem) auto;">
+  <h1 class="card__title">A abrir na app do LinkedIn…</h1>
+  <p>Se a app não abrir, confirma que a tens instalada ou abre a pesquisa no browser.</p>
+  <div class="cluster">
+    <%= link_to "Abrir na app", @app_url, class: "btn btn--primary" %>
+    <%= link_to "Abrir no browser", @web_url, class: "btn btn--outline" %>
+  </div>
+</div>
