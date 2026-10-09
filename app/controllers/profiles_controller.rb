@@ -1,5 +1,5 @@
 class ProfilesController < ApplicationController
-  PROFILE_FIELDS = %w[name email_address avatar_url objective theme timezone follow_up_after_days].freeze
+  PROFILE_FIELDS = %w[name email_address avatar_url objective theme timezone follow_up_after_days linkedin_app].freeze
 
   before_action :set_user
   # These actions check the current password: slow down guessing.
@@ -87,7 +87,7 @@ class ProfilesController < ApplicationController
     end
 
     def profile_params
-      params.expect(user: [ :name, :email_address, :avatar_url, :avatar, :objective, :theme, :timezone, :follow_up_after_days ])
+      params.expect(user: [ :name, :email_address, :avatar_url, :avatar, :objective, :theme, :timezone, :follow_up_after_days, :linkedin_app ])
     end
 
     def email_change_without_password?

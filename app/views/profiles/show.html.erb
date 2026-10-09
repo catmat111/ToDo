@@ -52,6 +52,8 @@
         <dd><%= timezone_label(@user.timezone) %></dd>
         <dt>Follow-up</dt>
         <dd><%= @user.follow_up_after_days.zero? ? "Desligado" : "Ao fim de #{@user.follow_up_after_days} dias sem resposta" %></dd>
+        <dt>App do LinkedIn</dt>
+        <dd><%= { nil => "Perguntar ao abrir uma pesquisa", true => "Tenho (abre na app)", false => "Não tenho (abre no browser)" }[@user.linkedin_app] %></dd>
         <dt>Hora local</dt>
         <dd><%= l(Time.current, format: "%H:%M") %></dd>
       </dl>

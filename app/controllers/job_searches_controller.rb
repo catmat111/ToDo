@@ -46,9 +46,21 @@ class JobSearchesController < ApplicationController
   end
 
   # Opens the external site with every filter applied (the view submits this in a new tab).
+  # LinkedIn searches ask once whether the user has the LinkedIn app, remember the answer
+  # and from then on open the app (yes) or the website (no).
   def run
-    url = JobSearches::Runner.call(@job_search)
-    redirect_to url, allow_other_host: true, status: :see_other
+    remember_linkedin_app if @job_search.source == "linkedin"
+    return render :linkedin_choice if @job_search.source == "linkedin" && Current.user.linkedin_app.nil?
+
+    if @job_search.source == "linkedin" && Current.user.linkedin_app?
+      # A redirect to linkedin:// would fail inside the service worker (it only fetches http),
+      # so a page hands the link to the app instead.
+      @app_url = JobSearches::Runner.call(@job_search, app: true)
+      @web_url = JobSearches::Sources.for(@job_search).url
+      render :open_linkedin_app
+    else
+      redirect_to JobSearches::Runner.call(@job_search), allow_other_host: true, status: :see_other
+    end
   end
 
   private
@@ -58,6 +70,11 @@ class JobSearchesController < ApplicationController
 
     def job_search_params
       params.expect(job_search: [ :name, :source, :query, :active ])
+    end
+
+    def remember_linkedin_app
+      answer = { "yes" => true, "no" => false }[params[:linkedin_app].to_s]
+      Current.user.update_column(:linkedin_app, answer) unless answer.nil?
     end
 
     def adapter_label

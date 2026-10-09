@@ -117,7 +117,51 @@ class JobSearchesControllerTest < ActionDispatch::IntegrationTest
     assert_nil listing.reload.job_search_id
   end
 
+  test "run asks whether the user has the LinkedIn app before the first LinkedIn search" do
+    post run_job_search_url(@job_search)
+
+    assert_response :success
+    assert_select "form[action=?]", run_job_search_path(@job_search), count: 2
+    assert_nil @user.reload.linkedin_app
+    assert_nil @job_search.reload.last_run_at
+  end
+
+  test "answering yes remembers it and opens the LinkedIn app" do
+    post run_job_search_url(@job_search), params: { linkedin_app: "yes" }
+
+    # Rendered page (not a redirect): a redirect to linkedin:// breaks inside the service worker.
+    assert_response :success
+    assert_select "meta[http-equiv=refresh][content^=?]", "0;url=linkedin://jobs/search?"
+    assert_select "a[href^=?]", "linkedin://jobs/search?", text: "Abrir na app"
+    assert_select "a[href^=?]", "https://www.linkedin.com/jobs/search/?", text: "Abrir no browser"
+    assert_equal true, @user.reload.linkedin_app
+    assert_not_nil @job_search.reload.last_run_at
+
+    post run_job_search_url(@job_search)
+    assert_response :success
+    assert_select "meta[http-equiv=refresh]"
+  end
+
+  test "answering no remembers it and opens the website" do
+    post run_job_search_url(@job_search), params: { linkedin_app: "no" }
+
+    assert response.location.start_with?("https://www.linkedin.com/jobs/search/?")
+    assert_equal false, @user.reload.linkedin_app
+
+    post run_job_search_url(@job_search)
+    assert response.location.start_with?("https://www.linkedin.com/jobs/search/?")
+  end
+
+  test "other sources never ask about the LinkedIn app" do
+    indeed = @user.job_searches.create!(name: "Indeed", source: "indeed", query: "rails")
+    post run_job_search_url(indeed)
+
+    assert_response :see_other
+    assert_nil @user.reload.linkedin_app
+  end
+
   test "run redirects to the external url and records the run" do
+    @user.update_column(:linkedin_app, false)
     freeze_time do
       post run_job_search_url(@job_search)
 
