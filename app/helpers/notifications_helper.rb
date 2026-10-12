@@ -15,6 +15,8 @@ module NotificationsHelper
     when JobSearch then job_search_path(record)
     when CalendarConnection then calendar_connection_path
     when Share then shares_path(tab: (notification.user_id == record.sender_id ? "sent" : nil))
+    when MailboxConnection then email_messages_path
+    when nil then job_applications_path if notification.notification_type == "application"
     end
   end
 
@@ -26,6 +28,8 @@ module NotificationsHelper
     when JobSearch then "Ver pesquisa"
     when CalendarConnection then "Ver ligação"
     when Share then "Ver partilhas"
+    when MailboxConnection then "Ver respostas"
+    when nil then "Ver candidaturas" if notification.notification_type == "application"
     end
   end
 

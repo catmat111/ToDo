@@ -31,7 +31,8 @@
 
       <ul class="donut__legend" role="list">
         <% breakdown.each do |status, label, count, pct| %>
-          <li class="donut__item<%= " is-empty" if count.zero? %>">
+          <% next if count.zero? %>
+          <li class="donut__item">
             <span class="donut__swatch donut__swatch--<%= status %>" aria-hidden="true"></span>
             <span class="donut__label"><%= label %></span>
             <span class="donut__value"><%= count %></span>

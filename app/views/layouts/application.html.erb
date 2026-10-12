@@ -41,8 +41,23 @@
           <%= link_to root_path, class: "wordmark", "aria-label": "Tu Do. — início" do %>Tu Do<span class="wordmark__dot">.</span><% end %>
           <nav class="mainnav" aria-label="Principal">
             <% main_sections.each do |section| %>
-              <%= link_to section[:label], section[:path], class: [ "mainnav__link", ("is-active" if section[:active]) ],
-                    "aria-current": (section[:active] ? "page" : nil) %>
+              <% if section[:links].any? %>
+                <div class="mainnav__item" data-controller="nav-menu"
+                     data-action="keydown->nav-menu#closeOnEscape click@window->nav-menu#closeOutside">
+                  <%= link_to section[:path], class: [ "mainnav__link", ("is-active" if section[:active]) ],
+                        "aria-current": (section[:active] ? "page" : nil) do %>
+                    <%= section[:label] %><% if section[:badge].positive? %> <span class="nav__badge"><%= section[:badge] %></span><% end %>
+                  <% end %>
+                  <button type="button" class="mainnav__toggle" aria-expanded="false" aria-controls="navmenu-<%= section[:key] %>"
+                          aria-label="Páginas de <%= section[:label] %>" data-nav-menu-target="toggle" data-action="nav-menu#toggle">
+                    <%= icon :chevron_down, size: 14 %>
+                  </button>
+                  <%= render "layouts/nav_menu", links: section[:links], id: "navmenu-#{section[:key]}", label: section[:label] %>
+                </div>
+              <% else %>
+                <%= link_to section[:label], section[:path], class: [ "mainnav__link", ("is-active" if section[:active]) ],
+                      "aria-current": (section[:active] ? "page" : nil) %>
+              <% end %>
             <% end %>
           </nav>
           <div class="masthead__tools" data-controller="search-shortcut" data-action="keydown@window->search-shortcut#focus">
@@ -57,25 +72,19 @@
               <%= render "notifications/badge", count: unread_notifications_count %>
             <% end %>
             <%= theme_toggle_button %>
-            <%= link_to profile_path, class: "masthead__avatar", title: Current.user.name do %>
-              <%= user_avatar(Current.user) %>
-            <% end %>
+            <% account_links = section_links(:account) %>
+            <div class="mainnav__item masthead__account" data-controller="nav-menu"
+                 data-action="keydown->nav-menu#closeOnEscape click@window->nav-menu#closeOutside">
+              <button type="button" class="masthead__avatar" title="<%= Current.user.name %>" aria-expanded="false"
+                      aria-controls="navmenu-account" aria-label="Conta de <%= Current.user.name %>"
+                      data-nav-menu-target="toggle" data-action="nav-menu#toggle">
+                <%= user_avatar(Current.user) %>
+                <% if account_links.sum { |l| l[:badge].to_i }.positive? %><span class="masthead__avatar-dot" aria-hidden="true"></span><% end %>
+              </button>
+              <%= render "layouts/nav_menu", links: account_links, id: "navmenu-account", label: "Conta" %>
+            </div>
           </div>
         </div>
-        <% if (links = section_links).any? %>
-          <nav class="subnav" aria-label="Secção">
-            <% links.each do |item| %>
-              <% if item[:method] %>
-                <%= button_to item[:label], item[:path], method: item[:method], class: "subnav__link subnav__link--button",
-                      form: { data: { turbo_confirm: item[:confirm] } } %>
-              <% else %>
-                <%= link_to item[:path], class: [ "subnav__link", ("is-active" if item[:active]) ] do %>
-                  <%= item[:label] %><% if item[:badge].to_i.positive? %> <span class="subnav__count"><%= item[:badge] %></span><% end %>
-                <% end %>
-              <% end %>
-            <% end %>
-          </nav>
-        <% end %>
       </header>
 
       <main id="main" class="content">
