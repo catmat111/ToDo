@@ -61,7 +61,7 @@ module Inbox
 
       def notify(count)
         @user.notifications.create!(
-          notification_type: "application",
+          notification_type: "application", notifiable: @connection,
           title: count == 1 ? "1 resposta nova de uma empresa para rever" : "#{count} respostas novas de empresas para rever",
           body: "Confirma a que candidatura pertencem e o que dizem."
         )

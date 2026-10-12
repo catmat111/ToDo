@@ -11,7 +11,6 @@ class JobApplicationsController < ApplicationController
 
     applications = Current.user.job_applications
     @status_counts = applications.group(:status).count
-    @applied_count = applications.where.not(applied_at: nil).count
 
     @work_mode = params[:work_mode].presence_in(Compensation::WORK_MODES.keys)
     @min_salary = params[:min_salary].to_i if params[:min_salary].to_i.positive?

@@ -1,0 +1,17 @@
+<%# Drop-down list of a section's pages: opens on hover or with the toggle button (keyboard, touch). %>
+<%# locals: (links:, id:, label:) %>
+<nav class="navmenu" id="<%= id %>" aria-label="<%= label %>" data-nav-menu-target="menu">
+  <% links.each do |item| %>
+    <% if item[:method] %>
+      <div class="navmenu__sep"></div>
+      <%= button_to item[:label], item[:path], method: item[:method],
+            class: "navmenu__link navmenu__link--button", form: { data: { turbo_confirm: item[:confirm] } } %>
+    <% else %>
+      <%= link_to item[:path], class: [ "navmenu__link", ("is-active" if item[:active]) ],
+            "aria-current": (item[:active] ? "page" : nil) do %>
+        <span><%= item[:label] %></span>
+        <% if item[:badge].to_i.positive? %><span class="navmenu__count"><%= item[:badge] %></span><% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</nav>

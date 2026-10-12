@@ -14,8 +14,7 @@
     </p>
   </div>
   <div class="page-header__actions">
-    <%= link_to new_linkedin_import_path, class: "btn btn--outline" do %><%= icon :refresh %> Importar do LinkedIn<% end %>
-    <%= link_to job_listings_path, class: "btn btn--outline" do %><%= icon :list %> Ver vagas<% end %>
+    <%= link_to new_linkedin_import_path, class: "btn btn--ghost" do %><%= icon :refresh %> Importar do LinkedIn<% end %>
     <%= link_to new_job_application_path, class: "btn btn--primary" do %><%= icon :plus %> Nova candidatura<% end %>
   </div>
 </div>
@@ -26,56 +25,42 @@
         body: "Guarda uma vaga que te interesse ou regista uma candidatura manualmente. Depois é só acompanhar cada etapa.",
         action: link_to("Criar a primeira candidatura", new_job_application_path, class: "btn btn--primary") %>
 <% else %>
-  <section class="ja-stats" aria-label="Resumo das candidaturas">
-    <div class="stat stat--terracotta">
-      <div class="stat__value"><%= in_progress %></div>
-      <div class="stat__label">Em curso</div>
-    </div>
-    <div class="stat stat--charcoal">
-      <div class="stat__value"><%= @applied_count %></div>
-      <div class="stat__label">Candidaturas enviadas</div>
-    </div>
-    <div class="stat stat--olive">
-      <div class="stat__value"><%= @status_counts.fetch("interview", 0) %></div>
-      <div class="stat__label">Em entrevista</div>
-    </div>
-    <div class="stat stat--mustard">
-      <div class="stat__value"><%= @status_counts.fetch("offer", 0) %></div>
-      <div class="stat__label"><%= @status_counts.fetch("offer", 0) == 1 ? "Oferta" : "Ofertas" %></div>
-    </div>
-  </section>
+  <%# Toolbar: view tabs on the left, search on the right; the rarer filters fold away. %>
+  <% active_filters = [ @status.presence, @work_mode, @min_salary, params[:sort].presence ].compact.size %>
+  <% more_filters = active_filters.positive? %>
+  <div class="ja-toolbar">
+    <nav class="tabs ja-toolbar__tabs" aria-label="Modo de visualização">
+      <%= link_to job_application_view_path("kanban"), class: [ "tabs__link", ("is-active" if @view == "kanban") ],
+            "aria-current": (@view == "kanban" ? "page" : nil) do %>Quadro<% end %>
+      <%= link_to job_application_view_path("list"), class: [ "tabs__link", ("is-active" if @view == "list") ],
+            "aria-current": (@view == "list" ? "page" : nil) do %>Lista<% end %>
+    </nav>
 
-  <nav class="tabs" aria-label="Modo de visualização">
-    <%= link_to job_application_view_path("kanban"), class: [ "tabs__link", ("is-active" if @view == "kanban") ],
-          "aria-current": (@view == "kanban" ? "page" : nil) do %>Quadro<% end %>
-    <%= link_to job_application_view_path("list"), class: [ "tabs__link", ("is-active" if @view == "list") ],
-          "aria-current": (@view == "list" ? "page" : nil) do %>Lista<% end %>
-  </nav>
-
-  <%= form_with url: job_applications_path, method: :get, class: "filters", role: "search" do |f| %>
-    <%= hidden_field_tag :view, @view, id: nil %>
-    <div class="field">
-      <%= f.label :q, "Pesquisar", class: "field__label" %>
-      <%= f.search_field :q, value: @query, placeholder: "Título ou empresa…", class: "input" %>
-    </div>
-    <% if @view == "list" %>
-      <div class="field">
-        <%= f.label :status, "Estado", class: "field__label" %>
-        <%= f.select :status, job_application_status_options(@status), {}, class: "input" %>
-      </div>
-      <div class="field">
-        <%= f.label :sort, "Ordenar", class: "field__label" %>
-        <%= f.select :sort, options_for_select([ [ "Mais recentes", "" ], [ "Maior salário", "salary" ] ], params[:sort]), {}, class: "input" %>
-      </div>
-    <% end %>
-    <%= render "shared/compensation_filters", f: f %>
-    <div class="cluster">
-      <%= f.button class: "btn btn--secondary" do %><%= icon :search %> Filtrar<% end %>
-      <% if @query.present? || @status.present? || @work_mode || @min_salary %>
-        <%= link_to "Limpar", job_applications_path(view: @view), class: "btn btn--ghost" %>
+    <%= form_with url: job_applications_path, method: :get, class: "ja-toolbar__search", role: "search" do |f| %>
+      <%= hidden_field_tag :view, @view, id: nil %>
+      <%= f.search_field :q, value: @query, placeholder: "Título ou empresa…", class: "input", "aria-label": "Pesquisar candidaturas" %>
+      <details class="ja-toolbar__more">
+        <summary class="btn btn--ghost btn--sm">Mais filtros<% if more_filters %> <span class="badge"><%= active_filters %></span><% end %></summary>
+        <div class="filters ja-toolbar__panel">
+          <% if @view == "list" %>
+            <div class="field">
+              <%= f.label :status, "Estado", class: "field__label" %>
+              <%= f.select :status, job_application_status_options(@status), {}, class: "input" %>
+            </div>
+            <div class="field">
+              <%= f.label :sort, "Ordenar", class: "field__label" %>
+              <%= f.select :sort, options_for_select([ [ "Mais recentes", "" ], [ "Maior salário", "salary" ] ], params[:sort]), {}, class: "input" %>
+            </div>
+          <% end %>
+          <%= render "shared/compensation_filters", f: f %>
+        </div>
+      </details>
+      <%= f.button class: "btn btn--secondary btn--sm", "aria-label": "Filtrar" do %><%= icon :search, size: 14 %><% end %>
+      <% if @query.present? || more_filters %>
+        <%= link_to "Limpar", job_applications_path(view: @view), class: "btn btn--ghost btn--sm" %>
       <% end %>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 
   <% if @view == "list" %>
     <%= render "list", job_applications: @job_applications, next_tasks: @next_tasks %>

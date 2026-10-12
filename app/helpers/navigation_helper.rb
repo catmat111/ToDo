@@ -1,7 +1,8 @@
-# Masthead navigation: the four main sections and each section's second row.
+# Masthead navigation: the four main sections, each with a small drop-down menu of its
+# pages (the account pages hang off the avatar).
 # To add a page: add its URL prefix to SECTIONS and a link to section_links.
 module NavigationHelper
-  # Top navigation: four sections; everything else lives in the section's sub-nav.
+  # Top navigation: four sections; everything else lives in the section's menu.
   SECTIONS = [
     { key: :home, label: "Hoje", prefixes: [] },
     { key: :tasks, label: "Tarefas", prefixes: %w[/tasks /tags] },
@@ -18,14 +19,16 @@ module NavigationHelper
   def main_sections
     paths = { home: root_path, tasks: tasks_path, calendar: calendar_path, jobs: job_applications_path }
     SECTIONS.select { |s| s[:label] }.map do |s|
-      { label: s[:label], path: paths[s[:key]], active: current_section == s[:key] }
+      links = section_links(s[:key])
+      { key: s[:key], label: s[:label], path: paths[s[:key]], active: current_section == s[:key],
+        links: links, badge: links.sum { |link| link[:badge].to_i } }
     end
   end
 
-  # Second row of links for the current section (empty on the home page).
-  def section_links
+  # The pages of one section, for its drop-down menu (empty for Hoje and Calendário).
+  def section_links(section = current_section)
     items =
-      case current_section
+      case section
       when :tasks
         [ [ "Todas as tarefas", tasks_path, "/tasks" ], [ "Etiquetas", tags_path, "/tags" ] ]
       when :jobs
@@ -46,7 +49,7 @@ module NavigationHelper
     links = items.map do |label, path, prefix, badge|
       { label: label, path: path, active: prefix == active_prefix, badge: badge }
     end
-    links << { label: "Sair", path: session_path, method: :delete, confirm: "Terminar sessão?" } if current_section == :account
+    links << { label: "Sair", path: session_path, method: :delete, confirm: "Terminar sessão?" } if section == :account
     links
   end
 
