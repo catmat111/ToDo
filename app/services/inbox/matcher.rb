@@ -4,7 +4,7 @@ module Inbox
   # email, job title in the email, and the recruiter's email. Returns nil when unsure.
   class Matcher
     GENERIC_DOMAINS = %w[gmail.com outlook.com hotmail.com yahoo.com icloud.com sapo.pt
-                         linkedin.com indeed.com greenhouse.io lever.co workday.com myworkdayjobs.com
+                         linkedin.com indeed.com itjobs.pt greenhouse.io lever.co workday.com myworkdayjobs.com
                          smartrecruiters.com teamtailor.com recruitee.com bamboohr.com].freeze
     MIN_SCORE = 3
 

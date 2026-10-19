@@ -20,7 +20,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: /(Bom dia|Boa tarde|Boa noite), Ana/
     assert_select ".quickadd__fab"
-    assert_select ".quickadd__form input[name='task[title]']"
+    assert_select ".quickadd__form input[name='message']"
     assert_select ".home__empty", text: /Nada para hoje/
     assert_select NEXT, count: 0
     assert_select ".home__footnote", count: 0

@@ -20,7 +20,10 @@ module Inbox
       return 0 unless @connection.active? && @connection.label_chosen?
 
       token = access_token
-      since = @connection.last_synced_at ? @connection.last_synced_at - 1.day : FIRST_SYNC_WINDOW.ago
+      # Gmail's "after:" is the email's own date, not when it got the label, so emails
+      # labelled late (e.g. while the app was off) would be missed with a shorter window.
+      # Already-read ids are skipped below, so looking at the whole window is cheap.
+      since = FIRST_SYNC_WINDOW.ago
       known = @user.email_messages.pluck(:external_id).to_set
       created = 0
 
@@ -33,6 +36,9 @@ module Inbox
       Inbox::Rematch.call(@user) # earlier emails may now match newly added applications
       notify(created) if created.positive?
       created
+    rescue GoogleClient::PermissionError
+      @connection.mark_error!(MailboxConnection::MISSING_PERMISSION)
+      0
     rescue GoogleClient::AuthError
       @connection.mark_error!("Autorização expirada — volta a ligar o Gmail.")
       0

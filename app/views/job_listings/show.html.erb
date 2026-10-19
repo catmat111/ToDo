@@ -19,7 +19,7 @@
       <%= link_to job_application_path(@job_application), class: "btn btn--secondary" do %><%= icon :briefcase %> Ver candidatura<% end %>
     <% else %>
       <%= button_to job_applications_path, params: { job_application: { job_listing_id: @job_listing.id } }, class: "btn btn--primary" do %>
-        <%= icon :briefcase %> Guardar como candidatura
+        <%= icon :briefcase %> Candidatei-me
       <% end %>
     <% end %>
     <%= button_to job_listing_path(@job_listing), method: :delete, class: "btn btn--danger",

@@ -61,7 +61,7 @@ class JobSearchesControllerTest < ActionDispatch::IntegrationTest
   test "new and create" do
     get new_job_search_url
     assert_response :success
-    assert_select "input[type=radio][name='job_search[source]']", 3
+    assert_select "input[type=radio][name='job_search[source]']", 4
 
     assert_difference -> { @user.job_searches.count }, 1 do
       post job_searches_url, params: { job_search: { name: "Indeed Porto", source: "indeed", query: "designer", active: "1" } }

@@ -1,0 +1,13 @@
+<%# An interview or an offer: shown big on top of the list. %>
+<%# locals: (job_application:, next_task: nil) %>
+<article class="ja-highlight ja-highlight--<%= job_application.status %>" id="<%= dom_id(job_application, :highlight) %>">
+  <p class="ja-highlight__kind"><%= icon(job_application.offer? ? :check : :calendar, size: 14) %> <%= job_application.status_label %></p>
+  <%= link_to job_application.title, job_application, class: "ja-highlight__title" %>
+  <% if job_application.company_name.present? %><p class="ja-highlight__company"><%= job_application.company_name %></p><% end %>
+  <% if next_task %>
+    <p class="ja-highlight__task<%= " ja-row__task--overdue" if next_task.overdue? %>">
+      <%= icon :clock, size: 13 %> <%= next_task.title.truncate(48) %> · <%= relative_due(next_task.due_at) %>
+    </p>
+  <% end %>
+  <%= render "job_applications/status_menu", job_application: job_application %>
+</article>

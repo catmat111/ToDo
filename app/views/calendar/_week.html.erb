@@ -2,6 +2,7 @@
 <div class="calendar-week">
   <% period.days.each do |date| %>
     <% day_tasks = agenda.tasks_on(date) %>
+    <% day_events = agenda.events_on(date) %>
     <section class="calendar-week__day<%= " calendar-week__day--today" if period.today?(date) %><%= " calendar-week__day--weekend" if date.saturday? || date.sunday? %>"
              aria-labelledby="calendar-day-<%= date.iso8601 %>"
              <%= tag.attributes("aria-current": (period.today?(date) ? "date" : nil)) %>>
@@ -12,10 +13,22 @@
           <span class="sr-only"><%= calendar_full_date(date) %><%= ", hoje" if period.today?(date) %></span>
         </h3>
         <% if period.today?(date) %><span class="badge badge--in-progress">Hoje</span><% end %>
+        <%= link_to new_event_path(date: date.iso8601), class: "calendar-day__add calendar-week__add",
+              title: "Novo evento", "aria-label": "Novo evento a #{calendar_full_date(date)}" do %><%= icon :plus, size: 13 %><% end %>
       </header>
 
-      <% if day_tasks.any? %>
+      <% if day_tasks.any? || day_events.any? %>
         <ul class="calendar-week__items">
+          <% day_events.each do |event| %>
+            <li class="calendar-week__item calendar-week__item--event">
+              <span class="calendar-week__time"><%= calendar_event_time(event, date) %></span>
+              <%= link_to event.title, edit_event_path(event), class: "calendar-week__link" %>
+              <span class="calendar-week__meta">
+                <span class="badge badge--type">Evento</span>
+                <% if event.location %><span class="muted small"><%= event.location %></span><% end %>
+              </span>
+            </li>
+          <% end %>
           <% day_tasks.each do |task| %>
             <li class="calendar-week__item calendar-week__item--<%= task.status.dasherize %><%= " calendar-week__item--overdue" if task.overdue? %>">
               <span class="calendar-week__time"><%= calendar_task_time(task) %></span>
@@ -30,7 +43,7 @@
           <% end %>
         </ul>
       <% else %>
-        <p class="calendar-week__empty">Sem tarefas</p>
+        <p class="calendar-week__empty">Nada marcado</p>
       <% end %>
     </section>
   <% end %>

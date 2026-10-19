@@ -7,7 +7,8 @@ module JobApplications
   # - Title/company are copied from the listing when not given; they are a snapshot that survives
   #   the listing being deleted later (plan §23).
   # - A listing never gets two applications: the existing one is returned (created: false).
-  # - Every new application starts as "saved" with a matching "saved" history event.
+  # - A new application starts as "saved" by default (imports, shares); pass status: "applied" to
+  #   register it as already sent. Either way a matching history event is recorded.
   class Create
     PERMITTED = %i[title company_name notes job_listing_id contact_id work_mode salary_min salary_max salary_period].freeze
 
@@ -15,8 +16,9 @@ module JobApplications
       new(...).call
     end
 
-    def initialize(user:, params:, occurred_at: Time.current)
+    def initialize(user:, params:, occurred_at: Time.current, status: "saved")
       @user = user
+      @status = status.to_s
       @params = params.to_h.symbolize_keys.slice(*PERMITTED)
       @occurred_at = occurred_at
     end
@@ -31,7 +33,7 @@ module JobApplications
       event = nil
       ActiveRecord::Base.transaction do
         application.save!
-        event = application.job_application_events.create!(event_type: "saved", occurred_at: occurred_at)
+        event = application.job_application_events.create!(event_type: status, occurred_at: occurred_at)
       end
 
       AuditLog.record("job_application.created", resource: application, user: user,
@@ -48,7 +50,7 @@ module JobApplications
     end
 
     private
-      attr_reader :user, :params, :occurred_at
+      attr_reader :user, :params, :occurred_at, :status
 
       def find_listing
         id = params[:job_listing_id]
@@ -62,7 +64,8 @@ module JobApplications
           company_name: params[:company_name].presence || listing&.company_name,
           notes: params[:notes].presence,
           contact: (user.contacts.find_by(id: params[:contact_id]) if params[:contact_id].present?),
-          status: "saved",
+          status: status,
+          applied_at: (occurred_at if status == "applied"),
           # Salary / work mode: what was typed, otherwise copied from the listing.
           work_mode: params[:work_mode].presence || listing&.work_mode,
           salary_min: params[:salary_min].presence || listing&.salary_min,

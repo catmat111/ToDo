@@ -1,0 +1,18 @@
+<% content_for :title, @event.title %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Caminho"><%= link_to "Calendário", calendar_path(date: @event.first_day.iso8601) %></nav>
+    <h1 class="page-header__title"><%= @event.title %></h1>
+  </div>
+  <div class="page-header__actions">
+    <%= button_to event_path(@event), method: :delete, class: "btn btn--danger btn--sm",
+          form: { data: { turbo_confirm: "Eliminar o evento «#{@event.title}»?" } } do %>
+      <%= icon :trash, size: 15 %> Eliminar
+    <% end %>
+  </div>
+</div>
+
+<div class="card event-form-card">
+  <%= render "form", event: @event %>
+</div>

@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   # --- Hoje & global search ---------------------------------------------------
   root "dashboard#show"
   resource :search, only: :show
+  resource :quick_add, only: :create, path: "chat" # the post-it chat (tasks with dates, events)
 
   # --- Account: sign in/up, password reset, profile, history -------------------
   resource :session, only: %i[new create destroy]
@@ -18,6 +19,10 @@ Rails.application.routes.draw do
 
   # --- Tarefas -------------------------------------------------------------------
   resources :tasks do
+    collection do
+      patch :complete_all
+      delete :destroy_all
+    end
     member do
       patch :start
       patch :complete
@@ -29,12 +34,14 @@ Rails.application.routes.draw do
     resources :reminders, only: %i[create destroy]
     resource :recurrence, only: %i[create update destroy], controller: "task_recurrences"
     resources :dependencies, only: %i[create destroy], controller: "task_dependencies", as: :dependencies
+    resource :chat, only: :create, controller: "task_chats" # the post-it chat, acting on this task
   end
   resources :tags, except: :show
   resources :links, only: %i[create destroy] # on tasks and applications
 
   # --- Calendário (+ Google Calendar sync) ----------------------------------------
   resource :calendar, only: :show, controller: "calendar"
+  resources :events, except: %i[index show] # appointments on the calendar (not tasks)
   resource :calendar_connection, only: %i[show create destroy] do
     get :callback
     post :sync

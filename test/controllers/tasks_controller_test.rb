@@ -266,6 +266,44 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
 
   # ---------- member actions ----------
 
+  test "complete_all completes every open task matching the filters" do
+    other = create_task(@user, title: "Segunda")
+    done = create_task(@user, title: "Já feita")
+    done.update!(status: "completed")
+    other_user_task = create_task(users(:two), title: "De outra pessoa")
+
+    patch complete_all_tasks_url
+    assert_redirected_to tasks_url
+    assert @task.reload.completed?
+    assert other.reload.completed?
+    assert other_user_task.reload.pending?
+
+    get tasks_url
+    assert_response :success
+  end
+
+  test "destroy_all deletes only the selected tasks" do
+    keep = create_task(@user, title: "Manter")
+    other = create_task(users(:two), title: "Alheia")
+
+    assert_difference -> { Task.count }, -1 do
+      delete destroy_all_tasks_url, params: { ids: [ @task.id, other.id ] }
+    end
+    assert_redirected_to tasks_url
+    assert_not Task.exists?(@task.id)
+    assert Task.exists?(keep.id)
+    assert Task.exists?(other.id)
+  end
+
+  test "destroy_all with all=1 deletes every task matching the filters" do
+    create_task(@user, title: "Segunda")
+    other = create_task(users(:two), title: "Alheia")
+
+    delete destroy_all_tasks_url, params: { all: "1" }
+    assert_equal 0, @user.tasks.count
+    assert Task.exists?(other.id)
+  end
+
   test "complete, reopen, start and cancel follow the transitions" do
     patch start_task_url(@task)
     assert @task.reload.in_progress?

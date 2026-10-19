@@ -34,6 +34,19 @@ module TasksHelper
     DUE_FILTER_LABELS.map { |value, label| [ label, value ] }
   end
 
+  # Other active filters as removable chips: [ label, params without that filter ].
+  def task_filter_chips(filter)
+    label_for = ->(options, value) { options.find { |_, v| v.to_s == value.to_s }&.first }
+    chips = []
+    chips << [ "“#{filter.q}”", filter.to_params(q: nil) ] if filter.q
+    chips << [ label_for.call(task_status_filter_options, filter.status), filter.to_params(status: nil) ] if filter.status
+    chips << [ label_for.call(task_type_options, filter.task_type), filter.to_params(task_type: nil) ] if filter.task_type
+    chips << [ "Prioridade #{label_for.call(task_priority_options, filter.priority).to_s.downcase}", filter.to_params(priority: nil) ] if filter.priority
+    chips << [ label_for.call(task_due_filter_options, filter.due), filter.to_params(due: nil) ] if filter.due
+    chips << [ "Com subtarefas", filter.to_params(subtasks: nil) ] if filter.subtasks?
+    chips
+  end
+
   def task_sort_options
     SORT_LABELS.map { |value, label| [ label, value ] }
   end
@@ -78,8 +91,8 @@ module TasksHelper
   end
 
   # One button per status the task can move to from here.
-  def task_status_buttons(task)
-    safe_join(task.allowed_transitions.map do |status|
+  def task_status_buttons(task, except: [])
+    safe_join((task.allowed_transitions - except).map do |status|
       config = STATUS_ACTIONS.fetch(status)
       button_to [ config[:action], task ], method: :patch, class: "btn btn--sm #{config[:style]}" do
         safe_join([ (icon(config[:icon], size: 15) if config[:icon]), config[:label] ].compact, " ")

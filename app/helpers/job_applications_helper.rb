@@ -7,7 +7,7 @@ module JobApplicationsHelper
     "withdrawn" => "Desististe desta candidatura. Este estado é final."
   }.freeze
 
-  JOB_LISTING_SOURCE_LABELS = { "linkedin" => "LinkedIn", "indeed" => "Indeed", "other" => "Outra fonte" }.freeze
+  JOB_LISTING_SOURCE_LABELS = { "linkedin" => "LinkedIn", "indeed" => "Indeed", "itjobs" => "ITjobs", "other" => "Outra fonte" }.freeze
 
   def job_application_transition_label(job_application, to)
     return "Nova entrevista" if job_application.interview? && to.to_s == "interview"
@@ -57,9 +57,5 @@ module JobApplicationsHelper
 
   def job_listing_source_label(source)
     JOB_LISTING_SOURCE_LABELS.fetch(source.to_s, source.to_s.humanize)
-  end
-
-  def job_application_view_path(view)
-    job_applications_path({ view: view, q: params[:q].presence, status: params[:status].presence }.compact)
   end
 end

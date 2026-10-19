@@ -10,10 +10,10 @@
     <p class="task-recurrence__summary"><strong><%= task_recurrence_summary(saved) %></strong></p>
     <p class="field__hint">Ao concluíres esta tarefa, é criada a próxima ocorrência com as datas avançadas.</p>
   <% else %>
-    <p class="muted small">Repete esta tarefa: quando a concluíres, é criada automaticamente a próxima ocorrência.</p>
+    <p class="muted small">Não se repete.</p>
   <% end %>
 
-  <details class="task-recurrence__edit"<%= " open" if recurrence.errors.any? || saved.nil? %>>
+  <details class="task-recurrence__edit"<%= " open" if recurrence.errors.any? %>>
     <summary class="task-recurrence__toggle"><%= saved ? "Alterar regra" : "Definir repetição" %></summary>
 
     <%= form_with model: recurrence, url: task_recurrence_path(task), method: (saved ? :patch : :post), class: "form task-recurrence__form" do |f| %>

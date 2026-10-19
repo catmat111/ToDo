@@ -1,6 +1,6 @@
 /* Tabs. */
 
-.tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-5); overflow-x: auto; }
+.tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-5); overflow-x: auto; overflow-y: hidden; }
 .tabs__link {
   padding: var(--space-2) var(--space-4); text-decoration: none; color: var(--color-text-muted);
   border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; font-weight: 500;

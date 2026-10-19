@@ -8,7 +8,7 @@
         <%= pluralize(@job_searches.size, "pesquisa guardada", plural: "pesquisas guardadas") %> ·
         <%= pluralize(@job_searches.count(&:active?), "ativa", plural: "ativas") %>
       <% else %>
-        Guarda as tuas pesquisas do LinkedIn e do Indeed e abre-as com um clique.
+        Guarda as tuas pesquisas do LinkedIn, do Indeed e do ITjobs e abre-as com um clique.
       <% end %>
     </p>
   </div>
@@ -22,7 +22,7 @@
   <%= icon :search, size: 20 %>
   <p>
     Cada pesquisa abre o site externo num novo separador com os filtros já aplicados.
-    Se for preciso iniciar sessão, fazes isso diretamente no LinkedIn ou no Indeed — o Tu Do nunca pede nem guarda essas passwords.
+    Se for preciso iniciar sessão, fazes isso diretamente no LinkedIn, no Indeed ou no ITjobs — o Tu Do nunca pede nem guarda essas passwords.
   </p>
 </div>
 
@@ -97,6 +97,6 @@
 <% else %>
   <%= render "shared/empty_state",
         title: "Ainda não tens pesquisas",
-        body: "Cria uma pesquisa com os teus termos e filtros (localização, recência, tipo de contrato…) e abre-a no LinkedIn, no Indeed ou no Google sempre que quiseres.",
+        body: "Cria uma pesquisa com os teus termos e filtros (localização, recência, tipo de contrato…) e abre-a no LinkedIn, no Indeed, no ITjobs ou no Google sempre que quiseres.",
         action: link_to("Criar a primeira pesquisa", new_job_search_path, class: "btn btn--primary") %>
 <% end %>

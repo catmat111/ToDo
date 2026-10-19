@@ -1,0 +1,20 @@
+<%# Change the status right from the list (the application page has the full form, with dates and notes),
+    or undo the last change. %>
+<%# locals: (job_application:) %>
+<% previous = job_application.previous_status %>
+<% if job_application.closed? && previous.nil? %>
+  <%= status_badge(job_application.status) %>
+<% else %>
+  <%= form_with url: transition_job_application_path(job_application), method: :patch, class: "ja-status-menu",
+        data: { controller: "autosubmit", turbo_stream: true } do |f| %>
+    <%= hidden_field_tag :return_to, "index", id: nil %>
+    <%= f.label "transition[to]", "Estado de «#{job_application.title}»", class: "sr-only", for: dom_id(job_application, :status) %>
+    <%= select_tag "transition[to]",
+          options_for_select([ [ job_application.status_label, "" ] ] +
+                             job_application.allowed_transitions.map { |s| [ "→ #{JobApplication.status_label(s)}", s ] } +
+                             (previous ? [ [ "↩ Voltar a «#{JobApplication.status_label(previous)}»", "revert" ] ] : []), ""),
+          id: dom_id(job_application, :status), class: "ja-status-menu__select ja-status-menu__select--#{job_application.status.dasherize}",
+          data: { action: "change->autosubmit#submit" } %>
+    <noscript><%= f.button "Mudar", class: "btn btn--outline btn--sm" %></noscript>
+  <% end %>
+<% end %>

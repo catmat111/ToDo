@@ -12,6 +12,7 @@ class User < ApplicationRecord
 
   has_many :tasks, dependent: :destroy
   has_many :tags, dependent: :destroy
+  has_many :events, dependent: :destroy
   has_many :links, dependent: :destroy
   has_many :job_searches, dependent: :destroy
   has_many :job_listings, dependent: :destroy

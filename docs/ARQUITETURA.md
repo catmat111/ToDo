@@ -55,7 +55,7 @@ A aplicação divide-se em domínios. Cada um tem os seus modelos, serviços e p
 | **Conta** | `User`, `Session`, `Current`, `AuditLog` | — | — | Avatar → Perfil, Histórico |
 | **Tarefas** | `Task` (+ subtarefas via `parent_task_id`), `TaskRecurrence`, `TaskDependency`, `Tag`, `TaskTag`, `Reminder`, `Link` | `Tasks::*`, `Reminders::Dispatcher` | — | Tarefas |
 | **Calendário** | `CalendarConnection`, `CalendarEvent` (+ `CalendarSyncable` em `Task`) | `Calendar::*` | `GoogleCalendarClient` | Calendário |
-| **Emprego** | `JobSearch`, `JobFilter`, `JobListing`, `JobApplication`, `JobApplicationEvent`, `Company`, `Contact` (+ `Compensation`) | `JobSearches::*`, `JobListings::Importer`, `JobApplications::*` | Links LinkedIn/Indeed, CSV do LinkedIn | Emprego |
+| **Emprego** | `JobSearch`, `JobFilter`, `JobListing`, `JobApplication`, `JobApplicationEvent`, `Company`, `Contact` (+ `Compensation`) | `JobSearches::*`, `JobListings::Importer`, `JobApplications::*` | Links LinkedIn/Indeed/ITjobs, CSV do LinkedIn | Emprego |
 | **Respostas (Gmail)** | `MailboxConnection`, `EmailMessage` | `Inbox::*` | `GmailClient` | Emprego → Respostas |
 | **Partilhas** | `Share` | `Shares::*` | — | Avatar → Partilhas |
 | **Notificações** | `Notification` (tempo real via Turbo Streams) | — | Email (SMTP) | Sino |

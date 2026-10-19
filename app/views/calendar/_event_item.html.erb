@@ -1,0 +1,6 @@
+<%# locals: (event:, date: event.first_day) %>
+<%= link_to edit_event_path(event), class: "calendar-item calendar-item--event", title: [ event.title, event.location ].compact.join(" — "),
+      "aria-label": "Evento: #{event.title}, #{calendar_event_time(event, date)}" do %>
+  <span class="calendar-item__time"><%= calendar_event_time(event, date) %></span>
+  <span class="calendar-item__title"><%= event.title %></span>
+<% end %>

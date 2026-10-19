@@ -1,0 +1,39 @@
+<%# locals: (event:) %>
+<%= form_with model: event, class: "form" do |f| %>
+  <%= render "shared/form_errors", record: event %>
+
+  <div class="field">
+    <%= f.label :title, "O quê" %>
+    <%= f.text_field :title, required: true, maxlength: 200, autofocus: event.new_record?, placeholder: "Ex.: Jantar com a Ana" %>
+  </div>
+
+  <div class="form__row">
+    <div class="field">
+      <%= f.label :starts_at, "Começa" %>
+      <%= f.datetime_field :starts_at, required: true, include_seconds: false %>
+    </div>
+    <div class="field">
+      <%= f.label :ends_at, "Acaba (opcional)" %>
+      <%= f.datetime_field :ends_at, include_seconds: false %>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="check"><%= f.check_box :all_day %> Dia todo (as horas são ignoradas)</label>
+  </div>
+
+  <div class="field">
+    <%= f.label :location, "Onde (opcional)" %>
+    <%= f.text_field :location, maxlength: 200, placeholder: "Ex.: Lisboa, sala 2, Google Meet…" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :notes, "Notas (opcional)" %>
+    <%= f.text_area :notes, rows: 3, maxlength: 5000 %>
+  </div>
+
+  <div class="form__actions">
+    <%= f.button class: "btn btn--primary" do %><%= icon :check, size: 16 %> <%= event.new_record? ? "Adicionar evento" : "Guardar" %><% end %>
+    <%= link_to "Cancelar", calendar_path(date: (event.starts_at || Time.current).in_time_zone.to_date.iso8601), class: "btn btn--ghost" %>
+  </div>
+<% end %>

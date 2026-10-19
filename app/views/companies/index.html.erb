@@ -3,7 +3,6 @@
 <div class="page-header">
   <div>
     <h1 class="page-header__title">Empresas</h1>
-    <p class="page-header__subtitle">Criadas automaticamente a partir das tuas candidaturas, ou à mão.</p>
   </div>
   <div class="page-header__actions">
     <%= link_to contacts_path, class: "btn btn--outline" do %><%= icon :user %> Contactos<% end %>
@@ -11,25 +10,35 @@
   </div>
 </div>
 
-<%= form_with url: companies_path, method: :get, class: "filters" do |f| %>
-  <div class="field">
-    <%= f.label :q, "Pesquisar", class: "field__label" %>
-    <%= f.search_field :q, value: params[:q], class: "input", placeholder: "Nome da empresa" %>
-  </div>
-  <%= f.button "Filtrar", class: "btn btn--outline", name: nil %>
+<%= form_with url: companies_path, method: :get, class: "companies-toolbar" do |f| %>
+  <%= f.hidden_field :sort, value: @sort, id: nil %>
+  <%= f.label :q, "Pesquisar empresa", class: "sr-only" %>
+  <%= f.search_field :q, value: params[:q], class: "input", placeholder: "Pesquisar empresa…" %>
+  <%= f.button icon(:search), class: "btn btn--outline", name: nil, "aria-label": "Pesquisar" %>
+  <nav class="companies-sort" aria-label="Ordenar">
+    <%= link_to "Mais candidaturas", companies_path(q: params[:q].presence, sort: "applications"),
+          class: "btn btn--sm #{@sort == 'applications' ? 'btn--secondary' : 'btn--ghost'}",
+          "aria-current": (@sort == "applications" ? "true" : nil) %>
+    <%= link_to "A–Z", companies_path(q: params[:q].presence, sort: "name"),
+          class: "btn btn--sm #{@sort == 'name' ? 'btn--secondary' : 'btn--ghost'}",
+          "aria-current": (@sort == "name" ? "true" : nil) %>
+  </nav>
 <% end %>
 
 <% if @companies.any? %>
+  <% max = [ @companies.map { |c| c.applications_count.to_i }.max, 1 ].max %>
   <div class="card card--flush">
     <ul class="list">
       <% @companies.each do |company| %>
-        <li class="list__item">
+        <% count = company.applications_count.to_i %>
+        <li class="list__item company-row">
           <div class="list__main">
             <%= link_to company.name, company, class: "list__title" %>
-            <div class="list__meta">
-              <% if company.location.present? %><span><%= company.location %></span> ·<% end %>
-              <span><%= pluralize(company.applications_count, "candidatura", plural: "candidaturas") %></span>
-            </div>
+            <% if company.location.present? %><div class="list__meta"><span><%= company.location %></span></div><% end %>
+          </div>
+          <div class="company-row__count" title="<%= pluralize(count, "candidatura", plural: "candidaturas") %>">
+            <span class="company-row__bar" aria-hidden="true"><span style="width: <%= (count * 100.0 / max).round %>%"></span></span>
+            <strong><%= count %></strong>
           </div>
         </li>
       <% end %>
@@ -37,6 +46,5 @@
   </div>
 <% else %>
   <%= render "shared/empty_state", title: "Sem empresas",
-        body: "Quando escreves a empresa numa candidatura, ela aparece aqui.",
         action: link_to("Nova empresa", new_company_path, class: "btn btn--primary") %>
 <% end %>

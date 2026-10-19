@@ -1,6 +1,6 @@
 class JobSearch < ApplicationRecord
-  SOURCES = %w[linkedin indeed other].freeze
-  SOURCE_LABELS = { "linkedin" => "LinkedIn", "indeed" => "Indeed", "other" => "Outra" }.freeze
+  SOURCES = %w[linkedin indeed itjobs other].freeze
+  SOURCE_LABELS = { "linkedin" => "LinkedIn", "indeed" => "Indeed", "itjobs" => "ITjobs", "other" => "Outra" }.freeze
 
   belongs_to :user
   has_many :job_filters, -> { order(:id) }, dependent: :destroy, inverse_of: :job_search

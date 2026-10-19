@@ -29,3 +29,11 @@
 .stat--charcoal { background: var(--charcoal); border-color: transparent; color: #FBF8F3; }
 .stat--terracotta .stat__label, .stat--olive .stat__label,
 .stat--mustard .stat__label, .stat--charcoal .stat__label { color: rgba(251, 248, 243, 0.82); }
+
+/* Collapsible forms: a button that reveals the form */
+.disclosure > summary { list-style: none; cursor: pointer; }
+.disclosure > summary::-webkit-details-marker { display: none; }
+.disclosure[open] > summary.btn { background: var(--color-surface-2); }
+.disclosure__title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.disclosure__body { margin-top: var(--space-3); }
+.disclosure[open] > .job-filter-form { margin-top: var(--space-3); }

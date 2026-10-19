@@ -63,7 +63,7 @@ Tarefas demoradas (sincronizar calendário, enviar lembretes) correm em **jobs**
 | `tag.rb` / `task_tag.rb` | Etiquetas e a ligação tarefa↔etiqueta. | Nome único por utilizador (sem distinguir maiúsculas); cor hexadecimal; nunca ligar etiqueta de outro utilizador. |
 | `reminder.rb` | Lembrete de uma tarefa (na app ou email). | Tem de ser no futuro; sem duplicados; `claim!` garante que nunca é enviado duas vezes; guarda erros e tenta até 5 vezes. |
 | `link.rb` | Link externo associado a tarefa ou candidatura. | Só `http(s)://`; o dono do link tem de ser o dono do registo. |
-| `job_search.rb` | Pesquisa de emprego guardada (LinkedIn/Indeed/Outra). | `search_url` gera o link com filtros. |
+| `job_search.rb` | Pesquisa de emprego guardada (LinkedIn/Indeed/ITjobs/Outra). | `search_url` gera o link com filtros. |
 | `job_filter.rb` | Filtro de uma pesquisa (localização, recência, tipo…). | Chaves permitidas por fonte; valores normalizados ("semana" → `week`). |
 | `job_listing.rb` | Vaga encontrada. | URL normalizada (sem `utm_`, `www`, `/` final) para **não duplicar**. |
 | `job_application.rb` | Candidatura a uma vaga. | Estados e transições explícitas (`TRANSITIONS`); guarda título/empresa mesmo que a vaga desapareça. |
@@ -116,7 +116,7 @@ Cada serviço tem um método `.call` e devolve um resultado (`success?`, `error`
 | `tasks/owned_tag_ids.rb` | Deixa passar só etiquetas do próprio utilizador. |
 | `tasks/result.rb`, `job_applications/result.rb` | Objetos de resultado dos serviços. |
 | `reminders/dispatcher.rb` | Transforma lembretes vencidos em notificações/emails, sem duplicar. |
-| `job_searches/sources.rb` + `sources/{base,linkedin,indeed,other}.rb` | "Adaptadores": sabem construir o URL de pesquisa de cada site. **Novo site = novo adaptador.** |
+| `job_searches/sources.rb` + `sources/{base,linkedin,indeed,itjobs,other}.rb` | "Adaptadores": sabem construir o URL de pesquisa de cada site. **Novo site = novo adaptador.** |
 | `job_searches/runner.rb` | Executa uma pesquisa: gera URL, guarda `last_run_at`, histórico. |
 | `job_listings/importer.rb` | Única porta de entrada de vagas; nunca duplica. |
 | `job_applications/create.rb` | Cria candidatura (manual ou a partir de vaga) com o primeiro evento. |

@@ -1,6 +1,7 @@
 module Calendar
   # The user's non-archived tasks placed on the days of a Period, by due_at
-  # (falling back to starts_at when a task only has a start).
+  # (falling back to starts_at when a task only has a start), plus their events
+  # (an event lasting several days shows on each of them).
   class Agenda
     def initialize(user:, period:)
       @user = user
@@ -30,6 +31,18 @@ module Calendar
 
     def tasks_on(date)
       tasks_by_day.fetch(date, [])
+    end
+
+    def events
+      @events ||= @user.events.overlapping(@period.time_range).chronological.to_a
+    end
+
+    def events_in_focus
+      @events_in_focus ||= events.select { |event| (event.first_day..event.last_day).any? { |day| @period.in_focus?(day) } }
+    end
+
+    def events_on(date)
+      events.select { |event| event.on?(date) }
     end
 
     def self.date_of(task)

@@ -28,6 +28,10 @@ class MailboxConnectionsController < ApplicationController
 
     client = GmailClient.new
     tokens = client.exchange_code(code: params[:code].to_s, redirect_uri: callback_mailbox_connection_url)
+    unless GmailClient.can_read_mail?(tokens.scope)
+      return redirect_to mailbox_connection_path,
+                         alert: "Não deste permissão para ler o Gmail. Volta a ligar e, no ecrã da Google, marca a caixa do Gmail (ver as tuas mensagens)."
+    end
     connection = Current.user.mailbox_connection || Current.user.build_mailbox_connection
     connection.update!(
       access_token: tokens.access_token,
@@ -75,6 +79,9 @@ class MailboxConnectionsController < ApplicationController
       connection = @connection || Current.user.mailbox_connection
       token = connection.token_expired? ? refresh(connection) : connection.access_token
       GmailClient.new.labels(access_token: token)
+    rescue GoogleClient::PermissionError
+      connection.mark_error!(MailboxConnection::MISSING_PERMISSION)
+      []
     rescue GoogleClient::AuthError
       connection.mark_error!("Autorização expirada — volta a ligar o Gmail.")
       []

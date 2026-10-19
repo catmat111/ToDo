@@ -1,0 +1,15 @@
+<%# locals: (message:, reply:) %>
+<div class="quickadd__msg quickadd__msg--me"><%= message.presence || "…" %></div>
+<% record = reply.record %>
+<% if !reply.ok? %>
+  <div class="quickadd__msg quickadd__msg--app quickadd__msg--error"><%= reply.text %></div>
+<% elsif record.is_a?(Event) %>
+  <div class="quickadd__msg quickadd__msg--app">
+    Marquei o evento <%= link_to record.title, edit_event_path(record) %> para
+    <strong><%= record.all_day? ? format_date(record.starts_at) : format_datetime(record.starts_at) %></strong>. Mais alguma coisa?
+  </div>
+<% else %>
+  <div class="quickadd__msg quickadd__msg--app">
+    Adicionei <%= link_to record.title, task_path(record) %> para <strong><%= relative_due(record.due_at) %></strong>. Mais alguma coisa?
+  </div>
+<% end %>

@@ -33,41 +33,39 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="muted reminders__empty">
-      <%= task.open? ? "Sem lembretes. Adiciona um para seres avisado a tempo." : "Esta tarefa já não está aberta, por isso não recebe lembretes." %>
-    </p>
+    <% unless task.open? %>
+      <p class="muted reminders__empty">Esta tarefa já não está aberta, por isso não recebe lembretes.</p>
+    <% end %>
   <% end %>
 
   <% if task.open? %>
     <% presets = reminder_presets(task) %>
-    <% if presets.any? %>
-      <div class="reminders__presets">
-        <p class="field__label">Atalhos</p>
-        <div class="cluster">
-          <% presets.each do |label, at| %>
-            <%= button_to label, task_reminders_path(task), method: :post,
-                  params: { reminder: { remind_at: at.iso8601, channel: "in_app" } },
-                  class: "btn btn--outline btn--sm", title: "Lembrar a #{format_datetime(at)}" %>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
-
-    <%= form_with model: Reminder.new, url: task_reminders_path(task), class: "form reminders__form" do |f| %>
-      <div class="form__row">
-        <div class="field">
-          <%= f.label :remind_at, "Data e hora", for: dom_id(task, :reminder_remind_at) %>
-          <%= f.datetime_field :remind_at, id: dom_id(task, :reminder_remind_at), required: true,
-                min: Time.current.strftime("%Y-%m-%dT%H:%M") %>
-        </div>
-        <div class="field">
-          <%= f.label :channel, "Canal", for: dom_id(task, :reminder_channel) %>
-          <%= f.select :channel, Reminder::CHANNEL_LABELS.invert, {}, id: dom_id(task, :reminder_channel) %>
-        </div>
-      </div>
-      <div class="form__actions">
-        <%= f.button type: "submit", class: "btn btn--secondary btn--sm" do %><%= icon :plus, size: 16 %> Adicionar lembrete<% end %>
-      </div>
-    <% end %>
+    <div class="reminders__presets cluster">
+      <span class="muted small"><%= reminders.any? ? "Mais um:" : "Lembrar-me:" %></span>
+      <% presets.each do |label, at| %>
+        <%= button_to label, task_reminders_path(task), method: :post,
+              params: { reminder: { remind_at: at.iso8601, channel: "in_app" } },
+              class: "btn btn--outline btn--sm", title: "Lembrar a #{format_datetime(at)}" %>
+      <% end %>
+      <details class="reminders__custom">
+        <summary class="btn btn--ghost btn--sm"><%= icon :plus, size: 14 %> Outra data</summary>
+        <%= form_with model: Reminder.new, url: task_reminders_path(task), class: "form reminders__form" do |f| %>
+          <div class="form__row">
+            <div class="field">
+              <%= f.label :remind_at, "Data e hora", for: dom_id(task, :reminder_remind_at) %>
+              <%= f.datetime_field :remind_at, id: dom_id(task, :reminder_remind_at), required: true,
+                    min: Time.current.strftime("%Y-%m-%dT%H:%M") %>
+            </div>
+            <div class="field">
+              <%= f.label :channel, "Canal", for: dom_id(task, :reminder_channel) %>
+              <%= f.select :channel, Reminder::CHANNEL_LABELS.invert, {}, id: dom_id(task, :reminder_channel) %>
+            </div>
+          </div>
+          <div class="form__actions">
+            <%= f.button type: "submit", class: "btn btn--secondary btn--sm" do %><%= icon :plus, size: 16 %> Adicionar lembrete<% end %>
+          </div>
+        <% end %>
+      </details>
+    </div>
   <% end %>
 </section>

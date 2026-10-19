@@ -6,8 +6,8 @@
     <% if task.blocked? %><span class="badge badge--overdue">Bloqueada</span><% end %>
   </div>
 
-  <h3 class="deps__heading">Bloqueada por</h3>
   <% if task.task_dependencies.any? %>
+    <h3 class="deps__heading">Bloqueada por</h3>
     <ul class="list deps__list">
       <% task.task_dependencies.includes(:blocker).each do |dependency| %>
         <li class="list__item">
@@ -23,7 +23,7 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="small muted">Nada — esta tarefa pode avançar.</p>
+    <p class="small muted">Esta tarefa tem de esperar por outra?</p>
   <% end %>
 
   <% candidates = Current.user.tasks.active.open.where.not(id: [ task.id, *task.blockers.ids ]).order(:title) %>

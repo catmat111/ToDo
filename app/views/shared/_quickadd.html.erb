@@ -1,32 +1,58 @@
-<%# Floating "post-it" button (bottom-right) that opens a small chat to add tasks for today. %>
+<%# Floating "post-it" button (bottom-right) that opens a small chat: on a task page it
+    changes that task (Tasks::Chat); everywhere else it adds a task with the date
+    it mentions (today by default) or an event (QuickAdd). %>
+<% chat_task = @task if controller_name == "tasks" && action_name == "show" && @task&.persisted? %>
 <div class="quickadd" data-controller="quickadd" data-action="keydown.esc@window->quickadd#close">
   <section class="quickadd__panel" id="quickadd-panel" role="dialog" aria-modal="false"
            aria-labelledby="quickadd-title" data-quickadd-target="panel" hidden>
     <header class="quickadd__header">
-      <p class="quickadd__title" id="quickadd-title">Para hoje</p>
+      <p class="quickadd__title" id="quickadd-title"><%= chat_task ? "Nesta tarefa" : "Adicionar" %></p>
       <button type="button" class="quickadd__close" data-action="quickadd#close" aria-label="Fechar">×</button>
     </header>
 
     <div class="quickadd__messages" id="quickadd_messages" data-quickadd-target="messages" aria-live="polite">
-      <div class="quickadd__msg quickadd__msg--app">
-        Olá<%= ", #{Current.user.first_name}" if Current.user.first_name %>! O que tens de fazer hoje?
-      </div>
+      <% if chat_task %>
+        <div class="quickadd__msg quickadd__msg--app">
+          Diz-me o que mudar em «<%= chat_task.title.truncate(60) %>». Por exemplo:
+          <span class="quickadd__examples">
+            <% Tasks::Chat::EXAMPLES.first(6).each do |example| %>
+              <button type="button" class="quickadd__example" data-action="quickadd#fill" data-quickadd-text-param="<%= example %>"><%= example %></button>
+            <% end %>
+          </span>
+        </div>
+      <% else %>
+        <div class="quickadd__msg quickadd__msg--app">
+          Olá<%= ", #{Current.user.first_name}" if Current.user.first_name %>! O que tens de fazer? Diz quando, se não for para hoje.
+          <span class="quickadd__examples">
+            <% [ "Ligar ao banco amanhã às 10h", "Entregar relatório sexta", "evento jantar sábado às 20h" ].each do |example| %>
+              <button type="button" class="quickadd__example" data-action="quickadd#fill" data-quickadd-text-param="<%= example %>"><%= example %></button>
+            <% end %>
+          </span>
+        </div>
+      <% end %>
     </div>
 
-    <%= form_with url: tasks_path, scope: :task, class: "quickadd__form",
-          data: { action: "turbo:submit-end->quickadd#sent" } do |f| %>
-      <%= hidden_field_tag :return_to, "chat", id: nil %>
-      <%# End of today = "today", no specific hour (see ApplicationHelper#all_day?). %>
-      <%= f.hidden_field :due_at, value: Time.current.end_of_day.strftime("%Y-%m-%dT%H:%M"), id: nil %>
-      <%= f.label :title, "Nova tarefa para hoje", class: "sr-only", for: "quickadd-input" %>
-      <%= f.text_field :title, id: "quickadd-input", placeholder: "Ex.: Ligar ao banco", required: true,
-            maxlength: 200, autocomplete: "off", data: { quickadd_target: "input" } %>
-      <button type="submit" class="quickadd__send" aria-label="Adicionar">➤</button>
+    <% if chat_task %>
+      <%= form_with url: task_chat_path(chat_task), class: "quickadd__form",
+            data: { action: "turbo:submit-end->quickadd#sent" } do |f| %>
+        <%= f.label :message, "Pedido para esta tarefa", class: "sr-only", for: "quickadd-input" %>
+        <%= f.text_field :message, id: "quickadd-input", placeholder: "Ex.: lembra-me amanhã às 9h", required: true,
+              maxlength: 1000, autocomplete: "off", data: { quickadd_target: "input" } %>
+        <button type="submit" class="quickadd__send" aria-label="Enviar">➤</button>
+      <% end %>
+    <% else %>
+      <%= form_with url: quick_add_path, class: "quickadd__form",
+            data: { action: "turbo:submit-end->quickadd#sent" } do |f| %>
+        <%= f.label :message, "Nova tarefa ou evento", class: "sr-only", for: "quickadd-input" %>
+        <%= f.text_field :message, id: "quickadd-input", placeholder: "Ex.: Ligar ao banco amanhã às 10h", required: true,
+              maxlength: 500, autocomplete: "off", data: { quickadd_target: "input" } %>
+        <button type="submit" class="quickadd__send" aria-label="Adicionar">➤</button>
+      <% end %>
     <% end %>
   </section>
 
   <button type="button" class="quickadd__fab" data-action="quickadd#toggle" data-quickadd-target="toggle"
-          aria-controls="quickadd-panel" aria-expanded="false" title="Adicionar tarefa para hoje">
+          aria-controls="quickadd-panel" aria-expanded="false" title="<%= chat_task ? "Mudar esta tarefa pelo chat" : "Adicionar tarefa ou evento" %>">
     <svg viewBox="-2 -4 70 70" width="96" height="96" aria-hidden="true">
       <path d="M8 10h48v40H8z" fill="#FBF3DC" stroke="#382C23" stroke-width="3.5" stroke-linejoin="round"/>
       <path d="M4 50h38c0 6 4 8 8 8H10c-3 0-6-3-6-8z" fill="#E9C46A" stroke="#382C23" stroke-width="3.5" stroke-linejoin="round"/>
@@ -37,6 +63,6 @@
       <path d="M28 6l7 7" stroke="#382C23" stroke-width="3.5" stroke-linecap="round"/>
       <circle cx="26" cy="5" r="5" fill="#9C5D3C" stroke="#382C23" stroke-width="3"/>
     </svg>
-    <span class="sr-only">Adicionar tarefa para hoje</span>
+    <span class="sr-only"><%= chat_task ? "Mudar esta tarefa pelo chat" : "Adicionar tarefa ou evento" %></span>
   </button>
 </div>

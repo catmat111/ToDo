@@ -47,9 +47,13 @@
 .reminders__item--sent .list__title { color: var(--color-text-muted); }
 .reminders__item--sent .reminders__icon { background: var(--color-surface-2); color: var(--color-text-muted); }
 .reminders__empty { margin-bottom: var(--space-4); }
-.reminders__presets { margin-bottom: var(--space-4); }
-.reminders__presets .field__label { display: block; margin-bottom: var(--space-2); }
-.reminders__form { padding-top: var(--space-4); border-top: 1px dashed var(--color-border); }
+.reminders__presets { align-items: center; }
+.reminders__presets form { margin: 0; }
+.reminders__custom { flex-basis: 100%; }
+.reminders__custom > summary { list-style: none; cursor: pointer; display: inline-flex; }
+.reminders__custom > summary::-webkit-details-marker { display: none; }
+.reminders__custom:not([open]) { flex-basis: auto; }
+.reminders__form { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--color-border); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 520px) {

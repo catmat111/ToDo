@@ -1,0 +1,17 @@
+<%# locals: (job_application:, next_task: nil) %>
+<article class="ja-row" id="<%= dom_id(job_application, :row) %>" role="listitem">
+  <div class="ja-row__main">
+    <%= link_to job_application.title, job_application, class: "ja-row__title", data: { turbo_frame: "_top" } %>
+    <p class="ja-row__meta">
+      <% if job_application.company_name.present? %><span><%= job_application.company_name %></span><% end %>
+      <span><%= job_application_activity(job_application) %></span>
+      <%= render "shared/compensation_tags", record: job_application %>
+    </p>
+    <% if next_task %>
+      <p class="ja-row__task<%= " ja-row__task--overdue" if next_task.overdue? %>">
+        <%= icon :tasks, size: 13 %> <span class="sr-only">Próxima tarefa:</span> <%= next_task.title.truncate(48) %> · <%= relative_due(next_task.due_at) %>
+      </p>
+    <% end %>
+  </div>
+  <%= render "job_applications/status_menu", job_application: job_application %>
+</article>

@@ -1,5 +1,5 @@
 class TasksController < ApplicationController
-  before_action :set_task, except: %i[index new create]
+  before_action :set_task, except: %i[index new create complete_all destroy_all]
   before_action :set_form_options, only: %i[new create edit update]
 
   def index
@@ -8,6 +8,8 @@ class TasksController < ApplicationController
     @tags = Current.user.tags.alphabetical
     @open_count = Current.user.tasks.active.open.count
     @overdue_count = Current.user.tasks.active.overdue.count
+    @completable_count = @filter.archived? ? 0 : @filter.scope.open.count
+    @matching_count = @filter.scope.count
   end
 
   def show
@@ -74,6 +76,31 @@ class TasksController < ApplicationController
   def complete
     result = Tasks::Complete.call(@task)
     respond_with_result(result, with_next_occurrence("Tarefa concluída.", result.next_task))
+  end
+
+  # Completes every open task matching the list filters (all pages, not just the visible one).
+  def complete_all
+    filter = Tasks::Filter.new(Current.user, params)
+    done = 0
+    filter.scope.open.to_a.each { |task| done += 1 if Tasks::Complete.call(task).success? }
+    redirect_to tasks_path(filter.to_params),
+                notice: (done == 1 ? "1 tarefa concluída." : "#{done} tarefas concluídas."), status: :see_other
+  end
+
+  # Deletes the selected tasks (ids[]) or, with all=1, every task matching the list filters.
+  def destroy_all
+    filter = Tasks::Filter.new(Current.user, params)
+    ids = params[:all].present? ? filter.scope.pluck(:id) : Array(params[:ids]).map(&:to_i)
+    deleted = 0
+    ids.each do |id|
+      task = Current.user.tasks.find_by(id: id) # subtasks may already be gone with their parent
+      next unless task
+      task.destroy!
+      AuditLog.record("task.deleted", resource: task, title: task.title, parent_task_id: task.parent_task_id)
+      deleted += 1
+    end
+    redirect_to tasks_path(filter.to_params),
+                notice: (deleted == 1 ? "1 tarefa eliminada." : "#{deleted} tarefas eliminadas."), status: :see_other
   end
 
   def reopen

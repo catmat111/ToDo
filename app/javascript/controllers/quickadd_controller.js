@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Bottom-right "post-it" chat for adding tasks due today.
+// Bottom-right "post-it" chat: adds tasks due today, or changes the task being viewed.
 export default class extends Controller {
   static targets = ["panel", "toggle", "input", "messages"]
 
@@ -30,6 +30,12 @@ export default class extends Controller {
     this.inputTarget.value = ""
     this.inputTarget.focus()
     requestAnimationFrame(() => this.scrollToEnd())
+  }
+
+  // An example bubble puts its text in the box, ready to adjust and send.
+  fill({ params: { text } }) {
+    this.inputTarget.value = text
+    this.inputTarget.focus()
   }
 
   scrollToEnd() {

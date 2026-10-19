@@ -18,6 +18,8 @@ class MailboxConnection < ApplicationRecord
     label_id.present?
   end
 
+  MISSING_PERMISSION = "Falta a permissão para ler o Gmail — volta a ligar e, no ecrã da Google, marca a caixa do Gmail.".freeze
+
   def mark_error!(message)
     update!(status: "error", last_error: message.to_s.truncate(500))
   end

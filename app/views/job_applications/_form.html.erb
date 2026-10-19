@@ -44,13 +44,9 @@
     <p class="field__hint" id="job_application_notes_hint">Só tu vês estas notas.</p>
   </div>
 
-  <% if job_application.new_record? %>
-    <p class="field__hint">A candidatura começa no estado «<%= JobApplication.status_label("saved") %>». Depois podes avançá-la na página da candidatura.</p>
-  <% end %>
-
   <div class="form__actions">
     <%= f.button type: "submit", class: "btn btn--primary" do %>
-      <%= icon :check %> <%= job_application.new_record? ? "Criar candidatura" : "Guardar alterações" %>
+      <%= icon :check %> <%= job_application.new_record? ? "Registar candidatura" : "Guardar alterações" %>
     <% end %>
     <%= link_to "Cancelar", (job_application.persisted? ? job_application_path(job_application) : job_applications_path), class: "btn btn--ghost" %>
   </div>

@@ -64,6 +64,16 @@ module CalendarHelper
     end
   end
 
+  # "Dia todo", "20:00" or "20:00–22:00"; on the later days of a multi-day event, "até 18:00".
+  def calendar_event_time(event, date)
+    return "Dia todo" if event.all_day?
+    starts = event.starts_at.in_time_zone
+    ends = event.ends_at&.in_time_zone
+    return "até #{ends.strftime("%H:%M")}" if ends && date > event.first_day && date == event.last_day
+    return "Dia todo" if date > event.first_day
+    ends && ends.to_date == starts.to_date && ends != starts ? "#{starts.strftime("%H:%M")}–#{ends.strftime("%H:%M")}" : starts.strftime("%H:%M")
+  end
+
   def calendar_task_label(task)
     kind = task.due_at.present? ? "prazo" : "início"
     "#{task.title} — #{kind} às #{Calendar::Agenda.time_of(task).in_time_zone.strftime("%H:%M")}, " \

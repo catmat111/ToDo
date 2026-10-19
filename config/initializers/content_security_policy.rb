@@ -12,9 +12,9 @@ Rails.application.configure do
     policy.object_src  :none
     policy.base_uri    :self
     policy.frame_ancestors :none
-    # Forms that redirect off-site: job searches open LinkedIn/Indeed/Google,
+    # Forms that redirect off-site: job searches open LinkedIn/Indeed/ITjobs/Google,
     # and "Ligar Google Calendar" goes to Google's OAuth page.
-    policy.form_action :self, "https://www.linkedin.com", "https://pt.indeed.com",
+    policy.form_action :self, "https://www.linkedin.com", "https://pt.indeed.com", "https://www.itjobs.pt",
                        "https://www.google.com", "https://accounts.google.com"
   end
 

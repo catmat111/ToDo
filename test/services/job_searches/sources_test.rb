@@ -22,6 +22,8 @@ class JobSearches::SourcesTest < ActiveSupport::TestCase
     assert_instance_of JobSearches::Sources::Other, JobSearches::Sources.for(search("other"))
     assert_equal "LinkedIn", JobSearches::Sources.for(search("linkedin")).label
     assert_equal "Indeed", JobSearches::Sources.for(search("indeed")).label
+    assert_instance_of JobSearches::Sources::Itjobs, JobSearches::Sources.for(search("itjobs"))
+    assert_equal "ITjobs", JobSearches::Sources.for(search("itjobs")).label
   end
 
   test "linkedin url with every filter" do
@@ -102,6 +104,36 @@ class JobSearches::SourcesTest < ActiveSupport::TestCase
     assert_nil params["remotejob"]
   end
 
+  test "itjobs url with every filter" do
+    job_search = search("itjobs", filters: [
+      [ "location", "Lisboa" ], [ "recency", "week" ], [ "job_type", "full_time" ],
+      [ "remote", "hybrid" ], [ "keywords", "júnior", "excludes" ]
+    ])
+    url = job_search.search_url
+
+    assert url.start_with?("https://www.itjobs.pt/emprego?")
+    params = query_params(url)
+    assert_equal "ruby on rails NOT júnior", params["q"]
+    assert_equal "14", params["location"]
+    assert_equal "1", params["type"]
+    assert_equal "2", params["work_model"]
+    assert_equal "date", params["sort"]
+    assert_nil params["contract"]
+  end
+
+  test "itjobs unknown location and internship go into the query" do
+    params = query_params(search("itjobs", filters: [ [ "location", "Faro" ], [ "job_type", "internship" ] ]).search_url)
+    assert_equal "ruby on rails Faro estágio", params["q"]
+    assert_nil params["location"]
+  end
+
+  test "itjobs contract and remote mappings" do
+    assert_equal "1", query_params(search("itjobs", filters: [ [ "job_type", "contract" ] ]).search_url)["contract"]
+    { "no" => "0", "yes" => "1", "hybrid" => "2" }.each do |value, code|
+      assert_equal code, query_params(search("itjobs", filters: [ [ "remote", value ] ]).search_url)["work_model"]
+    end
+  end
+
   test "other builds a Google search for jobs" do
     job_search = search("other", query: "enfermeiro", filters: [
       [ "location", "Coimbra" ], [ "recency", "month" ], [ "remote", "yes" ], [ "keywords", "noturno", "excludes" ]
@@ -132,6 +164,7 @@ class JobSearches::SourcesTest < ActiveSupport::TestCase
     assert_equal "linkedin", JobSearches::Sources.detect("https://pt.linkedin.com/jobs/view/dev-at-acme-3912345678")
     assert_equal "indeed", JobSearches::Sources.detect("https://pt.indeed.com/viewjob?jk=abc123")
     assert_equal "indeed", JobSearches::Sources.detect("https://www.indeed.co.uk/viewjob?jk=abc123")
+    assert_equal "itjobs", JobSearches::Sources.detect("https://www.itjobs.pt/oferta/518173/devops-engineer")
     assert_equal "other", JobSearches::Sources.detect("https://notlinkedin.com/jobs/view/3912345678")
     assert_equal "other", JobSearches::Sources.detect("not a url")
 
@@ -139,6 +172,7 @@ class JobSearches::SourcesTest < ActiveSupport::TestCase
     assert_equal "3912345678", JobSearches::Sources.external_id_from("https://pt.linkedin.com/jobs/view/dev-rails-at-acme-3912345678")
     assert_equal "3912345678", JobSearches::Sources.external_id_from("https://www.linkedin.com/jobs/search/?currentJobId=3912345678")
     assert_equal "abc123", JobSearches::Sources.external_id_from("https://pt.indeed.com/viewjob?jk=abc123&from=serp")
+    assert_equal "518173", JobSearches::Sources.external_id_from("https://www.itjobs.pt/oferta/518173/devops-engineer")
     assert_nil JobSearches::Sources.external_id_from("https://acme.pt/careers/42")
   end
 end

@@ -6,7 +6,7 @@ module NavigationHelper
   SECTIONS = [
     { key: :home, label: "Hoje", prefixes: [] },
     { key: :tasks, label: "Tarefas", prefixes: %w[/tasks /tags] },
-    { key: :calendar, label: "Calendário", prefixes: %w[/calendar] },
+    { key: :calendar, label: "Calendário", prefixes: %w[/calendar /events] },
     { key: :jobs, label: "Emprego", prefixes: %w[/applications /job_listings /job_searches /companies /contacts /replies /mailbox_connection] },
     { key: :account, label: nil, prefixes: %w[/profile /shares /notifications /history] }
   ].freeze

@@ -16,44 +16,59 @@ class JobApplicationsControllerTest < ActionDispatch::IntegrationTest
 
   # ---------- index ----------
 
-  test "index shows the kanban with every column and the user's applications only" do
+  test "index lists the user's applications, with interviews and offers highlighted on top" do
     create_job_application(@user, title: "Designer", status: "interview")
+    create_job_application(@user, title: "Analista", status: "offer")
     create_job_application(users(:two), title: "Segredo do Bruno")
 
     get job_applications_url
     assert_response :success
     assert_select "h1", "Candidaturas"
-    assert_select ".kanban .kanban__column", JobApplication::STATUSES.size
-    assert_select ".ja-column--saved .kanban__card", 1
-    assert_select ".ja-column--interview .kanban__card", 1
-    assert_select ".kanban__card[data-allowed='applied withdrawn']", 1
-    assert_match "Programador Rails", response.body
+    assert_select "#ja-highlights .ja-highlight", 2
+    assert_select "#ja-highlights .ja-highlight--interview", text: /Designer/
+    assert_select "#ja-list .ja-row", 1
+    assert_select "#ja-list .ja-row", text: /Programador Rails/
+    assert_select "#ja-list select[name='transition[to]'] option[value=applied]"
     assert_no_match "Segredo do Bruno", response.body
   end
 
-  test "index shows the next open task on the card" do
+  test "index shows the next open task on the row" do
     create_task(@user, title: "Enviar portefólio", job_application: @application, due_at: 2.days.from_now)
     create_task(@user, title: "Mais tarde", job_application: @application, due_at: 9.days.from_now)
 
     get job_applications_url
-    assert_select ".ja-card__task", text: /Enviar portefólio/
+    assert_select ".ja-row__task", text: /Enviar portefólio/
   end
 
-  test "index list view filters by status and search" do
+  test "index loads 10 at a time, the next page lazily" do
+    11.times { |i| create_job_application(@user, title: "Vaga #{i}", status: "applied") }
+
+    get job_applications_url
+    assert_select "#ja-list .ja-row", 10
+    assert_select "turbo-frame#ja-page-2[loading=lazy][src*='page=2']"
+
+    get job_applications_url(page: 2), headers: { "Turbo-Frame" => "ja-page-2" }
+    assert_select "turbo-frame#ja-page-2 .ja-row", 2
+    assert_select "turbo-frame#ja-page-3", 0
+  end
+
+  test "index filters by status tab and search" do
     create_job_application(@user, title: "Designer", status: "interview")
 
-    get job_applications_url(view: "list", status: "interview")
+    get job_applications_url(status: "interview")
     assert_response :success
-    assert_select "table.table tbody tr", 1
-    assert_select "table.table tbody tr", text: /Designer/
+    assert_select "#ja-highlights", 0
+    assert_select "#ja-list .ja-row", 1
+    assert_select "#ja-list .ja-row", text: /Designer/
+    assert_select ".tabs__link.is-active", /Entrevista/
 
-    get job_applications_url(view: "list", q: "rails")
-    assert_select "table.table tbody tr", 1
-    assert_select "table.table tbody tr", text: /Programador Rails/
+    get job_applications_url(q: "rails")
+    assert_select "#ja-list .ja-row", 1
+    assert_select "#ja-list .ja-row", text: /Programador Rails/
   end
 
-  test "index list view with no matches shows an empty state" do
-    get job_applications_url(view: "list", status: "offer")
+  test "index with no matches shows an empty state" do
+    get job_applications_url(status: "offer")
     assert_response :success
     assert_select ".empty-state"
   end
@@ -63,13 +78,13 @@ class JobApplicationsControllerTest < ActionDispatch::IntegrationTest
     get job_applications_url
     assert_response :success
     assert_select ".empty-state"
-    assert_select ".kanban", 0
+    assert_select "#ja-list", 0
   end
 
-  test "index ignores invalid view and status params" do
-    get job_applications_url(view: "<script>", status: "hired")
+  test "index ignores invalid params" do
+    get job_applications_url(view: "<script>", status: "hired", page: "-3")
     assert_response :success
-    assert_select ".kanban"
+    assert_select "#ja-list .ja-row", 1
   end
 
   # ---------- show ----------
@@ -155,14 +170,17 @@ class JobApplicationsControllerTest < ActionDispatch::IntegrationTest
     end
     application = @user.job_applications.order(:id).last
     assert_redirected_to job_application_url(application)
-    assert_equal "Candidatura criada.", flash[:notice]
-    assert application.saved?
+    assert_equal "Candidatura registada como enviada.", flash[:notice]
+    assert application.applied?
+    assert_not_nil application.applied_at
+    assert_equal "applied", application.job_application_events.last.event_type
+    assert_equal 0, application.tasks.count
     assert AuditLog.exists?(action: "job_application.created", resource_id: application.id)
   end
 
   test "create ignores a status param" do
     post job_applications_url, params: { job_application: { title: "Analista", status: "offer" } }
-    assert @user.job_applications.order(:id).last.saved?
+    assert @user.job_applications.order(:id).last.applied?
   end
 
   test "create with invalid data re-renders the form" do
@@ -276,7 +294,52 @@ class JobApplicationsControllerTest < ActionDispatch::IntegrationTest
     assert @application.reload.saved?
   end
 
-  test "transition from the kanban returns to the index" do
+  test "changing the status from the list answers in place" do
+    patch transition_job_application_url(@application), params: { transition: { to: "applied" }, return_to: "index" }, as: :turbo_stream
+    assert_response :success
+    assert_match %(action="prepend" target="ja-list"), response.body
+    assert_match "Candidatura enviada", response.body
+    assert @application.reload.applied?
+
+    patch transition_job_application_url(@application), params: { transition: { to: "interview" }, return_to: "index" }, as: :turbo_stream
+    assert_match %(action="prepend" target="ja-highlights"), response.body
+  end
+
+  test "undoes the last status change, from the list or the page" do
+    JobApplications::Transition.call(@application, to: "applied")
+    JobApplications::Transition.call(@application, to: "interview")
+
+    get job_applications_url
+    assert_select "#ja-highlights option[value=revert]", /Voltar a «Candidatura enviada»/
+
+    patch transition_job_application_url(@application), params: { transition: { to: "revert" }, return_to: "index" }, as: :turbo_stream
+    assert @application.reload.applied?
+    assert_match %(action="prepend" target="ja-list"), response.body
+    assert_equal %w[saved applied], @application.job_application_events.select(&:status_event?).map(&:event_type)
+
+    patch transition_job_application_url(@application), params: { transition: { to: "rejected" } }
+    patch transition_job_application_url(@application), params: { transition: { to: "revert" } }
+    assert_redirected_to job_application_url(@application)
+    assert @application.reload.applied?
+  end
+
+  test "undo still works when the status event was deleted from the history" do
+    JobApplications::Transition.call(@application, to: "applied")
+    JobApplications::Transition.call(@application, to: "interview")
+    @application.job_application_events.find_by(event_type: "interview").destroy!
+
+    patch transition_job_application_url(@application), params: { transition: { to: "revert" } }
+    assert @application.reload.applied?
+    assert_equal 1, @application.job_application_events.where(event_type: "applied").count
+  end
+
+  test "nothing to undo on a new application" do
+    patch transition_job_application_url(@application), params: { transition: { to: "revert" } }
+    assert_match "Não há nenhuma mudança", flash[:alert]
+    assert @application.reload.saved?
+  end
+
+  test "transition from the list without Turbo returns to the index" do
     patch transition_job_application_url(@application), params: { transition: { to: "applied" }, return_to: "index" }
     assert_redirected_to job_applications_url
   end

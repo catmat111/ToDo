@@ -22,7 +22,7 @@ class JobFilterTest < ActiveSupport::TestCase
     samples = { "location" => "Lisboa", "recency" => "week", "job_type" => "full_time", "experience" => "entry",
                 "remote" => "yes", "radius" => "10", "keywords" => "rails" }
     JobFilter::ALLOWED_KEYS.each do |source, keys|
-      search = { "linkedin" => @linkedin, "indeed" => @indeed, "other" => @other }.fetch(source)
+      search = { "linkedin" => @linkedin, "indeed" => @indeed, "other" => @other }.fetch(source) { @other.dup.tap { |s| s.source = source } }
       keys.each do |key|
         filter = search.job_filters.new(key: key, value: samples.fetch(key))
         assert filter.valid?, "#{source}/#{key}: #{filter.errors.full_messages.to_sentence}"

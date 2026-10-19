@@ -14,8 +14,10 @@
       <% period.weeks.each do |week| %>
         <tr>
           <% week.each do |date| %>
+            <% day_events = agenda.events_on(date) %>
             <% day_tasks = agenda.tasks_on(date) %>
-            <td class="<%= calendar_day_classes(period, date) %><%= " calendar-day--empty" if day_tasks.empty? %>"
+            <% day_count = day_events.size + day_tasks.size %>
+            <td class="<%= calendar_day_classes(period, date) %><%= " calendar-day--empty" if day_count.zero? %>"
                 <%= tag.attributes("aria-current": (period.today?(date) ? "date" : nil)) %>>
               <div class="calendar-day__header">
                 <%= link_to calendar_path(view: "week", date: date.iso8601), class: "calendar-day__number",
@@ -23,19 +25,21 @@
                   <span class="calendar-day__weekday" aria-hidden="true"><%= calendar_weekday_names[date.cwday - 1] %></span>
                   <span><%= date.day %></span>
                 <% end %>
-                <% if day_tasks.any? %>
-                  <span class="calendar-day__count"><%= day_tasks.size %><span class="sr-only"> <%= day_tasks.size == 1 ? "tarefa" : "tarefas" %></span></span>
-                <% end %>
+                <%= link_to new_event_path(date: date.iso8601), class: "calendar-day__add",
+                      title: "Novo evento", "aria-label": "Novo evento a #{calendar_full_date(date)}" do %><%= icon :plus, size: 12 %><% end %>
               </div>
-              <% if day_tasks.any? %>
+              <% if day_count.positive? %>
                 <ul class="calendar-day__items">
-                  <% day_tasks.first(max_items).each do |task| %>
+                  <% day_events.first(max_items).each do |event| %>
+                    <li><%= render "calendar/event_item", event: event, date: date %></li>
+                  <% end %>
+                  <% day_tasks.first([ max_items - day_events.size, 0 ].max).each do |task| %>
                     <li><%= render "calendar/task_item", task: task %></li>
                   <% end %>
                 </ul>
-                <% if day_tasks.size > max_items %>
-                  <%= link_to "+#{day_tasks.size - max_items} mais", calendar_path(view: "week", date: date.iso8601),
-                              class: "calendar-day__more", "aria-label": "Ver mais #{day_tasks.size - max_items} tarefas de #{calendar_full_date(date)}" %>
+                <% if day_count > max_items %>
+                  <%= link_to "+#{day_count - max_items} mais", calendar_path(view: "week", date: date.iso8601),
+                              class: "calendar-day__more", "aria-label": "Ver mais #{day_count - max_items} de #{calendar_full_date(date)}" %>
                 <% end %>
               <% end %>
             </td>
@@ -46,10 +50,10 @@
   </table>
 </div>
 
-<% if agenda.tasks_in_focus.empty? %>
+<% if agenda.tasks_in_focus.empty? && agenda.events_in_focus.empty? %>
   <div class="calendar-empty">
     <%= render "shared/empty_state", title: "Nada marcado para este mês",
-                                     body: "As tarefas com prazo ou data de início aparecem aqui automaticamente.",
-                                     action: link_to("Criar tarefa", new_task_path, class: "btn btn--primary") %>
+                                     body: "As tarefas com prazo ou data de início aparecem aqui automaticamente. Também podes marcar eventos.",
+                                     action: link_to("Novo evento", new_event_path, class: "btn btn--primary") %>
   </div>
 <% end %>

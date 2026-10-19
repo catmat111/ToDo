@@ -1,6 +1,6 @@
 class JobListing < ApplicationRecord
   include Compensation
-  SOURCES = %w[linkedin indeed other].freeze
+  SOURCES = %w[linkedin indeed itjobs other].freeze
   TRACKING_PARAMS = %w[ref refid trk trackingid fbclid gclid].freeze
 
   belongs_to :user

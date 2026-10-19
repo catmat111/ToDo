@@ -1,0 +1,6 @@
+<%# locals: (message:, reply:) %>
+<div class="quickadd__msg quickadd__msg--me"><%= message.presence || "…" %></div>
+<div class="quickadd__msg quickadd__msg--app<%= " quickadd__msg--error" unless reply.ok? %>">
+  <%= reply.text %>
+  <% if reply.link %> <%= link_to "Abrir", task_path(reply.link) %><% end %>
+</div>

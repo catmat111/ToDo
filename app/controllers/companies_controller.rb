@@ -2,9 +2,15 @@ class CompaniesController < ApplicationController
   before_action :set_company, only: %i[show edit update destroy]
 
   def index
-    @companies = Current.user.companies.alphabetical
+    @sort = params[:sort] == "name" ? "name" : "applications"
+    @companies = Current.user.companies
                         .left_joins(:job_applications).select("companies.*, COUNT(job_applications.id) AS applications_count")
                         .group("companies.id")
+    @companies = if @sort == "name"
+      @companies.alphabetical
+    else
+      @companies.order(Arel.sql("applications_count DESC")).alphabetical
+    end
     @companies = @companies.where("LOWER(companies.name) LIKE ?", "%#{Company.sanitize_sql_like(params[:q].downcase)}%") if params[:q].present?
   end
 

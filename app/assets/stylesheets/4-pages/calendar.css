@@ -8,6 +8,7 @@
 .calendar-item--completed { --item-color: var(--color-success); }
 .calendar-item--cancelled { --item-color: var(--color-border-strong); }
 .calendar-item--overdue { --item-color: var(--color-danger); }
+.calendar-item--event { --item-color: var(--olive); }
 
 /* ---------- Header navigation ---------- */
 .calendar-nav { align-items: center; }
@@ -247,3 +248,23 @@
   .calendar-week__item { grid-template-columns: auto minmax(0, 1fr); }
   .calendar-week__meta { grid-column: 1 / -1; justify-content: flex-start; }
 }
+
+/* ---------- Events (not tasks): filled olive chips, no status ---------- */
+.calendar-item.calendar-item--event {
+  border-left: 0; padding-left: 7px;
+  background: color-mix(in srgb, var(--olive) 82%, var(--color-surface)); color: #FBF8F3;
+}
+.calendar-item.calendar-item--event:hover { background: var(--olive); color: #FBF8F3; }
+.calendar-item--event .calendar-item__time { color: inherit; opacity: 0.85; }
+.calendar-week__item--event { --item-color: var(--olive); }
+
+/* "+" to add an event on a day: shows on hover/focus with a pointer, always on touch. */
+.calendar-day__add {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  color: var(--color-text-muted); text-decoration: none; opacity: 0; transition: opacity 0.15s ease;
+}
+.calendar-day:hover .calendar-day__add, .calendar-week__day:hover .calendar-day__add, .calendar-day__add:focus-visible { opacity: 1; }
+.calendar-day__add:hover { background: var(--color-surface-3); color: var(--color-text); }
+@media (hover: none) { .calendar-day__add { opacity: 0.6; } }
+.calendar-week__header { position: relative; }
+.calendar-week__add { position: absolute; top: 0; right: 0; }

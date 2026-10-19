@@ -2,9 +2,16 @@
 # never send, change or delete. OAuth, HTTP and errors come from GoogleClient
 # (same Google Cloud project / GOOGLE_CLIENT_ID as the calendar).
 class GmailClient < GoogleClient
-  SCOPE = "https://www.googleapis.com/auth/gmail.readonly email".freeze
+  READ_SCOPE = "https://www.googleapis.com/auth/gmail.readonly".freeze
+  SCOPE = "#{READ_SCOPE} email".freeze
   GMAIL_API = "https://gmail.googleapis.com/gmail/v1/users/me".freeze
   BODY_LIMIT = 4000
+
+  # Google lets the user untick Gmail on the consent screen; the token then works but
+  # can't read mail. +granted_scope+ is the "scope" of the token response (nil = unknown).
+  def self.can_read_mail?(granted_scope)
+    granted_scope.nil? || granted_scope.split.include?(READ_SCOPE)
+  end
 
   def profile(access_token:)
     request(:get, "#{GMAIL_API}/profile", access_token: access_token)

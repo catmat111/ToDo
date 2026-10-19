@@ -30,10 +30,7 @@
   <div class="stack--lg">
     <section class="card" id="filtros" aria-labelledby="filters-title">
       <div class="card__header">
-        <div>
-          <h2 class="card__title" id="filters-title">Filtros</h2>
-          <p class="small muted job-search-section-hint">Aplicados automaticamente quando abres a pesquisa no <%= adapter.label %>.</p>
-        </div>
+        <h2 class="card__title" id="filters-title">Filtros</h2>
         <span class="badge"><%= @job_filters.size %></span>
       </div>
 
@@ -102,11 +99,11 @@
           <% end %>
         </ul>
       <% else %>
-        <p class="muted">Ainda não há filtros. Sem filtros, a pesquisa usa apenas os termos de pesquisa.</p>
+        <p class="muted small">Sem filtros.</p>
       <% end %>
 
-      <div class="card__footer">
-        <h3 class="job-search-subtitle">Adicionar filtro</h3>
+      <details class="disclosure" <%= "open" if @job_filter.errors.any? || @job_filters.empty? %>>
+        <summary class="btn btn--ghost btn--sm"><%= icon :plus, size: 16 %> Adicionar filtro</summary>
         <% default_key = @job_filter.key.presence || @job_search.allowed_filter_keys.first %>
         <%= form_with model: @job_filter, url: job_search_job_filters_path(@job_search), method: :post,
               class: "form job-filter-form", data: { controller: "job-filter-form",
@@ -122,7 +119,7 @@
             <div class="field">
               <%= f.label :operator, "Operador", class: "field__label" %>
               <%= f.select :operator, job_filter_operator_options, {}, data: { job_filter_form_target: "operator" },
-                    "aria-describedby": "job_filter_operator_hint" %>
+                    title: "«Exclui» transforma o valor num termo NOT (ex.: NOT estágio). Só Localização e palavras-chave aceitam todos os operadores." %>
             </div>
             <div class="field">
               <%= f.label :value, "Valor", class: "field__label" %>
@@ -131,11 +128,8 @@
                     data: { job_filter_form_target: "value" } %>
             </div>
           </div>
-          <p class="field__hint" id="job_filter_operator_hint" data-job-filter-form-target="hint">
-            «Exclui» transforma o valor num termo NOT (ex.: NOT estágio). Localização e palavras-chave aceitam todos os operadores; os restantes filtros usam «Igual».
-          </p>
           <div class="form__actions">
-            <%= f.button type: :submit, class: "btn btn--secondary" do %><%= icon :plus %> Adicionar filtro<% end %>
+            <%= f.button type: :submit, class: "btn btn--secondary btn--sm" do %><%= icon :check, size: 16 %> Adicionar<% end %>
           </div>
         <% end %>
 
@@ -146,14 +140,14 @@
             <% end %>
           </datalist>
         <% end %>
-      </div>
+      </details>
     </section>
 
     <section class="card" id="vagas" aria-labelledby="listings-title">
       <div class="card__header">
         <h2 class="card__title" id="listings-title">Vagas encontradas</h2>
         <%= link_to new_job_listing_path(job_search_id: @job_search.id), class: "btn btn--secondary btn--sm" do %>
-          <%= icon :plus %> Adicionar vaga encontrada
+          <%= icon :plus %> Adicionar vaga
         <% end %>
       </div>
 
@@ -181,9 +175,7 @@
           <p class="small job-search-more"><%= link_to "Ver todas as #{total} vagas", job_listings_path(job_search_id: @job_search.id) %></p>
         <% end %>
       <% else %>
-        <%= render "shared/empty_state",
-              title: "Nenhuma vaga guardada",
-              body: "Quando encontrares uma vaga interessante nesta pesquisa, guarda-a aqui para não a perderes e transformá-la numa candidatura." %>
+        <p class="muted small">Sem vagas guardadas.</p>
       <% end %>
     </section>
   </div>
@@ -192,14 +184,10 @@
     <section class="card card--olive" aria-labelledby="details-title">
       <h2 class="card__title job-search-aside-title" id="details-title">Pesquisa</h2>
       <dl class="dl">
-        <dt>Fonte</dt>
-        <dd><%= @job_search.source_label %></dd>
-        <dt>Termos</dt>
-        <dd><%= @job_search.query.presence || "—" %></dd>
-        <dt>Estado</dt>
-        <dd><%= @job_search.active? ? "Ativa" : "Em pausa" %></dd>
-        <dt>Aberta</dt>
-        <dd><%= @job_search.last_run_at ? format_datetime(@job_search.last_run_at) : "Nunca" %></dd>
+        <% if @job_search.query.present? %>
+          <dt>Termos</dt>
+          <dd><%= @job_search.query %></dd>
+        <% end %>
         <dt>Criada</dt>
         <dd><%= format_date(@job_search.created_at) %></dd>
       </dl>
@@ -207,7 +195,6 @@
 
     <section class="card" aria-labelledby="url-title" data-controller="job-search-url">
       <h2 class="card__title job-search-aside-title" id="url-title">Link gerado</h2>
-      <p class="small muted">Pré-visualização do endereço que vai ser aberto no <%= adapter.label %>.</p>
       <code class="job-search-url" title="<%= search_url %>" data-job-search-url-target="source"><%= truncate(search_url, length: 160) %></code>
       <div class="cluster job-search-url__actions">
         <button type="button" class="btn btn--outline btn--sm" data-action="job-search-url#copy"

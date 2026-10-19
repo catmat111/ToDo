@@ -65,6 +65,18 @@ class JobApplication < ApplicationRecord
     TRANSITIONS.fetch(status, [])
   end
 
+  # The status before the last change, to undo it (nil when there is nothing to undo):
+  # the last different status in the history. When the event of the current status was
+  # deleted from the history, that is simply the last status still recorded there.
+  def previous_status
+    status_history.find { |event| event.event_type != status }&.event_type
+  end
+
+  # Status events, newest first.
+  def status_history
+    job_application_events.select(&:status_event?).sort_by(&:id).reverse
+  end
+
   def can_transition_to?(new_status)
     allowed_transitions.include?(new_status.to_s)
   end

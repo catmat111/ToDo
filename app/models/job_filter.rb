@@ -6,6 +6,7 @@ class JobFilter < ApplicationRecord
   ALLOWED_KEYS = {
     "linkedin" => %w[location recency job_type experience remote keywords],
     "indeed" => %w[location recency job_type radius remote keywords],
+    "itjobs" => %w[location recency job_type remote keywords],
     "other" => %w[location recency job_type remote keywords]
   }.freeze
   KEY_LABELS = {

@@ -7,14 +7,14 @@ module JobSearches
   #   adapter.label # => "LinkedIn"
   module Sources
     def self.adapters
-      { "linkedin" => Linkedin, "indeed" => Indeed, "other" => Other }
+      { "linkedin" => Linkedin, "indeed" => Indeed, "itjobs" => Itjobs, "other" => Other }
     end
 
     def self.for(job_search)
       adapters.fetch(job_search.source.to_s, Other).new(job_search)
     end
 
-    # Which source a job URL comes from ("linkedin", "indeed" or "other").
+    # Which source a job URL comes from ("linkedin", "indeed", "itjobs" or "other").
     def self.detect(url)
       adapters.find { |_, adapter| adapter.handles?(url) }&.first || "other"
     end

@@ -19,6 +19,13 @@
   </div>
 </div>
 
+<% if @connection&.error? %>
+  <div class="card card--mustard mb-error" role="alert">
+    <p><strong>Não estamos a conseguir ler o Gmail.</strong> <%= @connection.last_error %></p>
+    <%= button_to "Voltar a ligar", mailbox_connection_path, class: "btn btn--primary btn--sm", form: { data: { turbo: false } } %>
+  </div>
+<% end %>
+
 <nav class="tabs" aria-label="Respostas">
   <%= link_to email_messages_path, class: [ "tabs__link", ("is-active" if @tab == "pending") ] do %>
     Por rever <% if @pending_count.positive? %><span class="badge badge--in-progress"><%= @pending_count %></span><% end %>

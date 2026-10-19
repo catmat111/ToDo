@@ -1,0 +1,13 @@
+<% content_for :title, "Novo evento" %>
+
+<div class="page-header">
+  <div>
+    <nav class="breadcrumb" aria-label="Caminho"><%= link_to "Calendário", calendar_path %></nav>
+    <h1 class="page-header__title">Novo evento</h1>
+    <p class="page-header__subtitle">Algo marcado para uma hora — não é uma tarefa por fazer.</p>
+  </div>
+</div>
+
+<div class="card event-form-card">
+  <%= render "form", event: @event %>
+</div>

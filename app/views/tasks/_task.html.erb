@@ -1,5 +1,8 @@
 <%# locals: (task:, show_parent: false) %>
 <li class="list__item task-row<%= " task-row--closed" if task.closed? %><%= " task-row--overdue" if task.overdue? %>" id="<%= dom_id(task) %>">
+  <%= check_box_tag "ids[]", task.id, false, id: "select_#{dom_id(task)}", form: "bulk_tasks_form",
+        class: "task-row__select", "aria-label": "Selecionar «#{task.title}»",
+        data: { task_select_target: "item", action: "task-select#update" } %>
   <%= task_toggle_button(task) %>
   <div class="list__main">
     <%= link_to task.title, task, class: "list__title task-row__title" %>

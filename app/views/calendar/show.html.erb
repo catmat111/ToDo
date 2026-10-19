@@ -1,12 +1,13 @@
 <% content_for :title, "Calendário" %>
 <% tasks = @agenda.tasks_in_focus %>
+<% events = @agenda.events_in_focus %>
 
 <div class="page-header">
   <div>
     <h1 class="page-header__title">Calendário</h1>
     <p class="page-header__subtitle">
-      Prazos e datas de início ·
-      <%= pluralize(tasks.size, "tarefa", plural: "tarefas") %> <%= @period.month? ? "neste mês" : "nesta semana" %>
+      <%= pluralize(tasks.size, "tarefa", plural: "tarefas") %> e <%= pluralize(events.size, "evento", plural: "eventos") %>
+      <%= @period.month? ? "neste mês" : "nesta semana" %>
     </p>
   </div>
   <nav class="page-header__actions calendar-nav" aria-label="Navegação do calendário">
@@ -20,6 +21,9 @@
     <%= link_to calendar_path(@period.next_params), class: "btn btn--outline btn--icon calendar-nav__arrow",
                 "aria-label": @period.month? ? "Mês seguinte" : "Semana seguinte", rel: "next" do %>
       <span aria-hidden="true">›</span>
+    <% end %>
+    <%= link_to new_event_path(date: (@period.contains_today? ? Time.zone.today : @period.days.first).iso8601), class: "btn btn--primary btn--sm" do %>
+      <%= icon :plus, size: 15 %> Novo evento
     <% end %>
   </nav>
 </div>

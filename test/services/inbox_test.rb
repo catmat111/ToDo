@@ -62,4 +62,24 @@ class InboxTest < ActiveSupport::TestCase
     Inbox::Sync.call(@connection, client: gmail)
     assert @connection.reload.error?
   end
+
+  test "a token without the Gmail permission marks the connection with a clear error" do
+    gmail = FakeGmail.new({})
+    def gmail.message_ids(**) = raise(GoogleClient::PermissionError, "Google respondeu 403 (insufficientPermissions)")
+    Inbox::Sync.call(@connection, client: gmail)
+    assert @connection.reload.error?
+    assert_equal MailboxConnection::MISSING_PERMISSION, @connection.last_error
+  end
+
+  test "Google's 403 insufficientPermissions becomes a PermissionError" do
+    body = { error: { code: 403, errors: [ { reason: "insufficientPermissions" } ] } }.to_json
+    client = GmailClient.new(client_id: "id", client_secret: "secret",
+                             transport: ->(*) { GoogleClient::Response.new(status: 403, body: body) })
+    assert_raises(GoogleClient::PermissionError) { client.message_ids(access_token: "t", label_id: "Label_1") }
+  end
+
+  test "knows when the user unticked Gmail on the consent screen" do
+    assert GmailClient.can_read_mail?("#{GmailClient::READ_SCOPE} openid")
+    assert_not GmailClient.can_read_mail?("email https://www.googleapis.com/auth/userinfo.email openid")
+  end
 end

@@ -11,6 +11,12 @@
     </p>
   </div>
   <div class="page-header__actions">
+    <% if @completable_count > 1 %>
+      <%= button_to complete_all_tasks_path(@filter.to_params), method: :patch, class: "btn btn--outline",
+            form: { data: { turbo_confirm: "Concluir #{@completable_count} tarefas#{' (com os filtros aplicados)' if @filter.active?}?" } } do %>
+        <%= icon :check %> Concluir todas (<%= @completable_count %>)
+      <% end %>
+    <% end %>
     <%= link_to new_task_path, class: "btn btn--primary" do %><%= icon :plus %> Nova tarefa<% end %>
   </div>
 </div>
@@ -24,58 +30,100 @@
   <% end %>
 </nav>
 
-<%= form_with url: tasks_path, method: :get, class: "filters task-filters", role: "search", "aria-label": "Filtrar tarefas",
-              data: { controller: "task-filters", action: "change->task-filters#submit" } do %>
-  <%= hidden_field_tag :archived, "1", id: nil if @filter.archived? %>
-  <div class="field task-filters__search">
-    <%= label_tag :filter_q, "Pesquisar", class: "field__label" %>
-    <%= search_field_tag :q, @filter.q, id: "filter_q", class: "input", placeholder: "Título ou descrição…", maxlength: 100 %>
-  </div>
-  <div class="field">
-    <%= label_tag :filter_status, "Estado", class: "field__label" %>
-    <%= select_tag :status, options_for_select(task_status_filter_options, @filter.status), include_blank: "Todos", id: "filter_status", class: "input" %>
-  </div>
-  <div class="field">
-    <%= label_tag :filter_task_type, "Tipo", class: "field__label" %>
-    <%= select_tag :task_type, options_for_select(task_type_options, @filter.task_type), include_blank: "Todos", id: "filter_task_type", class: "input" %>
-  </div>
-  <div class="field">
-    <%= label_tag :filter_priority, "Prioridade", class: "field__label" %>
-    <%= select_tag :priority, options_for_select(task_priority_options, @filter.priority), include_blank: "Todas", id: "filter_priority", class: "input" %>
-  </div>
-  <% if @tags.any? %>
-    <div class="field">
-      <%= label_tag :filter_tag_id, "Etiqueta", class: "field__label" %>
-      <%= select_tag :tag_id, options_from_collection_for_select(@tags, :id, :name, @filter.tag&.id), include_blank: "Todas", id: "filter_tag_id", class: "input" %>
-    </div>
-  <% end %>
-  <div class="field">
-    <%= label_tag :filter_due, "Prazo", class: "field__label" %>
-    <%= select_tag :due, options_for_select(task_due_filter_options, @filter.due), include_blank: "Qualquer", id: "filter_due", class: "input" %>
-  </div>
-  <div class="field">
-    <%= label_tag :filter_sort, "Ordenar por", class: "field__label" %>
-    <%= select_tag :sort, options_for_select(task_sort_options, @filter.sort), id: "filter_sort", class: "input" %>
-  </div>
-  <div class="task-filters__footer">
-    <label class="check">
-      <%= check_box_tag :subtasks, "1", @filter.subtasks?, id: "filter_subtasks" %> Incluir subtarefas
-    </label>
-    <div class="cluster">
-      <%= submit_tag "Filtrar", name: nil, class: "btn btn--secondary btn--sm" %>
-      <% if @filter.active? %>
-        <%= link_to "Limpar filtros", tasks_path(@filter.archived? ? { archived: "1" } : {}), class: "btn btn--ghost btn--sm" %>
-      <% end %>
-    </div>
+<% if @filter.tag %>
+  <div class="tag-banner" style="--chip-color: <%= @filter.tag.color.presence || 'var(--color-primary)' %>">
+    <span class="tag-banner__label">Etiqueta</span>
+    <strong class="tag-banner__name"><%= @filter.tag.name %></strong>
+    <span class="muted small"><%= @matching_count == 1 ? "1 tarefa" : "#{@matching_count} tarefas" %></span>
+    <%= link_to tasks_path(@filter.to_params(tag_id: nil)), class: "btn btn--ghost btn--sm tag-banner__close" do %>
+      <%= icon :x, size: 14 %> Ver todas
+    <% end %>
   </div>
 <% end %>
 
+<%= form_with url: tasks_path, method: :get, class: "task-filters", role: "search", "aria-label": "Filtrar tarefas",
+              data: { controller: "task-filters", action: "change->task-filters#submit" } do %>
+  <%= hidden_field_tag :archived, "1", id: nil if @filter.archived? %>
+  <div class="task-filters__bar">
+    <%= label_tag :filter_q, "Pesquisar", class: "sr-only" %>
+    <%= search_field_tag :q, @filter.q, id: "filter_q", class: "input task-filters__search", placeholder: "Pesquisar tarefas…", maxlength: 100 %>
+    <%= label_tag :filter_sort, "Ordenar por", class: "sr-only" %>
+    <%= select_tag :sort, options_for_select(task_sort_options, @filter.sort), id: "filter_sort", class: "input task-filters__sort" %>
+    <%= button_tag icon(:search), type: "submit", class: "btn btn--outline", "aria-label": "Pesquisar", name: nil %>
+    <% if @filter.active? %>
+      <%= link_to "Limpar", tasks_path(@filter.archived? ? { archived: "1" } : {}), class: "btn btn--ghost btn--sm" %>
+    <% end %>
+  </div>
+  <% chips = task_filter_chips(@filter) %>
+  <% if chips.any? %>
+    <div class="filter-chips" aria-label="Filtros ativos">
+      <% chips.each do |label, params_without| %>
+        <%= link_to tasks_path(params_without), class: "filter-chip", title: "Remover filtro" do %>
+          <%= label %> <%= icon :x, size: 12 %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+  <details class="disclosure task-filters__more" <%= "open" if @filter.active? %>>
+    <summary class="btn btn--ghost btn--sm"><%= icon :filter, size: 16 %> Filtros</summary>
+    <div class="task-filters__grid">
+      <div class="field">
+        <%= label_tag :filter_status, "Estado", class: "field__label" %>
+        <%= select_tag :status, options_for_select(task_status_filter_options, @filter.status), include_blank: "Todos", id: "filter_status", class: "input" %>
+      </div>
+      <div class="field">
+        <%= label_tag :filter_task_type, "Tipo", class: "field__label" %>
+        <%= select_tag :task_type, options_for_select(task_type_options, @filter.task_type), include_blank: "Todos", id: "filter_task_type", class: "input" %>
+      </div>
+      <div class="field">
+        <%= label_tag :filter_priority, "Prioridade", class: "field__label" %>
+        <%= select_tag :priority, options_for_select(task_priority_options, @filter.priority), include_blank: "Todas", id: "filter_priority", class: "input" %>
+      </div>
+      <% if @tags.any? %>
+        <div class="field">
+          <%= label_tag :filter_tag_id, "Etiqueta", class: "field__label" %>
+          <%= select_tag :tag_id, options_from_collection_for_select(@tags, :id, :name, @filter.tag&.id), include_blank: "Todas", id: "filter_tag_id", class: "input" %>
+        </div>
+      <% end %>
+      <div class="field">
+        <%= label_tag :filter_due, "Prazo", class: "field__label" %>
+        <%= select_tag :due, options_for_select(task_due_filter_options, @filter.due), include_blank: "Qualquer", id: "filter_due", class: "input" %>
+      </div>
+      <label class="check">
+        <%= check_box_tag :subtasks, "1", @filter.subtasks?, id: "filter_subtasks" %> Incluir subtarefas
+      </label>
+    </div>
+  </details>
+<% end %>
+
 <% if @tasks.any? %>
-  <div class="card card--flush">
-    <ul class="list task-list" aria-label="Lista de tarefas">
-      <%= render partial: "tasks/task", collection: @tasks, as: :task,
-                 locals: { show_parent: @filter.subtasks? || @filter.q.present? } %>
-    </ul>
+  <div data-controller="task-select">
+    <%= form_with url: destroy_all_tasks_path, method: :delete, id: "bulk_tasks_form", class: "task-bulk" do %>
+      <% @filter.to_params.each do |key, value| %><%= hidden_field_tag key, value, id: nil %><% end %>
+      <button type="button" class="btn btn--ghost btn--sm" data-task-select-target="start" data-action="task-select#start">
+        <%= icon :check, size: 16 %> Selecionar
+      </button>
+      <div class="task-bulk__bar" data-task-select-target="bar" hidden>
+        <label class="check">
+          <input type="checkbox" data-task-select-target="all" data-action="task-select#toggleAll"> Todas
+        </label>
+        <span class="muted small" data-task-select-target="count" aria-live="polite">0 selecionadas</span>
+        <button type="submit" class="btn btn--danger btn--sm" disabled
+                data-task-select-target="deleteSelected"><%= icon :trash, size: 16 %> Eliminar selecionadas</button>
+        <button type="submit" name="all" value="1" class="btn btn--ghost btn--sm"
+                data-turbo-confirm="Eliminar <%= @matching_count %> tarefas<%= ' (com os filtros aplicados)' if @filter.active? %>? Esta ação não pode ser desfeita.">
+          Eliminar todas (<%= @matching_count %>)
+        </button>
+        <button type="button" class="btn btn--ghost btn--sm" data-action="task-select#cancel">Cancelar</button>
+      </div>
+    <% end %>
+
+    <div class="card card--flush">
+      <ul class="list task-list" aria-label="Lista de tarefas">
+        <%= render partial: "tasks/task", collection: @tasks, as: :task,
+                   locals: { show_parent: @filter.subtasks? || @filter.q.present? } %>
+      </ul>
+    </div>
   </div>
 
   <% if @filter.previous_page? || @filter.next_page? %>
@@ -93,15 +141,12 @@
 <% elsif @filter.active? %>
   <%= render "shared/empty_state",
              title: "Nenhuma tarefa corresponde aos filtros",
-             body: "Experimenta outra pesquisa ou limpa os filtros para ver todas as tarefas.",
              action: link_to("Limpar filtros", tasks_path(@filter.archived? ? { archived: "1" } : {}), class: "btn btn--outline") %>
 <% elsif @filter.archived? %>
   <%= render "shared/empty_state",
-             title: "Nada arquivado",
-             body: "As tarefas que arquivares ficam aqui guardadas, com todo o histórico, sem ocupar a tua lista." %>
+             title: "Nada arquivado" %>
 <% else %>
   <%= render "shared/empty_state",
              title: "Ainda não tens tarefas",
-             body: "Cria a tua primeira tarefa — um projeto, uma entrega, um exame ou uma rotina.",
              action: link_to(safe_join([ icon(:plus), "Nova tarefa" ], " "), new_task_path, class: "btn btn--primary") %>
 <% end %>

@@ -62,3 +62,11 @@
   .quickadd { right: var(--space-4); bottom: var(--space-4); }
   .quickadd__fab svg { width: 80px; height: 80px; }
 }
+
+/* Example requests on a task page: tap one to put it in the box. */
+.quickadd__examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-2); }
+.quickadd__example {
+  padding: 3px 10px; border: 1px solid var(--color-border-strong); border-radius: 999px;
+  background: var(--color-surface); color: var(--color-text); font: inherit; font-size: 0.8rem; cursor: pointer;
+}
+.quickadd__example:hover { border-color: var(--olive); color: var(--olive); }

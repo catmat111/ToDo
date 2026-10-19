@@ -7,6 +7,8 @@ require "json"
 # can decide what to retry:
 #
 #   AuthError     -> 401 / invalid_grant: the user must reconnect (never retried)
+#   PermissionError (an AuthError) -> 403 insufficientPermissions: the user didn't
+#                    tick the permission on Google's consent screen; reconnect and tick it
 #   NotFoundError -> 404 / 410: the remote event no longer exists
 #   ConflictError -> 412: the event changed remotely (If-Match etag mismatch)
 #   NetworkError  -> timeouts, connection failures, 429 and 5xx (safe to retry)
@@ -33,6 +35,7 @@ class GoogleClient
     end
   end
   class AuthError < Error; end
+  class PermissionError < AuthError; end
   class NotFoundError < Error; end
   class ConflictError < Error; end
   class NetworkError < Error; end
@@ -179,7 +182,11 @@ class GoogleClient
       when 400 then token_endpoint && %w[invalid_grant unauthorized_client].include?(reason) ? AuthError : Error
       when 404, 410 then NotFoundError
       when 412 then ConflictError
-      when 403 then %w[rateLimitExceeded userRateLimitExceeded].include?(reason) ? NetworkError : Error
+      when 403
+        if %w[rateLimitExceeded userRateLimitExceeded].include?(reason) then NetworkError
+        elsif %w[insufficientPermissions ACCESS_TOKEN_SCOPE_INSUFFICIENT insufficient_scope].include?(reason) then PermissionError
+        else Error
+        end
       when 408, 429, 500..599 then NetworkError
       else Error
       end

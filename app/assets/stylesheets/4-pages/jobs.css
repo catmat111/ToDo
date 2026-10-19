@@ -7,6 +7,7 @@
 .job-source { font-weight: 600; }
 .job-source--linkedin { background: var(--color-primary-soft); color: var(--color-primary); }
 .job-source--indeed { background: var(--color-accent-soft); color: var(--color-accent); }
+.job-source--itjobs { background: var(--color-success-soft); color: var(--color-success); }
 .job-source--other { background: var(--color-warning-soft); color: var(--color-warning); }
 
 /* ---------- Intro note ---------- */
@@ -129,6 +130,7 @@
 }
 .job-source-mark--linkedin { background: var(--color-primary-soft); color: var(--color-primary); }
 .job-source-mark--indeed { background: var(--color-accent-soft); color: var(--color-accent); }
+.job-source-mark--itjobs { background: var(--color-success-soft); color: var(--color-success); }
 .job-source-mark--other { background: var(--color-warning-soft); color: var(--color-warning); }
 .job-listing-item__company { font-weight: 500; color: var(--color-text); }
 .job-listing-item__search { color: var(--color-text-muted); }
@@ -145,7 +147,7 @@
   .job-listing-item__mark { display: none; }
 }
 
-/* Salary + work mode tags (listings, applications, kanban) */
+/* Salary + work mode tags (listings and applications) */
 .work-mode {
   display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px;
   font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #FBF8F3;

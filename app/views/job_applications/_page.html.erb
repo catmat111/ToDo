@@ -1,0 +1,13 @@
+<%# One page of the list; the next page loads by itself when the end scrolls into view. %>
+<%# locals: (job_applications:, next_tasks:, page:, next_page:) %>
+<%= turbo_frame_tag "ja-page-#{page}", target: "_top" do %>
+  <% job_applications.each do |job_application| %>
+    <%= render "job_applications/row", job_application: job_application, next_task: next_tasks[job_application.id] %>
+  <% end %>
+  <% if next_page %>
+    <%= turbo_frame_tag "ja-page-#{page + 1}", src: job_applications_path(request.query_parameters.merge(page: page + 1)),
+          loading: :lazy, target: "_top", class: "ja-more" do %>
+      <p class="ja-more__text muted small">A carregar mais…</p>
+    <% end %>
+  <% end %>
+<% end %>
