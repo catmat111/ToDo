@@ -8,9 +8,13 @@ module Tasks
   #   reply.text     # => "Vou lembrar-te a 14/10 às 09:00."
   #   reply.changed? # => true (the page should be refreshed)
   class Chat
-    Reply = Data.define(:ok, :text, :changed, :link) do
+    # understood: false only when no rule matched — then the assistant (LLM) may try.
+    Reply = Data.define(:ok, :text, :changed, :link, :understood) do
+      def initialize(understood: true, **) = super
+
       def ok? = ok
       def changed? = changed
+      def understood? = understood
     end
 
     EXAMPLES = [
@@ -71,7 +75,7 @@ module Tasks
       end
 
       def not_understood
-        failure("Não percebi. Experimenta: #{EXAMPLES.first(4).map { |e| "«#{e}»" }.join(", ")} — ou escreve «ajuda».")
+        Reply.new(ok: false, changed: false, link: nil, understood: false, text: "Não percebi. Experimenta: #{EXAMPLES.first(4).map { |e| "«#{e}»" }.join(", ")} — ou escreve «ajuda».")
       end
 
       def at(time)

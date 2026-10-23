@@ -1,53 +1,51 @@
 <%# Floating "post-it" button (bottom-right) that opens a small chat: on a task page it
-    changes that task (Tasks::Chat); everywhere else it adds a task with the date
-    it mentions (today by default) or an event (QuickAdd). %>
+    changes that task (Tasks::Chat, then the local LLM); everywhere else it adds tasks and
+    events (the local LLM, or QuickAdd's rules). It stays put across pages and refreshes
+    (data-turbo-permanent): the task chat has its own id, so it swaps on task pages. %>
 <% chat_task = @task if controller_name == "tasks" && action_name == "show" && @task&.persisted? %>
-<div class="quickadd" data-controller="quickadd" data-action="keydown.esc@window->quickadd#close">
+<% llm = OllamaClient.enabled? %>
+<% suggestions = chat_task ? Tasks::Chat::EXAMPLES.first(5) :
+     [ "Ligar ao banco amanhã às 10h", "Entregar relatório sexta", "Jantar com a Ana sábado às 20h" ] %>
+<div class="quickadd" id="<%= chat_task ? "quickadd-task-#{chat_task.id}" : "quickadd" %>" data-turbo-permanent
+     data-controller="quickadd" data-action="keydown.esc@window->quickadd#close">
   <section class="quickadd__panel" id="quickadd-panel" role="dialog" aria-modal="false"
            aria-labelledby="quickadd-title" data-quickadd-target="panel" hidden>
     <header class="quickadd__header">
-      <p class="quickadd__title" id="quickadd-title"><%= chat_task ? "Nesta tarefa" : "Adicionar" %></p>
-      <button type="button" class="quickadd__close" data-action="quickadd#close" aria-label="Fechar">×</button>
+      <span class="quickadd__badge" aria-hidden="true"><%= icon(chat_task ? :tasks : :plus, size: 16) %></span>
+      <div class="quickadd__heading">
+        <p class="quickadd__title" id="quickadd-title"><%= chat_task ? "Nesta tarefa" : "O que tens para fazer?" %></p>
+        <p class="quickadd__subtitle">
+          <% if chat_task %><%= chat_task.title.truncate(40) %><% else %>Tarefas e eventos<% end %>
+          <% if llm %><span class="quickadd__ai" title="Pedidos em texto livre, percebidos por uma IA que corre neste computador (Ollama)">· IA local</span><% end %>
+        </p>
+      </div>
+      <button type="button" class="quickadd__close" data-action="quickadd#close" aria-label="Fechar"><%= icon :x, size: 18 %></button>
     </header>
 
     <div class="quickadd__messages" id="quickadd_messages" data-quickadd-target="messages" aria-live="polite">
-      <% if chat_task %>
-        <div class="quickadd__msg quickadd__msg--app">
-          Diz-me o que mudar em «<%= chat_task.title.truncate(60) %>». Por exemplo:
-          <span class="quickadd__examples">
-            <% Tasks::Chat::EXAMPLES.first(6).each do |example| %>
-              <button type="button" class="quickadd__example" data-action="quickadd#fill" data-quickadd-text-param="<%= example %>"><%= example %></button>
-            <% end %>
-          </span>
-        </div>
-      <% else %>
-        <div class="quickadd__msg quickadd__msg--app">
-          Olá<%= ", #{Current.user.first_name}" if Current.user.first_name %>! O que tens de fazer? Diz quando, se não for para hoje.
-          <span class="quickadd__examples">
-            <% [ "Ligar ao banco amanhã às 10h", "Entregar relatório sexta", "evento jantar sábado às 20h" ].each do |example| %>
-              <button type="button" class="quickadd__example" data-action="quickadd#fill" data-quickadd-text-param="<%= example %>"><%= example %></button>
-            <% end %>
-          </span>
-        </div>
+      <div class="quickadd__msg quickadd__msg--app">
+        <% if chat_task %>
+          Diz-me o que mudar nesta tarefa<%= " — por palavras tuas" if llm %>.
+        <% else %>
+          Olá<%= ", #{Current.user.first_name}" if Current.user.first_name %>! Escreve o que tens de fazer e quando.
+          <%= llm ? "Podes pôr várias coisas na mesma frase." : "Sem data, fica para hoje." %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="quickadd__suggestions" aria-label="Sugestões">
+      <% suggestions.each do |example| %>
+        <button type="button" class="quickadd__example" data-action="quickadd#fill" data-quickadd-text-param="<%= example %>"><%= example %></button>
       <% end %>
     </div>
 
-    <% if chat_task %>
-      <%= form_with url: task_chat_path(chat_task), class: "quickadd__form",
-            data: { action: "turbo:submit-end->quickadd#sent" } do |f| %>
-        <%= f.label :message, "Pedido para esta tarefa", class: "sr-only", for: "quickadd-input" %>
-        <%= f.text_field :message, id: "quickadd-input", placeholder: "Ex.: lembra-me amanhã às 9h", required: true,
-              maxlength: 1000, autocomplete: "off", data: { quickadd_target: "input" } %>
-        <button type="submit" class="quickadd__send" aria-label="Enviar">➤</button>
-      <% end %>
-    <% else %>
-      <%= form_with url: quick_add_path, class: "quickadd__form",
-            data: { action: "turbo:submit-end->quickadd#sent" } do |f| %>
-        <%= f.label :message, "Nova tarefa ou evento", class: "sr-only", for: "quickadd-input" %>
-        <%= f.text_field :message, id: "quickadd-input", placeholder: "Ex.: Ligar ao banco amanhã às 10h", required: true,
-              maxlength: 500, autocomplete: "off", data: { quickadd_target: "input" } %>
-        <button type="submit" class="quickadd__send" aria-label="Adicionar">➤</button>
-      <% end %>
+    <%= form_with url: (chat_task ? task_chat_path(chat_task) : quick_add_path), class: "quickadd__form",
+          data: { action: "turbo:submit-end->quickadd#sent" } do |f| %>
+      <%= f.label :message, (chat_task ? "Pedido para esta tarefa" : "Nova tarefa ou evento"), class: "sr-only", for: "quickadd-input" %>
+      <%= f.text_field :message, id: "quickadd-input", required: true, autocomplete: "off",
+            maxlength: (chat_task ? 1000 : 500), data: { quickadd_target: "input" },
+            placeholder: (chat_task ? "Ex.: lembra-me na véspera às 9h" : "Ex.: ligar ao banco amanhã às 10h") %>
+      <button type="submit" class="quickadd__send" aria-label="Enviar"><%= icon :send, size: 16 %></button>
     <% end %>
   </section>
 

@@ -10,6 +10,8 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# The chat assistant refreshes the page after a change: morph, keep the scroll (and the chat). %>
+    <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
     <%= yield :head %>
 
     <link rel="icon" href="/tudo-favicon.png" type="image/png">
@@ -34,6 +36,7 @@
     <% if authenticated? %>
       <%# Live notifications: new ones pop up, update the counter and the notifications page. %>
       <%= turbo_stream_from Current.user, :notifications %>
+      <%= turbo_stream_from Current.user, :assistant %>
       <div id="toasts" class="toasts" aria-live="polite"></div>
 
       <header class="masthead">

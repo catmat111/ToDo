@@ -1,0 +1,9 @@
+<%# The assistant's answer (state: thinking | done | error); replaced in place by AssistantReplyJob. %>
+<%# locals: (id:, text: nil, state: "thinking") %>
+<div class="quickadd__msg quickadd__msg--app<%= " quickadd__msg--error" if state == "error" %><%= " quickadd__msg--thinking" if state == "thinking" %>" id="<%= id %>">
+  <% if state == "thinking" %>
+    <span class="quickadd__dots" aria-label="A pensar"><span></span><span></span><span></span></span>
+  <% else %>
+    <%= text %>
+  <% end %>
+</div>

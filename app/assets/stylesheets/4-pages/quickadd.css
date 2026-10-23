@@ -15,45 +15,83 @@
 .quickadd__panel[hidden] { display: none; }
 
 .quickadd__panel {
-  width: min(360px, calc(100vw - 2 * var(--space-4)));
-  display: flex; flex-direction: column; max-height: min(480px, 70vh);
-  background: var(--color-surface); border: 3px solid var(--charcoal); border-radius: 14px;
-  box-shadow: 0 6px 0 var(--charcoal); overflow: hidden;
-  animation: quickadd-in 0.18s ease-out;
+  width: min(380px, calc(100vw - 2 * var(--space-4)));
+  display: flex; flex-direction: column; max-height: min(540px, 72vh);
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(26, 20, 15, 0.22), 0 2px 6px rgba(26, 20, 15, 0.08); overflow: hidden;
+  animation: quickadd-in 0.18s ease-out; transform-origin: bottom right;
 }
-@keyframes quickadd-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes quickadd-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
 
 .quickadd__header {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--terracotta); color: #FBF8F3; padding: var(--space-3) var(--space-4);
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border); background: var(--color-surface);
 }
-.quickadd__title { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 1.5rem; font-weight: 600; }
-.quickadd__close { background: none; border: 0; color: #FBF8F3; font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.quickadd__badge {
+  flex-shrink: 0; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--terracotta); color: #FBF8F3;
+}
+.quickadd__heading { flex: 1; min-width: 0; }
+.quickadd__title { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; line-height: 1.15; color: var(--color-text); }
+.quickadd__subtitle {
+  margin: 1px 0 0; font-size: 0.78rem; color: var(--color-text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.quickadd__ai { color: var(--olive); font-weight: 600; }
+.quickadd__close {
+  flex-shrink: 0; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  background: none; border: 0; color: var(--color-text-muted); cursor: pointer;
+}
+.quickadd__close:hover { background: var(--color-surface-2); color: var(--color-text); }
 
 .quickadd__messages {
   flex: 1; overflow-y: auto; padding: var(--space-4);
-  display: flex; flex-direction: column; gap: var(--space-2);
-  background:
-    repeating-linear-gradient(transparent 0 27px, color-mix(in srgb, var(--cream) 55%, transparent) 27px 28px),
-    var(--color-surface);
+  display: flex; flex-direction: column; gap: var(--space-2); background: var(--color-bg);
 }
-.quickadd__msg { max-width: 85%; padding: var(--space-2) var(--space-3); border-radius: 14px; line-height: 1.4; overflow-wrap: anywhere; }
-.quickadd__msg--app { align-self: flex-start; background: var(--color-surface-2); color: var(--color-text); border-bottom-left-radius: 4px; }
+.quickadd__msg {
+  max-width: 85%; padding: 8px 12px; border-radius: 16px; line-height: 1.45; font-size: 0.92rem; overflow-wrap: anywhere;
+  animation: quickadd-msg 0.16s ease-out;
+}
+@keyframes quickadd-msg { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.quickadd__msg--app {
+  align-self: flex-start; background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-border); border-bottom-left-radius: 6px;
+}
 .quickadd__msg--app a { color: var(--color-primary); font-weight: 600; }
-.quickadd__msg--me { align-self: flex-end; background: var(--olive); color: #FBF8F3; border-bottom-right-radius: 4px; }
-.quickadd__msg--error { background: var(--color-danger-soft); color: var(--color-danger); }
+.quickadd__msg--me { align-self: flex-end; background: var(--terracotta); color: #FBF8F3; border-bottom-right-radius: 6px; }
+.quickadd__msg--error { background: var(--color-danger-soft); border-color: transparent; color: var(--color-danger); }
 
-.quickadd__form { display: flex; gap: var(--space-2); padding: var(--space-3); border-top: 2px solid var(--charcoal); background: var(--color-surface); }
-.quickadd__form input[type="text"] {
-  flex: 1; min-width: 0; border: 2px solid var(--color-border-strong); border-radius: 999px;
-  padding: 8px 14px; font: inherit; background: var(--color-bg); color: var(--color-text);
+/* Suggestions: one scrollable row above the box; tap one to put it in the box. */
+.quickadd__suggestions {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  padding: var(--space-2) var(--space-3) 0; background: var(--color-surface);
 }
-.quickadd__form input[type="text"]:focus { outline: none; border-color: var(--mustard); }
+.quickadd__suggestions::-webkit-scrollbar { display: none; }
+.quickadd__example {
+  flex-shrink: 0; padding: 4px 11px; border: 1px solid var(--color-border-strong); border-radius: 999px;
+  background: var(--color-surface); color: var(--color-text-muted); font: inherit; font-size: 0.78rem; cursor: pointer; white-space: nowrap;
+}
+.quickadd__example:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+/* The box, with the send button inside it. */
+.quickadd__form {
+  position: relative; display: flex; align-items: center; margin: 0;
+  padding: var(--space-2) var(--space-3) var(--space-3); background: var(--color-surface);
+}
+.quickadd__form input[type="text"] {
+  flex: 1; min-width: 0; border: 1px solid var(--color-border-strong); border-radius: 999px;
+  padding: 10px 48px 10px 16px; font: inherit; font-size: 0.92rem; background: var(--color-bg); color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.quickadd__form input[type="text"]:focus { outline: none; border-color: var(--terracotta); box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 18%, transparent); }
 .quickadd__send {
-  width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
-  background: var(--terracotta); color: #FBF8F3; font-size: 1.05rem;
+  position: absolute; right: calc(var(--space-3) + 5px); display: inline-grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--terracotta); color: #FBF8F3; transition: background 0.15s ease, transform 0.1s ease;
 }
 .quickadd__send:hover { background: var(--charcoal); }
+.quickadd__send:active { transform: scale(0.94); }
 
 /* Live-notification toasts sit above the button. */
 .toasts { bottom: calc(var(--space-5) + 110px); }
@@ -63,10 +101,13 @@
   .quickadd__fab svg { width: 80px; height: 80px; }
 }
 
-/* Example requests on a task page: tap one to put it in the box. */
-.quickadd__examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-2); }
-.quickadd__example {
-  padding: 3px 10px; border: 1px solid var(--color-border-strong); border-radius: 999px;
-  background: var(--color-surface); color: var(--color-text); font: inherit; font-size: 0.8rem; cursor: pointer;
+/* The assistant thinking (local LLM): three bouncing dots. */
+.quickadd__dots { display: inline-flex; gap: 4px; padding: 4px 0; }
+.quickadd__dots span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--color-text-muted);
+  animation: quickadd-dot 1s infinite ease-in-out;
 }
-.quickadd__example:hover { border-color: var(--olive); color: var(--olive); }
+.quickadd__dots span:nth-child(2) { animation-delay: 0.15s; }
+.quickadd__dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes quickadd-dot { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .quickadd__dots span { animation: none; } }
