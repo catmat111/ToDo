@@ -3,6 +3,7 @@
   <% period.days.each do |date| %>
     <% day_tasks = agenda.tasks_on(date) %>
     <% day_events = agenda.events_on(date) %>
+    <% day_spans = agenda.spans_on(date) %>
     <section class="calendar-week__day<%= " calendar-week__day--today" if period.today?(date) %><%= " calendar-week__day--weekend" if date.saturday? || date.sunday? %>"
              aria-labelledby="calendar-day-<%= date.iso8601 %>"
              <%= tag.attributes("aria-current": (period.today?(date) ? "date" : nil)) %>>
@@ -17,8 +18,21 @@
               title: "Novo evento", "aria-label": "Novo evento a #{calendar_full_date(date)}" do %><%= icon :plus, size: 13 %><% end %>
       </header>
 
-      <% if day_tasks.any? || day_events.any? %>
+      <% if day_tasks.any? || day_events.any? || day_spans.any? %>
         <ul class="calendar-week__items">
+          <% day_spans.each do |span| %>
+            <% task = span.task %>
+            <li class="calendar-week__item calendar-week__item--span calendar-week__item--<%= task.status.dasherize %><%= " calendar-week__item--overdue" if task.overdue? %>">
+              <span class="calendar-week__time">
+                <% if date == span.last_day %><%= icon :flag, size: 12 %> <%= calendar_task_time(task) %><% else %>até <%= l(span.last_day, format: "%d/%m") %><% end %>
+              </span>
+              <%= link_to task.title, task_path(task), class: "calendar-week__link" %>
+              <span class="calendar-week__meta">
+                <% if date == span.last_day %><span class="badge badge--overdue">Prazo</span><% end %>
+                <%= priority_badge(task) %>
+              </span>
+            </li>
+          <% end %>
           <% day_events.each do |event| %>
             <li class="calendar-week__item calendar-week__item--event">
               <span class="calendar-week__time"><%= calendar_event_time(event, date) %></span>

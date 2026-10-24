@@ -1,0 +1,51 @@
+<%# Left column of "Hoje": each tag with its open tasks (a backlog), and a box to add one to it. %>
+<%# locals: (groups:) %>
+<aside class="home-backlog" aria-labelledby="home-backlog-title">
+  <div class="home-backlog__head">
+    <h2 class="home-backlog__title" id="home-backlog-title">Backlog</h2>
+    <%= link_to "Etiquetas", tags_path, class: "home-backlog__manage" %>
+  </div>
+
+  <% if groups.empty? %>
+    <p class="home-backlog__empty">
+      Cria etiquetas (ex.: <em>Estudo</em>, <em>Casa</em>) para juntar aqui o que tens por fazer.
+      <%= link_to "Criar etiqueta", new_tag_path %>
+    </p>
+  <% end %>
+
+  <% groups.each do |group| %>
+    <details class="home-backlog__group" data-drop-zone="backlog" data-tag-id="<%= group.tag.id %>" <%= "open" if group.total.positive? %> <%= tag.attributes(style: ("--tape: #{group.tag.color}" if group.tag.color.present?)) %>>
+      <summary class="home-backlog__summary">
+        <%= tag_chip(group.tag) %>
+        <span class="home-backlog__count"><%= group.total %></span>
+      </summary>
+
+      <% if group.tasks.any? %>
+        <ul class="home-backlog__list">
+          <% group.tasks.each do |task| %>
+            <li class="home-backlog__item<%= " home-backlog__item--overdue" if task.overdue? %>" draggable="true"
+                data-plan-url="<%= plan_task_path(task) %>" data-tag-ids="<%= task.tag_ids.join(" ") %>"<%= " data-dated" if task.due_at %>
+                title="Arrasta para Hoje para a fazeres hoje">
+              <%= button_to complete_task_path(task), method: :patch, class: "home-backlog__check",
+                    title: "Marcar como concluída", "aria-label": "Marcar “#{task.title}” como concluída" do %>
+                <%= icon :check, size: 12 %>
+              <% end %>
+              <%= link_to task.title, task_path(task), class: "home-backlog__link" %>
+              <% if task.due_at %><span class="home-backlog__due"><%= task.overdue? ? "atrasada" : relative_due(task.due_at) %></span><% end %>
+            </li>
+          <% end %>
+        </ul>
+        <% if group.total > group.tasks.size %>
+          <%= link_to "+#{group.total - group.tasks.size} mais", tasks_path(tag_id: group.tag.id), class: "home-backlog__more" %>
+        <% end %>
+      <% end %>
+
+      <%= form_with url: tasks_path, scope: :task, class: "home-backlog__add" do |f| %>
+        <%= hidden_field_tag :return_to, "home", id: nil %>
+        <%= hidden_field_tag "task[tag_ids][]", group.tag.id, id: nil %>
+        <%= f.text_field :title, value: nil, id: "backlog-add-#{group.tag.id}", required: true, maxlength: 200,
+              autocomplete: "off", placeholder: "Adicionar a #{group.tag.name}…", "aria-label": "Nova tarefa em #{group.tag.name}" %>
+      <% end %>
+    </details>
+  <% end %>
+</aside>

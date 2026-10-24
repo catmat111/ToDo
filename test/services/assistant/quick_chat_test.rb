@@ -40,5 +40,14 @@ module Assistant
         assert_match "não percebi quando", QuickChat.call(@user, "reunião", client: client).text
       end
     end
+
+    test "a task in a tag without a date has no due date" do
+      study = @user.tags.create!(name: "Estudo")
+      client = FakeOllama.new(FakeOllama.call_tool("criar_tarefa", { "titulo" => "angular", "etiquetas" => [ "estudo" ] }), FakeOllama.say("ok"))
+      reply = QuickChat.call(@user, "adicionar na etiqueta de estudo, angular", client: client)
+      task = @user.tasks.last
+      assert_equal [ "Angular", [ study ], nil ], [ task.title, task.tags.to_a, task.due_at ]
+      assert_match "na etiqueta «Estudo»", reply.text
+    end
   end
 end

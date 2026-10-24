@@ -1,52 +1,283 @@
-/* "Hoje": compact greeting, two coloured lists. */
-.home { max-width: none; }
-/* On this page the content spans the full width, so the greeting sits in the page corner. */
-.content:has(> .home) { max-width: none; }
+/* "Hoje": a cosy desk. A warm header that follows the hour (morning / afternoon / night),
+   today's list on a notepad, the next days grouped, and the backlog as index cards. */
 
-/* Greeting: a small detail in the top-left corner; the lists sit centred. */
-.home__header { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: 0 0 var(--space-6); }
-.home__date {
-  display: inline-block; background: var(--mustard); color: #FBF8F3;
-  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 5px 12px; border-radius: 3px;
+.home {
+  --home-warm: var(--mustard);
+  max-width: 1180px; margin: 0 auto;
 }
-.home__greeting { margin: 0; font-size: 1.6rem; font-weight: 500; font-style: italic; color: var(--color-primary); }
-.home__greeting::after { display: none; }
-.home__section { max-width: 860px; margin-left: auto; margin-right: auto; }
-.home__footnote { max-width: 860px; margin-left: auto; margin-right: auto; }
+/* This page is a little wider than the others (the backlog column). */
+.content:has(> .home) { max-width: 1260px; }
+.home--afternoon { --home-warm: var(--orange); }
+.home--night { --home-warm: var(--olive); }
 
-.home__section { margin-bottom: var(--space-7); }
-.home__heading { display: flex; align-items: center; gap: var(--space-2); font-size: 2.3rem; font-style: italic; margin: 0 0 var(--space-3); }
-.home__count { font-family: var(--font-body); font-style: normal; font-size: 0.95rem; font-weight: 700; min-width: 32px; padding: 3px 10px; border-radius: 999px; text-align: center; color: #FBF8F3; background: var(--mustard); }
-.home__list { list-style: none; margin: 0; padding: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; overflow: hidden; }
-.home__section--today .home__list { border-left: 5px solid var(--mustard); }
-.home__section--next .home__list { border-left: 5px solid var(--olive); }
+/* ---------- Header: a landscape whose sky follows the clock ---------- */
+/* Each phase sets the sky (three stops), the sun/moon, the hills and the text colour.
+   --sky-t (0..1) moves the sun or moon along its arc, left to right. */
+.home-hero {
+  --sky-top: #9CC9E3; --sky-mid: #CFE6EE; --sky-low: #F4EBD9;
+  --orb: #F9D46B; --orb-glow: rgba(249, 212, 107, 0.55);
+  --hill-far: #A8AE78; --hill-near: #6E6B41;
+  --ink: #2B221B; --ink-soft: rgba(43, 34, 27, 0.7);
+  --sky-t: 0.5;
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-5);
+  min-height: 190px; margin-bottom: var(--space-6); padding: var(--space-5) var(--space-6) var(--space-7);
+  border-radius: 22px; color: var(--ink);
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-low) 100%);
+  box-shadow: 0 12px 32px rgba(56, 44, 35, 0.12);
+  transition: color 1.5s ease;
+}
+.home-hero[data-sky="dawn"] {
+  --sky-top: #F2B9A0; --sky-mid: #F8D9BD; --sky-low: #FCEFD8;
+  --orb: #F6A15B; --orb-glow: rgba(246, 161, 91, 0.55);
+  --hill-far: #D5A38A; --hill-near: #9C5D3C;
+}
+.home-hero[data-sky="dusk"] {
+  --sky-top: #5B4373; --sky-mid: #C9705A; --sky-low: #F0AE74;
+  --orb: #F07C3E; --orb-glow: rgba(240, 124, 62, 0.6);
+  --hill-far: #6E4A45; --hill-near: #3B2A26;
+  --ink: #FBF3E6; --ink-soft: rgba(251, 243, 230, 0.82);
+}
+.home-hero[data-sky="night"] {
+  --sky-top: #161A33; --sky-mid: #262B4D; --sky-low: #3A3756;
+  --orb: #F3EBD3; --orb-glow: rgba(243, 235, 211, 0.28);
+  --hill-far: #2A2840; --hill-near: #1A1828;
+  --ink: #F6EFE2; --ink-soft: rgba(246, 239, 226, 0.78);
+}
+
+.home-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+/* Sun / moon: along an arc — low at the sides, high in the middle. */
+.home-sky__orb, .home-sky__glow {
+  position: absolute; border-radius: 50%;
+  left: calc(6% + var(--sky-t) * 82%);
+  /* on the arc; --sky-rise (0 → 1 on load) lifts it from behind the hills */
+  top: calc(80% - (10% + sin(var(--sky-t) * 180deg) * 52%) * var(--sky-rise, 1));
+  transition: left 2s ease, top 2s ease;
+}
+.home-sky__orb { width: 46px; height: 46px; margin: -23px 0 0 -23px; background: var(--orb); box-shadow: 0 0 24px 6px var(--orb-glow); }
+.home-sky__glow { width: 260px; height: 260px; margin: -130px 0 0 -130px; background: radial-gradient(circle, var(--orb-glow), transparent 65%); }
+.home-hero[data-sky="night"] .home-sky__orb { box-shadow: inset -10px -4px 0 0 rgba(22, 26, 51, 0.35), 0 0 22px 4px var(--orb-glow); }
+
+.home-sky__stars, .home-sky__clouds { position: absolute; inset: 0 0 30% 0; width: 100%; height: 70%; transition: opacity 1.5s ease; }
+.home-sky__stars { opacity: 0; fill: #FFF8E6; }
+.home-sky__stars circle { animation: home-twinkle 3.2s ease-in-out infinite; }
+.home-hero[data-sky="night"] .home-sky__stars { opacity: 1; }
+.home-hero[data-sky="dusk"] .home-sky__stars { opacity: 0.35; }
+.home-sky__clouds { fill: rgba(255, 255, 255, 0.75); opacity: 0; animation: home-drift 60s linear infinite alternate; }
+.home-hero[data-sky="day"] .home-sky__clouds, .home-hero[data-sky="dawn"] .home-sky__clouds { opacity: 1; }
+.home-sky__hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 42%; }
+.home-sky__hill { transition: fill 1.5s ease; }
+.home-sky__hill--far { fill: var(--hill-far); }
+.home-sky__hill--near { fill: var(--hill-near); }
+@keyframes home-twinkle { 50% { opacity: 0.3; } }
+
+/* Animated by sky_controller.js: every colour and position is set each frame, so no
+   CSS transitions (they would lag behind); stars and clouds fade with the hour. */
+.home-hero.is-live { transition: none; cursor: pointer; }
+.home-hero.is-live .home-sky__orb, .home-hero.is-live .home-sky__glow,
+.home-hero.is-live .home-sky__hill, .home-hero.is-live .home-sky__stars, .home-hero.is-live .home-sky__clouds { transition: none; }
+.home-hero.is-live .home-sky__stars { opacity: var(--stars, 0); }
+.home-hero.is-live .home-sky__clouds { opacity: var(--clouds, 0); }
+/* The moon's shadow shows only at night (it fades in with the dark). */
+.home-hero.is-live .home-sky__orb { box-shadow: 0 0 24px 6px var(--orb-glow); }
+.home-hero.is-live[data-sky="night"] .home-sky__orb { box-shadow: inset -10px -4px 0 0 rgba(22, 26, 51, 0.35), 0 0 22px 4px var(--orb-glow); }
+@keyframes home-drift { to { transform: translateX(6%); } }
+
+/* The words sit on a frosted card, so they read well over any sky (the landscape
+   shows through, blurred). Colours come from the page theme, not from the sky. */
+.home-hero__text {
+  position: relative; min-width: 0; max-width: 560px;
+  padding: var(--space-4) var(--space-5); border-radius: 16px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  border: 1px solid color-mix(in srgb, #FFFFFF 55%, transparent);
+  box-shadow: 0 8px 24px rgba(26, 20, 15, 0.12);
+  backdrop-filter: blur(10px) saturate(1.1); -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+.home-hero__date {
+  margin: 0 0 var(--space-1); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-muted);
+}
+.home-hero__greeting { margin: 0; font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 500; font-style: italic; line-height: 1.1; color: var(--color-text); }
+.home-hero__greeting::after { display: none; }
+.home-hero__greeting .wordmark__dot { color: var(--orange); }
+.home-hero__mood { margin: var(--space-2) 0 0; font-size: 1rem; color: var(--color-text); }
+
+/* The goal from the profile: small, quiet. */
+.home__objective {
+  margin: var(--space-3) 0 0; padding-top: var(--space-2); border-top: 1px dashed var(--color-border-strong);
+  font-family: var(--font-display); font-style: italic; font-size: 1.02rem;
+}
+.home__objective a { color: var(--color-text-muted); text-decoration: none; }
+.home__objective a::before { content: "— "; color: var(--orange); }
+.home__objective a:hover { color: var(--color-text); }
+
+/* How much of today is done: a ring on frosted glass. */
+.home-ring {
+  --p: 0;
+  position: relative; flex-shrink: 0; display: grid; place-items: center; align-content: center;
+  width: 104px; height: 104px; border-radius: 50%;
+  background:
+    radial-gradient(closest-side, rgba(255, 252, 245, 0.85) 78%, transparent 80%),
+    conic-gradient(var(--olive) calc(var(--p) * 1%), rgba(255, 252, 245, 0.45) 0);
+  backdrop-filter: blur(3px);
+}
+.home-ring__value { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; line-height: 1; color: #2B221B; }
+.home-ring__value small { font-size: 0.95rem; color: #6F6155; }
+.home-ring__label { font-size: 0.7rem; color: #6F6155; }
+
+/* ---------- Two columns: backlog (left) + today (right) ---------- */
+.home__layout {
+  display: grid; gap: var(--space-6); align-items: start;
+  grid-template-columns: minmax(230px, 290px) minmax(0, 1fr); grid-template-areas: "backlog main";
+}
+.home__main { grid-area: main; min-width: 0; }
+
+.home__section { margin-bottom: var(--space-6); }
+.home__heading { display: flex; align-items: center; gap: var(--space-2); font-size: 1.9rem; font-style: italic; margin: 0 0 var(--space-3); }
+.home__count {
+  font-family: var(--font-body); font-style: normal; font-size: 0.85rem; font-weight: 700;
+  min-width: 28px; padding: 2px 9px; border-radius: 999px; text-align: center; color: #FBF8F3; background: var(--home-warm);
+}
 .home__section--next .home__heading { color: var(--color-accent); }
-.home__empty { color: var(--color-text-muted); font-style: italic; padding: var(--space-5); font-size: 1.1rem; margin: 0; background: var(--color-surface); border: 1px dashed var(--color-border-strong); border-radius: 6px; }
-.home__more { display: inline-block; margin-top: var(--space-3); font-size: 1rem; font-weight: 600; color: var(--color-accent); }
-.home__footnote { margin-top: 0; margin-bottom: 0; }
-.home__footnote a {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  background: var(--olive); color: #FBF8F3; text-decoration: none; font-weight: 600;
-  padding: var(--space-3) var(--space-5); font-size: 1.05rem; border-radius: 999px;
+.home__day {
+  margin: var(--space-4) 0 var(--space-2); font-family: var(--font-body); font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted);
 }
-.home__footnote a:hover { background: var(--charcoal); }
+.home__day:first-of-type { margin-top: 0; }
 
-.home-task { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); font-size: 1.15rem; border-bottom: 1px solid var(--color-border); }
+/* Lists */
+.home__list {
+  list-style: none; margin: 0; padding: 0; overflow: hidden;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(56, 44, 35, 0.05);
+}
+/* Today: a notepad — ruled lines and a margin line. */
+.home-notepad .home__list {
+  background:
+    linear-gradient(90deg, transparent 52px, color-mix(in srgb, var(--terracotta) 35%, transparent) 52px 53px, transparent 53px),
+    var(--color-surface);
+  border-top: 6px solid var(--home-warm);
+}
+.home__more { display: inline-block; margin-top: var(--space-3); font-size: 0.95rem; font-weight: 600; color: var(--color-accent); }
+
+.home-task { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-5); font-size: 1.05rem; border-bottom: 1px dashed var(--color-border); }
 .home-task:last-child { border-bottom: 0; }
-.home-task:hover { background: color-mix(in srgb, var(--mustard) 8%, transparent); }
+.home-task:hover { background: color-mix(in srgb, var(--home-warm) 7%, transparent); }
 .home-task form { margin: 0; display: flex; }
-.home-task__check { width: 28px; height: 28px; border-radius: 50%; padding: 0; cursor: pointer; display: grid; place-items: center; color: transparent; background: transparent; border: 2px solid var(--olive); }
-.home-task__check:hover { background: var(--olive); color: #FBF8F3; }
+.home-task__check {
+  width: 26px; height: 26px; border-radius: 50%; padding: 0; cursor: pointer; display: grid; place-items: center;
+  color: transparent; background: var(--color-surface); border: 2px solid var(--olive); transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.home-task__check:hover { background: var(--olive); color: #FBF8F3; transform: scale(1.08); }
 .home-task__title { flex: 1; min-width: 0; color: var(--color-text); text-decoration: none; font-weight: 500; overflow-wrap: anywhere; }
 .home-task__title:hover { color: var(--color-primary); }
-.home-task__due { font-size: 0.95rem; color: var(--color-text-muted); white-space: nowrap; }
-.home-task--overdue { background: color-mix(in srgb, var(--terracotta) 9%, transparent); }
-.home-task--overdue .home-task__due { background: var(--terracotta); color: #FBF8F3; font-weight: 700; padding: 3px 10px; border-radius: 3px; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.06em; }
+.home-task__due { font-size: 0.85rem; color: var(--color-text-muted); white-space: nowrap; }
+.home-task--overdue { background: color-mix(in srgb, var(--terracotta) 8%, transparent); }
+.home-task--overdue .home-task__due {
+  background: var(--terracotta); color: #FBF8F3; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+  text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.06em;
+}
 
-
-/* The today list is always rendered (the quick-add chat appends to it);
-   show the empty message only while it has no tasks. */
+/* Empty today: a cup of tea, steam rising. The list is always rendered (the quick-add
+   chat appends to it); the empty card shows only while it has no tasks. */
+.home__empty {
+  display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5);
+  background: var(--color-surface); border: 1px dashed var(--color-border-strong); border-radius: 14px; color: var(--color-text-muted);
+}
+.home__empty p { margin: 0; font-style: italic; font-size: 1.05rem; }
+.home__cup { flex-shrink: 0; color: var(--terracotta); }
+.home__steam { animation: home-steam 3s ease-in-out infinite; transform-origin: center bottom; }
+@keyframes home-steam { 0%, 100% { opacity: 0.25; transform: translateY(2px); } 50% { opacity: 0.9; transform: translateY(-2px); } }
 .home__list:not(:has(li)) { display: none; }
 .home__list:has(li) + .home__empty { display: none; }
-.home__greeting .wordmark__dot { color: var(--mustard); }
+
+/* Applications: a small warm pill */
+.home__footnote { margin: 0; }
+.home__footnote a {
+  display: inline-flex; align-items: center; gap: var(--space-2); text-decoration: none; font-weight: 600;
+  padding: var(--space-2) var(--space-4); border-radius: 999px; font-size: 0.95rem;
+  background: color-mix(in srgb, var(--olive) 14%, var(--color-surface)); color: var(--color-text); border: 1px solid color-mix(in srgb, var(--olive) 30%, transparent);
+}
+.home__footnote a:hover { background: var(--olive); color: #FBF8F3; }
+
+/* ---------- Backlog: index cards, taped in the tag's colour ---------- */
+.home-backlog { grid-area: backlog; position: sticky; top: calc(var(--space-6) + 70px); max-height: calc(100vh - 110px); overflow-y: auto; padding: 4px 4px var(--space-2); }
+.home-backlog__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-3); }
+.home-backlog__title { margin: 0; font-size: 1.6rem; font-style: italic; }
+.home-backlog__manage { font-size: 0.82rem; color: var(--color-text-muted); }
+.home-backlog__empty { color: var(--color-text-muted); font-size: 0.92rem; }
+
+.home-backlog__group {
+  --tape: var(--mustard);
+  position: relative; margin: 0 0 var(--space-4); background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: 10px; box-shadow: 0 3px 10px rgba(56, 44, 35, 0.06);
+}
+.home-backlog__group:nth-child(odd) { transform: rotate(-0.6deg); }
+.home-backlog__group:nth-child(even) { transform: rotate(0.5deg); }
+.home-backlog__group::before { /* a strip of tape */
+  content: ""; position: absolute; top: -7px; left: 50%; width: 58px; height: 14px; transform: translateX(-50%) rotate(-2deg);
+  background: color-mix(in srgb, var(--tape) 45%, transparent); border-radius: 2px;
+}
+.home-backlog__summary {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-2); cursor: pointer; list-style: none;
+}
+.home-backlog__summary::-webkit-details-marker { display: none; }
+.home-backlog__summary::after { content: "▸"; color: var(--color-text-muted); transition: transform 0.15s ease; }
+.home-backlog__group[open] > .home-backlog__summary::after { transform: rotate(90deg); }
+.home-backlog__count { margin-left: auto; font-size: 0.78rem; font-weight: 700; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+
+.home-backlog__list { list-style: none; margin: 0; padding: 0; }
+.home-backlog__item { display: flex; align-items: center; gap: var(--space-2); padding: 6px var(--space-3); font-size: 0.9rem; }
+.home-backlog__item + .home-backlog__item { border-top: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent); }
+.home-backlog__item form { margin: 0; display: flex; }
+.home-backlog__check {
+  flex-shrink: 0; width: 18px; height: 18px; padding: 0; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center; color: transparent; background: transparent; border: 1.5px solid var(--olive);
+}
+.home-backlog__check:hover { background: var(--olive); color: #FBF8F3; }
+.home-backlog__link { flex: 1; min-width: 0; color: var(--color-text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-backlog__link:hover { color: var(--color-primary); }
+.home-backlog__due { flex-shrink: 0; font-size: 0.75rem; color: var(--color-text-muted); }
+.home-backlog__item--overdue .home-backlog__due { color: var(--terracotta); font-weight: 600; }
+.home-backlog__more { display: block; padding: 4px var(--space-3) 0; font-size: 0.8rem; color: var(--color-accent); }
+.home-backlog__add { margin: 0; padding: var(--space-2) var(--space-3) var(--space-3); }
+.home-backlog__add input {
+  width: 100%; border: 1px dashed var(--color-border-strong); border-radius: 8px; padding: 6px 10px;
+  font: inherit; font-size: 0.85rem; background: transparent; color: var(--color-text);
+}
+.home-backlog__add input:focus { outline: none; border-style: solid; border-color: var(--terracotta); background: var(--color-bg); }
+
+/* ---------- Smaller screens ---------- */
+@media (max-width: 900px) {
+  .home__layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "main" "backlog"; }
+  .home-backlog { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 600px) {
+  .home-hero { flex-direction: column; align-items: flex-start; padding: var(--space-4) var(--space-4) var(--space-7); }
+  .home-ring { width: 84px; height: 84px; }
+  .home-notepad .home__list { background: var(--color-surface); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home__steam, .home-sky__stars circle, .home-sky__clouds { animation: none; }
+  .home-sky__orb, .home-sky__glow { transition: none; }
+}
+
+/* ---------- Dragging tasks between the backlog and today ---------- */
+[data-plan-url] { cursor: grab; }
+[data-plan-url]:active { cursor: grabbing; }
+.is-dragging { opacity: 0.4; }
+.is-moving { opacity: 0.5; pointer-events: none; }
+/* While dragging, the places a task can go glow softly; the one under it, clearly. */
+.is-dragging-task [data-drop-zone] { transition: box-shadow 0.15s ease, background 0.15s ease; }
+.is-dragging-task .home-backlog__group,
+.is-dragging-task .home__section--today .home__list,
+.is-dragging-task .home__section--today .home__empty { box-shadow: 0 0 0 2px color-mix(in srgb, var(--home-warm) 30%, transparent); }
+.home-backlog__group.is-drop-target {
+  box-shadow: 0 0 0 3px var(--home-warm), 0 8px 20px rgba(56, 44, 35, 0.15); transform: rotate(0) scale(1.02);
+  background: color-mix(in srgb, var(--home-warm) 8%, var(--color-surface));
+}
+.home__section--today.is-drop-target .home__list,
+.home__section--today.is-drop-target .home__empty {
+  box-shadow: 0 0 0 3px var(--home-warm), 0 8px 20px rgba(56, 44, 35, 0.15);
+  background-color: color-mix(in srgb, var(--home-warm) 8%, var(--color-surface));
+}

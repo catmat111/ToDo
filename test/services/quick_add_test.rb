@@ -45,4 +45,14 @@ class QuickAddTest < ActiveSupport::TestCase
     assert_not reply.ok?
     assert_match "Quando", reply.text
   end
+
+  test "puts a task in a tag, without a date (backlog)" do
+    study = @user.tags.create!(name: "Estudo")
+    task = QuickAdd.call(@user, "adicionar na etiqueta de estudo, angular").record
+    assert_equal [ "Angular", [ study ], nil ], [ task.title, task.tags.to_a, task.due_at ]
+
+    task = QuickAdd.call(@user, "na etiqueta trabalho: rever orçamento sexta").record
+    assert_equal [ "Rever orçamento", [ "Trabalho" ] ], [ task.title, task.tags.map(&:name) ]
+    assert task.due_at.friday?
+  end
 end

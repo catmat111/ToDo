@@ -39,7 +39,7 @@ module Assistant
 
     test "arguments sent under the wrong tool go to the tool they fit" do
       chat(FakeOllama.call_tool("mudar_prioridade", { "nomes" => [ "estudo" ] }), FakeOllama.say("ok"))
-      assert_equal [ "estudo" ], @task.tags.pluck(:name)
+      assert_equal [ "Estudo" ], @task.tags.pluck(:name)
       assert_equal 0, @task.reload.priority
     end
 

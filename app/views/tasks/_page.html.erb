@@ -28,6 +28,9 @@
     <details class="task-more">
       <summary class="btn btn--ghost btn--sm btn--icon" title="Mais ações" aria-label="Mais ações"><%= icon :more %></summary>
       <div class="task-more__menu">
+        <%= button_to duplicate_task_path(@task), method: :post, class: "task-more__item", title: "Cria uma cópia com as etiquetas, links e subtarefas" do %>
+          <%= icon :copy, size: 15 %> Duplicar
+        <% end %>
         <% if @task.allowed_transitions.include?("cancelled") %>
           <%= button_to cancel_task_path(@task), method: :patch, class: "task-more__item" do %><%= icon :x, size: 15 %> Cancelar tarefa<% end %>
         <% end %>

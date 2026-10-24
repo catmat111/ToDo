@@ -4,9 +4,11 @@ module Assistant
   # the part of the user's own sentence that thing came from (small models drop dates).
   class QuickTools < Tools
     DEFINITIONS = [
-      function("criar_tarefa", "Cria uma tarefa (algo a fazer). Sem data, fica para hoje.",
-               { titulo: { type: "string", description: "O que fazer, curto, começando por um verbo (ex.: «Ligar ao banco»), sem a data" },
-                 quando: { type: "string", description: "#{Dates::HINT}. Vazio se não disse." } }, %i[titulo]),
+      function("criar_tarefa", "Cria uma tarefa (algo a fazer). Sem data fica para hoje; numa etiqueta e sem data fica sem prazo (backlog).",
+               { titulo: { type: "string", description: "O que fazer, curto, sem a data e sem a etiqueta (ex.: «Ligar ao banco», «Angular»)" },
+                 quando: { type: "string", description: "#{Dates::HINT}. Vazio se não disse." },
+                 etiquetas: { type: "array", items: { type: "string" },
+                              description: "Etiquetas onde pôr a tarefa, se disse (ex.: «na etiqueta de estudo» → [\"estudo\"])" } }, %i[titulo]),
       function("criar_evento", "Marca um evento no calendário (algo que acontece a uma hora: jantar, reunião, aula, consulta).",
                { titulo: { type: "string", description: "O evento, curto, sem a data (ex.: «Jantar com a Ana»)" },
                  quando: { type: "string", description: Dates::HINT },
@@ -25,12 +27,17 @@ module Assistant
     private
       def tool_criar_tarefa(args)
         title = args["titulo"].to_s.squish.presence or return "Erro: falta o título."
+        tags = tags_named(@user, args["etiquetas"])
         time, has_hour = date_for(title, args["quando"])
-        due = time ? (has_hour ? time : time.end_of_day) : Time.zone.now.end_of_day
-        result = Tasks::Create.call(user: @user, params: { title: title.upcase_first, due_at: due })
+        # Put in a tag without a date, it's a backlog item; otherwise no date means today.
+        due = if time then has_hour ? time : time.end_of_day
+        elsif tags.empty? then Time.zone.now.end_of_day
+        end
+        result = Tasks::Create.call(user: @user, params: { title: title.upcase_first, due_at: due, tag_ids: tags.map(&:id) })
         return "Erro: #{result.error}" unless result.success?
         @records << result.task
-        done("Adicionei a tarefa «#{result.task.title}» para #{when_text(due)}.")
+        where = tags.any? ? " na etiqueta #{tags.map { |t| "«#{t.name}»" }.join(", ")}" : ""
+        done("Adicionei a tarefa «#{result.task.title}»#{where}#{" para #{when_text(due)}" if due}.")
       end
 
       def tool_criar_evento(args)

@@ -30,6 +30,8 @@ Rails.application.routes.draw do
       patch :cancel
       patch :archive
       patch :unarchive
+      post :duplicate
+      patch :plan # drag between today and a tag's backlog (home page)
     end
     resources :reminders, only: %i[create destroy]
     resource :recurrence, only: %i[create update destroy], controller: "task_recurrences"

@@ -16,6 +16,8 @@ module Assistant
         - Algo a FAZER (ligar, enviar, estudar, comprar, pagar…) é uma tarefa: usa criar_tarefa.
         - Algo que ACONTECE a uma hora (jantar, reunião, aula, consulta, festa) é um evento: usa criar_evento. Se começar por «evento», é um evento.
         - Se a frase tiver várias coisas, cria cada uma (uma chamada por coisa).
+        - «na etiqueta X», «em X», «para a etiqueta X»: põe a tarefa nessa etiqueta (etiquetas: ["X"]). O título é o resto.
+          Ex.: «adicionar na etiqueta de estudo, angular» → criar_tarefa(titulo: "Angular", etiquetas: ["estudo"]).
         - O título é curto e sem a data. A data vai em «quando», com as palavras do utilizador; não faças contas de datas.
         - Se não percebes o que é para fazer, pergunta. Não inventes tarefas.
       PROMPT

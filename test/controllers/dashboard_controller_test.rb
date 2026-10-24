@@ -78,4 +78,79 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_match "Comprar pão", response.body
     assert_match 'target="home-today-list"', response.body
   end
+
+  test "the backlog lists each tag with its open tasks, undated ones too" do
+    user = users(:one)
+    sign_in_as user
+    study = user.tags.create!(name: "Estudo")
+    user.tags.create!(name: "Casa")
+    create_task(user, title: "Angular", tag_ids: [ study.id ])
+    create_task(user, title: "React", tag_ids: [ study.id ], due_at: 2.days.from_now)
+    create_task(user, title: "Feita", tag_ids: [ study.id ], status: "completed")
+
+    get root_path
+    assert_select ".home-backlog .home-backlog__group", 2
+    assert_select ".home-backlog__group[open]", 1 # Casa has nothing, so it starts closed
+    assert_select ".home-backlog__group[open] .home-backlog__link", count: 2
+    assert_select ".home-backlog__link", text: "React" # dated first
+    assert_select ".home-backlog__link", text: "Feita", count: 0
+  end
+
+  test "adding from a tag's backlog puts the task in that tag, without a date" do
+    sign_in_as users(:one)
+    study = users(:one).tags.create!(name: "Estudo")
+    post tasks_path, params: { return_to: "home", task: { title: "Vue", tag_ids: [ study.id ] } }
+
+    assert_redirected_to root_path
+    assert_equal "«Vue» adicionada a «Estudo».", flash[:notice]
+    task = users(:one).tasks.last
+    assert_equal [ [ study ], nil ], [ task.tags.to_a, task.due_at ]
+  end
+
+  test "shows the goal from the profile, quietly, when there is one" do
+    sign_in_as users(:one)
+    get root_path
+    assert_select ".home__objective", 0
+
+    users(:one).update!(objective: "Encontrar emprego e passar ao mestrado")
+    get root_path
+    assert_select ".home__objective a[href=?]", profile_path, text: "Encontrar emprego e passar ao mestrado"
+  end
+
+  test "dragging a backlog task onto today gives it today as its deadline" do
+    sign_in_as users(:one)
+    study = users(:one).tags.create!(name: "Estudo")
+    task = create_task(users(:one), title: "Angular", tag_ids: [ study.id ], starts_at: 3.days.from_now)
+
+    patch plan_task_path(task), params: { to: "today" }, as: :turbo_stream
+    assert_response :success
+    assert_match %(action="refresh"), response.body
+    assert_equal Time.zone.today, task.reload.due_at.to_date
+    assert_nil task.starts_at # a later start would be after the new deadline
+  end
+
+  test "dragging a today task onto a tag removes the deadline and adds the tag" do
+    sign_in_as users(:one)
+    study = users(:one).tags.create!(name: "Estudo")
+    task = create_task(users(:one), title: "Tibco", due_at: Time.current.end_of_day)
+
+    patch plan_task_path(task), params: { to: "backlog", tag_id: study.id }, as: :turbo_stream
+    assert_nil task.reload.due_at
+    assert_equal [ study ], task.tags.to_a
+
+    get root_path
+    assert_select ".home-backlog__group[data-tag-id=?] .home-backlog__link", study.id.to_s, text: "Tibco"
+    assert_select "#home-today-list li", 0
+  end
+
+  test "can't drag onto someone else's tag or move someone else's task" do
+    sign_in_as users(:one)
+    task = create_task(users(:one), title: "Minha")
+    other_tag = users(:two).tags.create!(name: "Dele")
+    patch plan_task_path(task), params: { to: "backlog", tag_id: other_tag.id }, as: :turbo_stream
+    assert_response :not_found
+
+    patch plan_task_path(create_task(users(:two))), params: { to: "today" }, as: :turbo_stream
+    assert_response :not_found
+  end
 end

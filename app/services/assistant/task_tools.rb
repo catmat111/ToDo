@@ -31,6 +31,7 @@ module Assistant
                  intervalo: { type: "integer", description: "De quantas em quantas (1 = todas)" } }, %i[frequencia]),
       function("partilhar_tarefa", "Envia esta tarefa a outra pessoa da app, pelo email dela.",
                { email: { type: "string" }, mensagem: { type: "string" } }, %i[email]),
+      function("duplicar_tarefa", "Cria uma cópia desta tarefa (com etiquetas, links e subtarefas)."),
       function("adicionar_link", "Guarda um link nesta tarefa.", { url: { type: "string" }, nome: { type: "string" } }, %i[url])
     ].freeze
 
@@ -85,15 +86,11 @@ module Assistant
       end
 
       def tool_adicionar_etiquetas(args)
-        added = Array(args["nomes"]).map { |n| n.to_s.delete_prefix("#").squish.truncate(40, omission: "") }.compact_blank.uniq.first(5).filter_map do |name|
-          tag = user.tags.where("LOWER(name) = ?", name.downcase).first || user.tags.create(name: name)
-          next unless tag.persisted? && !task.tags.include?(tag)
-          task.tags << tag
-          tag.name
-        end
+        added = tags_named(user, args["nomes"]).reject { |tag| task.tags.include?(tag) }
         return "Essas etiquetas já estavam na tarefa." if added.empty?
+        task.tags << added
         AuditLog.record("task.updated", resource: task, user: user, fields: [ "tags" ])
-        done("Etiquetas adicionadas: #{added.join(", ")}.")
+        done("Etiquetas adicionadas: #{added.map(&:name).join(", ")}.")
       end
 
       def tool_remover_etiquetas(args)
@@ -157,6 +154,11 @@ module Assistant
         return "Erro: #{link.errors.full_messages.to_sentence}" unless link.save
         AuditLog.record("link.created", resource: link, user: user, linkable_type: "Task", linkable_id: task.id, host: link.host)
         done("Link guardado.")
+      end
+
+      def tool_duplicar_tarefa(_args)
+        result = Tasks::Duplicate.call(task)
+        result.success? ? "Criei uma cópia: «#{result.task.title}»." : "Erro: #{result.error}"
       end
 
       def update(attributes, message)

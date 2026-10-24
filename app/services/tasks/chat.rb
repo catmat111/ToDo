@@ -104,6 +104,10 @@ module Tasks
           archive(false, "Tarefa restaurada do arquivo.")
         when /\Aarquiva(r)?\b/
           archive(true, "Tarefa arquivada.")
+        when /\A(duplicar|duplica|copiar|copia|faz uma copia)( (a|esta|da|desta) tarefa)?\z/
+          result = Duplicate.call(task)
+          return failure(result.error) unless result.success?
+          Reply.new(ok: true, changed: false, link: result.task, text: "Criei uma cópia: «#{result.task.title}».")
         when /\A(eliminar|elimina|apagar|apaga)( (a|esta) tarefa)?\z/
           failure("Para eliminar, usa o botão «⋯» no topo da página — assim pedimos confirmação.")
         end

@@ -1,5 +1,7 @@
 <%# locals: (task:) %>
-<li class="home-task<%= " home-task--overdue" if task.overdue? %>">
+<li class="home-task<%= " home-task--overdue" if task.overdue? %>" draggable="true"
+    data-plan-url="<%= plan_task_path(task) %>" data-tag-ids="<%= task.tag_ids.join(" ") %>"<%= " data-dated" if task.due_at %>
+    title="Arrasta entre Hoje e as etiquetas do backlog">
   <%= button_to complete_task_path(task), method: :patch, class: "home-task__check",
         title: "Marcar como concluída", "aria-label": "Marcar “#{task.title}” como concluída" do %>
     <%= icon :check, size: 16 %>

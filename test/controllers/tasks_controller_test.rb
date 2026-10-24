@@ -393,4 +393,18 @@ class TasksControllerTest < ActionDispatch::IntegrationTest
     assert @task.pending?
     assert_not @task.archived?
   end
+
+  test "duplicates a task and opens the copy" do
+    task = create_task(title: "Relatório")
+    assert_difference -> { Task.count }, 1 do
+      post duplicate_task_path(task)
+    end
+    copy = Task.order(:id).last
+    assert_redirected_to task_path(copy)
+    assert_equal "Relatório (cópia)", copy.title
+
+    other = create_task(users(:two))
+    post duplicate_task_path(other)
+    assert_response :not_found
+  end
 end

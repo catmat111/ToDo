@@ -1,5 +1,6 @@
 <%# locals: (period:, agenda:) %>
 <% max_items = 3 %>
+<% max_lanes = 3 %>
 <div class="card card--flush calendar-month-wrap">
   <table class="calendar-month">
     <caption class="sr-only">Tarefas de <%= period.title %>, por dia</caption>
@@ -13,11 +14,16 @@
     <tbody>
       <% period.weeks.each do |week| %>
         <tr>
+          <% week_lanes = agenda.lanes(week) %>
+          <% shown_lanes = week_lanes.first(max_lanes) %>
           <% week.each do |date| %>
             <% day_events = agenda.events_on(date) %>
             <% day_tasks = agenda.tasks_on(date) %>
+            <% hidden_spans = week_lanes.drop(max_lanes).count { |lane| lane.any? { |span| span.covers?(date) } } %>
+            <% lane_spans = shown_lanes.map { |lane| lane.find { |span| span.covers?(date) } } %>
+            <% lane_spans = lane_spans[0..(lane_spans.rindex(&:itself) || -1)] %>
             <% day_count = day_events.size + day_tasks.size %>
-            <td class="<%= calendar_day_classes(period, date) %><%= " calendar-day--empty" if day_count.zero? %>"
+            <td class="<%= calendar_day_classes(period, date) %><%= " calendar-day--empty" if day_count.zero? && lane_spans.empty? %>"
                 <%= tag.attributes("aria-current": (period.today?(date) ? "date" : nil)) %>>
               <div class="calendar-day__header">
                 <%= link_to calendar_path(view: "week", date: date.iso8601), class: "calendar-day__number",
@@ -28,6 +34,18 @@
                 <%= link_to new_event_path(date: date.iso8601), class: "calendar-day__add",
                       title: "Novo evento", "aria-label": "Novo evento a #{calendar_full_date(date)}" do %><%= icon :plus, size: 12 %><% end %>
               </div>
+              <%# Deadline lines, one lane each (an empty slot keeps the lines below at their height). %>
+              <% if lane_spans.any? %>
+                <div class="calendar-spans">
+                  <% lane_spans.each do |span| %>
+                    <% if span %>
+                      <%= render "calendar/span_segment", span: span, date: date, week: week %>
+                    <% else %>
+                      <span class="calendar-span calendar-span--gap" aria-hidden="true"></span>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
               <% if day_count.positive? %>
                 <ul class="calendar-day__items">
                   <% day_events.first(max_items).each do |event| %>
@@ -37,10 +55,11 @@
                     <li><%= render "calendar/task_item", task: task %></li>
                   <% end %>
                 </ul>
-                <% if day_count > max_items %>
-                  <%= link_to "+#{day_count - max_items} mais", calendar_path(view: "week", date: date.iso8601),
-                              class: "calendar-day__more", "aria-label": "Ver mais #{day_count - max_items} de #{calendar_full_date(date)}" %>
-                <% end %>
+              <% end %>
+              <% more = [ day_count - max_items, 0 ].max + hidden_spans %>
+              <% if more.positive? %>
+                <%= link_to "+#{more} mais", calendar_path(view: "week", date: date.iso8601),
+                            class: "calendar-day__more", "aria-label": "Ver mais #{more} de #{calendar_full_date(date)}" %>
               <% end %>
             </td>
           <% end %>
@@ -50,7 +69,7 @@
   </table>
 </div>
 
-<% if agenda.tasks_in_focus.empty? && agenda.events_in_focus.empty? %>
+<% if agenda.tasks_in_focus.empty? && agenda.events_in_focus.empty? && agenda.spans.empty? %>
   <div class="calendar-empty">
     <%= render "shared/empty_state", title: "Nada marcado para este mês",
                                      body: "As tarefas com prazo ou data de início aparecem aqui automaticamente. Também podes marcar eventos.",

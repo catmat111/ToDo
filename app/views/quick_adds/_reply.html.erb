@@ -10,6 +10,6 @@
   </div>
 <% else %>
   <div class="quickadd__msg quickadd__msg--app">
-    Adicionei <%= link_to record.title, task_path(record) %> para <strong><%= relative_due(record.due_at) %></strong>. Mais alguma coisa?
+    Adicionei <%= link_to record.title, task_path(record) %><% if record.tags.any? %> na etiqueta <strong><%= record.tags.map(&:name).to_sentence %></strong><% end %><% if record.due_at %> para <strong><%= relative_due(record.due_at) %></strong><% end %>. Mais alguma coisa?
   </div>
 <% end %>

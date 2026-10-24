@@ -1,0 +1,18 @@
+<%# One day of a deadline line: the title on its first day (or the week's first), a flag on the deadline. %>
+<%# locals: (span:, date:, week:) %>
+<% task = span.task %>
+<% starts = date == span.first_day %>
+<% ends = date == span.last_day %>
+<% label = starts || date == week.first %>
+<% due = task.due_at.in_time_zone %>
+<% due_text = all_day?(due) ? l(due.to_date, format: "%d/%m") : l(due, format: "%d/%m %H:%M") %>
+<%= link_to task_path(task),
+      class: [ "calendar-span", "calendar-span--#{task.status.dasherize}", ("calendar-span--overdue" if task.overdue?),
+               ("calendar-span--start" if starts), ("calendar-span--end" if ends) ],
+      style: ("--span-days: #{([ span.last_day, week.last ].min - date).to_i + 1}; --span-reserve: #{span.last_day <= week.last ? 40 : 6}px" if label),
+      title: "#{task.title} — prazo #{due_text}",
+      tabindex: (label ? nil : -1), "aria-hidden": (label ? nil : "true"),
+      "aria-label": (label ? "#{task.title}, prazo #{due_text}" : nil) do %>
+  <% if label %><span class="calendar-span__title"><%= task.title %></span><% end %>
+  <% if ends %><span class="calendar-span__due"><%= icon :flag, size: 11 %><%= " #{due.strftime("%H:%M")}" unless all_day?(due) %></span><% end %>
+<% end %>

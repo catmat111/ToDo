@@ -41,7 +41,7 @@
 
       <header class="masthead">
         <div class="masthead__inner">
-          <%= link_to root_path, class: "wordmark", "aria-label": "Tu Do. — início" do %>Tu Do<span class="wordmark__dot">.</span><% end %>
+          <%= link_to root_path, class: "wordmark", "aria-label": "Tu Do. — Hoje", "aria-current": (current_section == :home ? "page" : nil) do %>Tu Do<span class="wordmark__dot">.</span><% end %>
           <nav class="mainnav" aria-label="Principal">
             <% main_sections.each do |section| %>
               <% if section[:links].any? %>

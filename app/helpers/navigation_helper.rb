@@ -1,10 +1,11 @@
-# Masthead navigation: the four main sections, each with a small drop-down menu of its
-# pages (the account pages hang off the avatar).
+# Masthead navigation: three main sections, each with a small drop-down menu of its
+# pages (the account pages hang off the avatar). The home page ("Hoje") has no tab:
+# the "Tu Do." wordmark leads there.
 # To add a page: add its URL prefix to SECTIONS and a link to section_links.
 module NavigationHelper
-  # Top navigation: four sections; everything else lives in the section's menu.
+  # Top navigation: the sections with a label; everything else lives in their menus.
   SECTIONS = [
-    { key: :home, label: "Hoje", prefixes: [] },
+    { key: :home, label: nil, prefixes: [] },
     { key: :tasks, label: "Tarefas", prefixes: %w[/tasks /tags] },
     { key: :calendar, label: "Calendário", prefixes: %w[/calendar /events] },
     { key: :jobs, label: "Emprego", prefixes: %w[/applications /job_listings /job_searches /companies /contacts /replies /mailbox_connection] },
@@ -17,7 +18,7 @@ module NavigationHelper
   end
 
   def main_sections
-    paths = { home: root_path, tasks: tasks_path, calendar: calendar_path, jobs: job_applications_path }
+    paths = { tasks: tasks_path, calendar: calendar_path, jobs: job_applications_path }
     SECTIONS.select { |s| s[:label] }.map do |s|
       links = section_links(s[:key])
       { key: s[:key], label: s[:label], path: paths[s[:key]], active: current_section == s[:key],

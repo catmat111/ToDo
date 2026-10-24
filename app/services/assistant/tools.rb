@@ -33,6 +33,14 @@ module Assistant
         text
       end
 
+      # The user's tags with these names (case-insensitive), creating the missing ones.
+      def tags_named(user, names)
+        Array(names).map { |n| n.to_s.delete_prefix("#").squish.truncate(40, omission: "") }.compact_blank.uniq(&:downcase).first(5).filter_map do |name|
+          tag = user.tags.where("LOWER(name) = ?", name.downcase).first || user.tags.create(name: name.upcase_first)
+          tag if tag.persisted?
+        end
+      end
+
       # Small models sometimes send one tool's arguments under another tool's name (e.g.
       # tag names to mudar_prioridade). When the arguments only fit another tool, use that one.
       def repaired_name(name, args)

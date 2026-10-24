@@ -19,7 +19,7 @@
   font-size: 1.9rem; line-height: 1; letter-spacing: -0.01em; white-space: nowrap;
   color: #EFE7DD; text-decoration: none;
 }
-.wordmark .wordmark__dot { color: inherit; }
+.wordmark .wordmark__dot { color: var(--orange); }
 
 /* --- Main navigation --- */
 .mainnav { display: flex; align-items: center; gap: var(--space-5); flex: 1; }

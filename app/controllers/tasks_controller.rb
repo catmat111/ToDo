@@ -40,7 +40,7 @@ class TasksController < ApplicationController
 
     if result.success?
       if params[:return_to] == "home"
-        redirect_to root_path, notice: "«#{@task.title}» adicionada a hoje."
+        redirect_to root_path, notice: home_notice(@task)
       elsif @task.parent_task
         redirect_to @task.parent_task, notice: "Subtarefa «#{@task.title}» criada."
       else
@@ -115,6 +115,29 @@ class TasksController < ApplicationController
     respond_with_result(Tasks::ChangeStatus.call(@task, to: "cancelled"), "Tarefa cancelada.")
   end
 
+  # Dragged on the home page: to today, or to a tag's backlog (no date). Answers with a
+  # page refresh (morphed, so the scroll stays).
+  def plan
+    tag = Current.user.tags.find(params[:tag_id]) if params[:tag_id].present?
+    result = Tasks::Plan.call(@task, to: params[:to], tag: tag)
+    respond_to do |format|
+      format.turbo_stream do
+        flash.now[:alert] = result.error unless result.success?
+        render turbo_stream: (result.success? ? turbo_stream.refresh(request_id: nil) : turbo_stream.update("flash", partial: "shared/flash"))
+      end
+      format.html { redirect_to root_path, (result.success? ? :notice : :alert) => (result.success? ? "Tarefa movida." : result.error), status: :see_other }
+    end
+  end
+
+  def duplicate
+    result = Tasks::Duplicate.call(@task)
+    if result.success?
+      redirect_to result.task, notice: "Tarefa duplicada. Estás agora na cópia.", status: :see_other
+    else
+      redirect_to @task, alert: "Não foi possível duplicar: #{result.error}", status: :see_other
+    end
+  end
+
   def archive
     respond_with_result(Tasks::Archive.call(@task), "Tarefa arquivada.")
   end
@@ -152,6 +175,14 @@ class TasksController < ApplicationController
         redirect_back_or_to @task, notice: notice, status: :see_other
       else
         redirect_back_or_to @task, alert: result.error, status: :see_other
+      end
+    end
+
+    # Added from the home page: to today's list, or to a tag's backlog (no date).
+    def home_notice(task)
+      if task.due_at then "«#{task.title}» adicionada a hoje."
+      elsif task.tags.any? then "«#{task.title}» adicionada a #{task.tags.map { |t| "«#{t.name}»" }.to_sentence}."
+      else "«#{task.title}» adicionada."
       end
     end
 

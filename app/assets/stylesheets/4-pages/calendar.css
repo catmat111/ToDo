@@ -268,3 +268,29 @@
 @media (hover: none) { .calendar-day__add { opacity: 0.6; } }
 .calendar-week__header { position: relative; }
 .calendar-week__add { position: absolute; top: 0; right: 0; }
+
+/* ---------- Deadline lines: an open task drawn from its start to its deadline ---------- */
+.calendar-spans { display: flex; flex-direction: column; gap: 2px; margin-bottom: 3px; }
+.calendar-span {
+  --item-color: var(--color-primary);
+  position: relative; display: flex; align-items: center; gap: 4px; height: 16px;
+  margin: 0 -7px; padding: 0 6px; /* reach the cell edges, so the days join into one line */
+  background: color-mix(in srgb, var(--item-color) 22%, var(--color-surface));
+  color: var(--color-text); font-size: 0.7rem; line-height: 16px; text-decoration: none;
+}
+.calendar-span:hover { background: color-mix(in srgb, var(--item-color) 36%, var(--color-surface)); color: var(--color-text); }
+.calendar-span--gap { background: none; pointer-events: none; }
+.calendar-span--start { margin-left: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; border-left: 3px solid var(--item-color); }
+.calendar-span--end { margin-right: 0; border-top-right-radius: 8px; border-bottom-right-radius: 8px; justify-content: flex-end; }
+.calendar-span--in-progress { --item-color: var(--color-warning); }
+.calendar-span--overdue { --item-color: var(--color-danger); }
+/* The title runs over the next days of the same week (--span-days cells wide, leaving
+   room for the deadline flag), painted above those days' pieces of the line. */
+.calendar-span__title {
+  position: relative; z-index: 1; flex: 0 0 auto; font-weight: 600;
+  width: calc(var(--span-days, 1) * 100% - var(--span-reserve, 6px));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.calendar-span--end .calendar-span__title { flex: 1 1 auto; width: auto; min-width: 0; }
+.calendar-span__due { flex-shrink: 0; display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--item-color); }
+.calendar-week__item--span { background: color-mix(in srgb, var(--item-color) 16%, var(--color-surface)); }
